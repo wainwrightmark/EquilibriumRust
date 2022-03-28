@@ -1,0 +1,190 @@
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+use itertools::Itertools;
+use rand::Rng;
+
+use crate::{
+    draggable::{Draggable, Dragged},
+    game_shape::{GameShape, ShapeAppearance},
+    shape_maker::{create_shape, SHAPE_SIZE},
+    walls::Wall,
+};
+
+pub struct WinPlugin;
+
+impl Plugin for WinPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<NewGameEvent>()
+            .add_system(check_for_contacts.label("check_for_contacts"))
+            .add_system(
+                check_for_win
+                    .label("check_for_win")
+                    .after("check_for_contacts"),
+            )
+            .add_system(
+                handle_new_game
+                    .system()
+                    .label("handle_new_game")
+                    .after("check_for_win"),
+            )
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(bevy::core::FixedTimestep::step(2f64))
+                    .with_system(check_for_tower.system().label("check_for_tower").after("check_for_contacts")),
+            );
+    }
+}
+
+#[derive(Component)]
+pub struct WinTimer {
+    pub win_time: f64,
+}
+
+pub struct NewGameEvent {}
+
+const COUNTDOWN: f64 = 3.0;
+
+pub fn handle_new_game(
+    mut commands: Commands,
+    mut new_game_events: EventReader<NewGameEvent>,
+    draggables: Query<(Entity, With<Draggable>)>,
+    rapier_config: Res<RapierConfiguration>,
+) {
+    let scale = rapier_config.scale;
+
+    let mut first = true;
+    for _ng in new_game_events.iter() {
+        if !first {
+            continue;
+        }
+        first = false;
+
+        let mut shape_count = 0;
+        for (e, _) in draggables.iter() {
+            println!("Despawn {:?}", e);
+            commands.entity(e).despawn();
+            shape_count += 1;
+        }
+        shape_count += 1; //reate one more shape for new game
+
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..shape_count {
+            let shape = crate::game_shape::get_random_shape(&mut rng);
+
+            let rangex = -100f32..100f32;
+            let rangey = -100f32..100f32;
+
+            let point = nalgebra::Vector2::<f32>::new(rng.gen_range(rangex), rng.gen_range(rangey));
+
+            let angle = rng.gen_range(0f32..std::f32::consts::TAU);
+
+            create_shape(
+                &mut commands,
+                &shape,
+                SHAPE_SIZE,
+                scale,
+                point.into(),
+                angle,
+                true,
+                ShapeAppearance {
+                    fill: (shape.default_fill_color()),
+                    ..Default::default()
+                },
+            );
+        }
+    }
+}
+
+pub fn check_for_win(
+    mut commands: Commands,
+    mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
+    time: Res<Time>,
+    mut new_game_events: EventWriter<NewGameEvent>,
+) {
+    if let Some((timer_entity, timer,mut timer_transform)) = win_timer.get_single_mut().ok() {
+        let remaining = timer.win_time - time.seconds_since_startup();
+
+        if remaining <= 0f64 {
+            println!("Win - Despawn Win Timer {:?}", timer_entity);
+            commands.entity(timer_entity).despawn();
+            println!("Win");
+            new_game_events.send(NewGameEvent {});
+        } else {
+            let new_scale = (remaining / COUNTDOWN)  as f32; 
+
+            timer_transform.scale = Vec3::new(new_scale, new_scale, 1.0);
+        }
+    }
+}
+
+pub fn check_for_tower(
+    mut commands: Commands,
+    win_timer: Query<&WinTimer>,
+    time: Res<Time>,
+    dragged: Query<&Dragged>,
+    narrow_phase: Res<NarrowPhase>,
+    walls: Query<(Entity, With<Wall>)>,
+) {
+    if !win_timer.is_empty() {
+        return; // no need to check, we're already winning
+    }
+
+    if !dragged.is_empty() {
+        return; //Something is being dragged so the player can't win yet
+    }
+
+    for (wall, _) in walls.iter() {
+        for contact in narrow_phase.contacts_with(wall.handle()) {
+            if contact.has_any_active_contact {
+                return;
+            }
+        }
+    }
+
+    commands
+        .spawn()
+        .insert(WinTimer {
+            win_time: time.seconds_since_startup() + COUNTDOWN,
+        })
+        .insert(Transform{translation: Vec3::new(0.0, 100.0, 0.0) , ..Default::default()})
+        .insert_bundle(GameShape::Box.get_shapebundle(100f32, ShapeAppearance::default()));
+
+    println!("Tower Built");
+}
+
+fn check_for_contacts(
+    mut commands: Commands,
+    win_timer: Query<(Entity, &WinTimer)>,
+    mut intersection_events: EventReader<IntersectionEvent>,
+    mut contact_events: EventReader<ContactEvent>,
+    dragged: Query<&Dragged>,
+) {
+    if win_timer.is_empty() {
+        return; // no need to check
+    }
+
+    let mut fail = false;
+
+    for _ in intersection_events.iter() {
+        fail = true;
+    }
+
+    for _ in contact_events.iter() {
+        fail = true;
+    }
+
+    if !fail {
+        if !dragged.is_empty() {
+            fail = true;
+        }
+    }
+
+    if fail {
+        println!(
+            "Contact found - Despawn Win Timer {:?}",
+            win_timer.single().0
+        );
+        commands.entity(win_timer.single().0).despawn();
+    }
+}

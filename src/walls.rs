@@ -1,11 +1,8 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::{prelude::*};
 use bevy_rapier2d::prelude::*;
 use nalgebra::Point2;
 
-pub const WINDOW_WIDTH: f32 = 360f32;
-pub const WINDOW_HEIGHT: f32 = 640f32;
-pub const WALL_WIDTH: f32 = 30f32;
 
 pub struct WallsPlugin;
 
@@ -15,127 +12,82 @@ impl Plugin for WallsPlugin {
     }
 }
 
+
+#[derive(Component)]
+pub struct Wall{
+
+}
+
 fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration>) {
     let scale = rapier_config.scale;
 
-    //Spawn outer wall
-    //Spawn top and bottom wall
-    let shape_top_and_bottom_wall = shapes::Rectangle {
-        extents: Vec2::new(WINDOW_WIDTH, WALL_WIDTH),
-        origin: shapes::RectangleOrigin::Center,
-    };
+    let color = Color::GRAY;
+    
+    
+    let bottom_wall_pos: Point2<f32> = Point2::new(0.0, -crate::WINDOW_HEIGHT / 2.0) / scale;
+    let top_wall_pos: Point2<f32> = Point2::new(0.0, crate::WINDOW_HEIGHT / 2.0)/ scale;
+    let left_wall_pos: Point2<f32> = Point2::new(-crate::WINDOW_WIDTH / 2.0, 0.0)/ scale;
+    let right_wall_pos: Point2<f32> = Point2::new(crate::WINDOW_WIDTH / 2.0, 0.0)/ scale;
 
-    //Spawn bottom wall
-    let bottom_wall_pos: Point2<f32> = Point2::new(0.0, -WINDOW_HEIGHT / 2.0) / scale;
-    commands
-        .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
-            &shape_top_and_bottom_wall,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::TEAL),
-                outline_mode: StrokeMode::color(Color::TEAL),
-            },
-            Transform::default(),
-        ))
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(
-                shape_top_and_bottom_wall.extents.x / scale / 2.0,
-                shape_top_and_bottom_wall.extents.y / scale / 2.0,
-            )
-            .into(),
-            position: bottom_wall_pos.into(),
-            ..Default::default()
-        })
-        .insert(ColliderPositionSync::Discrete);
 
-    //Spawn top wall
-    let top_wall_pos: Point2<f32> = Point2::new(0.0, WINDOW_HEIGHT / 2.0)/ scale;
-    commands
-        .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
-            &shape_top_and_bottom_wall,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::TEAL),
-                outline_mode: StrokeMode::color(Color::TEAL),
-            },
-            Transform::default(),
-        ))
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(
-                shape_top_and_bottom_wall.extents.x / scale / 2.0,
-                shape_top_and_bottom_wall.extents.y / scale / 2.0,
-            )
-            .into(),
-            position: top_wall_pos.into(),
-            ..Default::default()
-        })
-        .insert(ColliderPositionSync::Discrete);
+    spawn_wall(&mut commands, scale, bottom_wall_pos,crate::WINDOW_WIDTH, crate::WALL_WIDTH, color );
+    spawn_wall(&mut commands, scale, top_wall_pos,crate::WINDOW_WIDTH, crate::WALL_WIDTH, color );
 
-    //Spawn left and right wall
-    let shape_left_and_right_wall = shapes::Rectangle {
-        extents: Vec2::new(WALL_WIDTH, WINDOW_HEIGHT),
-        origin: shapes::RectangleOrigin::Center,
-    };
-
-    //Spawn left wall
-    let left_wall_pos: Point2<f32> = Point2::new(-WINDOW_WIDTH / 2.0, 0.0)/ scale;
-    commands
-        .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
-            &shape_left_and_right_wall,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::TEAL),
-                outline_mode: StrokeMode::color(Color::TEAL),
-            },
-            Transform::default(),
-        ))
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(
-                shape_left_and_right_wall.extents.x / scale / 2.0,
-                shape_left_and_right_wall.extents.y / scale / 2.0,
-            )
-            .into(),
-            position: left_wall_pos.into(),
-            ..Default::default()
-        })
-        .insert(ColliderPositionSync::Discrete);
-
-    //Spawn right wall
-    let right_wall_pos: Point2<f32> = Point2::new(WINDOW_WIDTH / 2.0, 0.0)/ scale;
-    commands
-        .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
-            &shape_left_and_right_wall,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(Color::TEAL),
-                outline_mode: StrokeMode::color(Color::TEAL),
-            },
-            Transform::default(),
-        ))
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: ColliderShape::cuboid(
-                shape_left_and_right_wall.extents.x / scale / 2.0,
-                shape_left_and_right_wall.extents.y / scale / 2.0,
-            )
-            .into(),
-            position: right_wall_pos.into(),
-            ..Default::default()
-        })
-        .insert(ColliderPositionSync::Discrete);
+    spawn_wall(&mut commands, scale, left_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color );
+    spawn_wall(&mut commands, scale, right_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color );
 }
+
+fn spawn_wall(commands: &mut Commands, physics_scale : f32,
+    point : Point2<f32>,
+    width: f32,
+    height: f32,
+    color : Color
+    
+    ){
+    
+        let shape = shapes::Rectangle {
+            extents: Vec2::new(width, height),
+            origin: shapes::RectangleOrigin::Center,
+        };
+        let collider_shape1 = ColliderShape::cuboid(
+            shape.extents.x / physics_scale / 2.0,
+            shape.extents.y / physics_scale / 2.0,
+        );
+        let collider_shape2  = ColliderShape::cuboid(
+            shape.extents.x / physics_scale / 2.0,
+            shape.extents.y / physics_scale / 2.0,
+        );
+    
+        commands
+            .spawn()
+            .insert_bundle(GeometryBuilder::build_as(
+                &shape,
+                DrawMode::Outlined {
+                    fill_mode: FillMode::color(color),
+                    outline_mode: StrokeMode::color(color),
+                },
+                Transform::default(),
+            ))
+            .insert_bundle(RigidBodyBundle {
+                body_type: RigidBodyType::Static.into(),
+                position: point.into(),
+                ..Default::default()
+            })
+            .insert_bundle(ColliderBundle {
+                shape: collider_shape1.into(),                
+                ..Default::default()
+            })
+            .insert(ColliderPositionSync::Discrete)
+            .insert(Wall{})
+            .with_children(|f|{
+                f.spawn_bundle(ColliderBundle {
+                    shape: collider_shape2.into(),          
+                    flags: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
+                    collider_type: ColliderType::Sensor.into(),
+                    
+          
+                    ..Default::default()
+                });
+            })
+            ;
+    }

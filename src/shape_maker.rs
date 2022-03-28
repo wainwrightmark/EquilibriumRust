@@ -1,77 +1,108 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{prelude::*};
-use nalgebra::{Point2};
-use bevy_prototype_lyon::prelude::*;
+
+use crate::game_shape::*;
+use bevy_rapier2d::prelude::*;
+use rand::Rng;
+
+pub const SHAPE_SIZE: f32 = 60f32;
+
+pub fn create_game(mut commands: Commands, rapier_config: Res<RapierConfiguration>) {
+    let physics_scale = rapier_config.scale;
+    create_boxes(&mut commands, physics_scale);
 
 
-pub fn create_boxes(
-    mut commands: Commands,
-    rapier_config: Res<RapierConfiguration>,
-) {
-    let scale = rapier_config.scale;
-    
-    create_box(&mut commands, scale, 50f32, Point2::new(-100f32, -100f32).into(), true);
+    let x = 0f32;
+    let y = SHAPE_SIZE - (crate::WINDOW_HEIGHT / 2.0);
 
-    create_box(&mut commands, scale, 50f32, Point2::new(0f32, 0f32).into(), false);
-
-    create_box(&mut commands, scale, 50f32, Point2::new(100f32, 100f32).into(), true);
-    
+    create_shape(
+        &mut commands,
+        &GameShape::Box,
+        SHAPE_SIZE,
+        physics_scale,
+        nalgebra::Vector2::<f32>::new(x,y),
+        0f32,
+        false,
+        ShapeAppearance { fill: (Color::GRAY), ..Default::default() }
+    );
 }
 
-fn create_box(
+pub fn create_boxes(mut commands: &mut Commands, physics_scale: f32) {
+    let mut rng = rand::thread_rng();
+
+    for shape in crate::game_shape::game_shapes() {
+        let rangex = -100f32..100f32;
+        let rangey = -100f32..100f32;
+
+        let point = nalgebra::Vector2::<f32>::new(rng.gen_range(rangex), rng.gen_range(rangey));
+
+        let angle = rng.gen_range(0f32..std::f32::consts::TAU);
+
+        create_shape(
+            &mut commands,
+            &shape,
+            SHAPE_SIZE,
+            physics_scale,
+            point.into(),
+            angle,
+            true,
+            ShapeAppearance { fill: (shape.default_fill_color()), ..Default::default() }
+        );
+    }
+}
+
+pub fn create_shape(
     commands: &mut Commands,
-    scale: f32,
-    size : f32,
-    position: Point2<f32>,
-     dynamic: bool
-){
-    let shape = shapes::Rectangle {
-        extents: Vec2::new(size, size),
-        origin: shapes::RectangleOrigin::Center
+    shape: &GameShape,
+    shape_size: f32,
+    physics_scale: f32,
+    position: nalgebra::Vector2<f32>,
+    angle : f32,
+    dynamic: bool,
+    appearance: ShapeAppearance
+) {
+    let collider_shape = shape.to_collider_shape(shape_size, physics_scale);
+    let position_component : Isometry<Real> = Isometry::<Real>::new(position /physics_scale, angle);
+
+    let rbb: RigidBodyBundle = if dynamic {
+        RigidBodyBundle {
+            ccd: RigidBodyCcd {
+                ccd_enabled: true,
+                ..Default::default()
+            }
+            .into(),
+            body_type: RigidBodyType::Dynamic.into(),
+            position : position_component.into(),
+            ..Default::default()
+        }
+    } else {
+        RigidBodyBundle {
+            body_type: RigidBodyType::Static.into(),
+            position : position_component.into(),
+            ..Default::default()
+        }
     };
 
-    let collider_shape = ColliderShape::cuboid(shape.extents.x/scale/2.0, shape.extents.y/scale/2.0);
+    
 
-    let scaled_position = position / scale;
+    let mut entity_builder = commands.spawn();
+    let name = shape.name();
 
-    println!("Created box scale:{scale} size:{size} scaled_position{scaled_position}");
-
-    commands
-        .spawn()
-        .insert_bundle(
-            GeometryBuilder::build_as(
-                &shape,
-                DrawMode::Outlined{
-                    fill_mode: FillMode::color(Color::GOLD),
-                    outline_mode: StrokeMode::new(Color::TEAL, 2.0),
-                },
-                Transform::default(),
-            )
-        )
-        .insert_bundle(
-            if dynamic{
-                RigidBodyBundle {
-                    ccd: RigidBodyCcd { ccd_enabled: true, ..Default::default() }.into(),
-                    body_type: RigidBodyType::Dynamic.into(),
-                    ..Default::default()
-                }
-            }
-            else{
-                RigidBodyBundle {
-                    body_type: RigidBodyType::KinematicPositionBased.into(),
-                    ..Default::default()
-                }
-            }
-            
-            )
+    entity_builder.insert_bundle(shape.get_shapebundle(shape_size, appearance))
+    .insert_bundle(rbb)
         .insert_bundle(ColliderBundle {
             shape: collider_shape.into(),
-            position: (scaled_position).into() ,
+            //position: position_component.into(),
             ..Default::default()
         })
         .insert(ColliderPositionSync::Discrete)
-        .insert(crate::Draggable{drag_mode: crate::DragMode::Release});
+        .insert(Name::new(name))
+        ;
+
+    if dynamic{
+        entity_builder.insert(crate::Draggable {
+            drag_mode: crate::DragMode::Release,
+        });
+    }
+    
+    println!("Spawn {:?} {:?}", entity_builder.id(), shape);
 }
-
-
-
