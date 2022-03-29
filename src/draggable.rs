@@ -159,16 +159,16 @@ pub fn drag_system(
 
     if let Some(position) = get_cursor_position(windows, q_camera, rapier_config) {
         for mut thing in dragged.iter_mut() {
-            let max_x: f32 = (crate::WINDOW_WIDTH / 2.0 + (crate::WALL_WIDTH)) / scale; //You can leave the box but can't go too far
-            let max_y: f32 = (crate::WINDOW_HEIGHT / 2.0 + (crate::WALL_WIDTH)) / scale;
+            let max_x: f32 = (crate::WINDOW_WIDTH / 2.0 ) / scale; //You can leave the box but can't go too far
+            let max_y: f32 = (crate::WINDOW_HEIGHT / 2.0 ) / scale;
 
             let min_x: f32 = -max_x;
             let min_y: f32 = -max_y;
 
-            let clamped_position =
-                bevy::math::Vec2::clamp(position, Vec2::new(min_x, min_y), Vec2::new(max_x, max_y));
+             let clamped_position =
+                 bevy::math::Vec2::clamp(position, Vec2::new(min_x, min_y), Vec2::new(max_x, max_y));
 
-            let new_position = thing.0.offset + clamped_position;
+            let new_position = thing.0.offset + clamped_position;// clamped_position;
 
             thing.1.next_position.translation = new_position.into();
         }

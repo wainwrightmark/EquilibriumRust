@@ -129,7 +129,7 @@ impl GameShape {
 
     fn box_geometry(shape_size: f32) -> Rectangle {
         shapes::Rectangle {
-            extents: Vec2::new(shape_size, shape_size),
+            extents: Vec2::new(shape_size/ 2.0, shape_size / 2.0),
             origin: shapes::RectangleOrigin::Center,
         }
     }

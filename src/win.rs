@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use itertools::Itertools;
 use rand::Rng;
 
 use crate::{
@@ -29,7 +28,7 @@ impl Plugin for WinPlugin {
             )
             .add_system_set(
                 SystemSet::new()
-                    .with_run_criteria(bevy::core::FixedTimestep::step(2f64))
+                    .with_run_criteria(bevy::core::FixedTimestep::step(0.2f64))
                     .with_system(check_for_tower.system().label("check_for_tower").after("check_for_contacts")),
             );
     }
@@ -47,7 +46,7 @@ const COUNTDOWN: f64 = 3.0;
 pub fn handle_new_game(
     mut commands: Commands,
     mut new_game_events: EventReader<NewGameEvent>,
-    draggables: Query<(Entity, With<Draggable>)>,
+    draggables: Query<(Entity, Or<(With<Draggable>, With<crate::Foundation>)> )>,
     rapier_config: Res<RapierConfiguration>,
 ) {
     let scale = rapier_config.scale;
@@ -61,13 +60,17 @@ pub fn handle_new_game(
 
         let mut shape_count = 0;
         for (e, _) in draggables.iter() {
-            println!("Despawn {:?}", e);
+            //println!("Despawn {:?}", e);
             commands.entity(e).despawn();
             shape_count += 1;
         }
         shape_count += 1; //reate one more shape for new game
 
         let mut rng = rand::thread_rng();
+
+        let foundation_shape = crate::game_shape::get_random_shape(&mut rng);
+
+        crate::create_foundations(&mut commands, scale, &foundation_shape);
 
         for _ in 0..shape_count {
             let shape = crate::game_shape::get_random_shape(&mut rng);
@@ -106,9 +109,9 @@ pub fn check_for_win(
         let remaining = timer.win_time - time.seconds_since_startup();
 
         if remaining <= 0f64 {
-            println!("Win - Despawn Win Timer {:?}", timer_entity);
+            //println!("Win - Despawn Win Timer {:?}", timer_entity);
             commands.entity(timer_entity).despawn();
-            println!("Win");
+            //println!("Win");
             new_game_events.send(NewGameEvent {});
         } else {
             let new_scale = (remaining / COUNTDOWN)  as f32; 
@@ -122,8 +125,11 @@ pub fn check_for_tower(
     mut commands: Commands,
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
-    dragged: Query<&Dragged>,
+    dragged: Query<With<Dragged>>,
+    mut intersection_events:  ResMut<bevy::app::Events<IntersectionEvent>>,
+    mut contact_events:  ResMut<bevy::app::Events<ContactEvent>>,
     narrow_phase: Res<NarrowPhase>,
+
     walls: Query<(Entity, With<Wall>)>,
 ) {
     if !win_timer.is_empty() {
@@ -134,6 +140,7 @@ pub fn check_for_tower(
         return; //Something is being dragged so the player can't win yet
     }
 
+    //Check for contacts
     for (wall, _) in walls.iter() {
         for contact in narrow_phase.contacts_with(wall.handle()) {
             if contact.has_any_active_contact {
@@ -141,16 +148,20 @@ pub fn check_for_tower(
             }
         }
     }
+    
+    //Clear the events so the win timer isn't immediately despawned
+    intersection_events.clear();
+    contact_events.clear();
 
     commands
         .spawn()
         .insert(WinTimer {
             win_time: time.seconds_since_startup() + COUNTDOWN,
         })
-        .insert(Transform{translation: Vec3::new(0.0, 100.0, 0.0) , ..Default::default()})
+        .insert(Transform{translation: Vec3::new(50.0, 200.0, 0.0) , ..Default::default()})
         .insert_bundle(GameShape::Box.get_shapebundle(100f32, ShapeAppearance::default()));
 
-    println!("Tower Built");
+    //println!("Tower Built");
 }
 
 fn check_for_contacts(
@@ -158,33 +169,36 @@ fn check_for_contacts(
     win_timer: Query<(Entity, &WinTimer)>,
     mut intersection_events: EventReader<IntersectionEvent>,
     mut contact_events: EventReader<ContactEvent>,
-    dragged: Query<&Dragged>,
+    dragged: Query<With<Dragged>>,
+    //named: Query<&Name>
 ) {
     if win_timer.is_empty() {
         return; // no need to check
     }
 
-    let mut fail = false;
+    let mut fail: Option<&str> = None;
 
-    for _ in intersection_events.iter() {
-        fail = true;
+    for _ie in intersection_events.iter() {
+        //let name1 = named.get(ie.collider1.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
+        //let name2 = named.get(ie.collider2.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
+        //println!("Intersection Found {name1} {name2}");
+        fail = Some("Intersection Found");
     }
 
     for _ in contact_events.iter() {
-        fail = true;
+        fail = Some("Contact Found");
     }
 
-    if !fail {
-        if !dragged.is_empty() {
-            fail = true;
+    if fail.is_none() {
+        if !dragged.is_empty() {            
+            fail = Some("Something Dragged");
         }
     }
 
-    if fail {
-        println!(
-            "Contact found - Despawn Win Timer {:?}",
-            win_timer.single().0
-        );
+    if let Some(_error_message) = fail {
+        // println!(            "{error_message} - Despawn Win Timer {:?}",
+        //     win_timer.single().0
+        // );
         commands.entity(win_timer.single().0).despawn();
     }
 }

@@ -11,12 +11,17 @@ pub fn create_game(mut commands: Commands, rapier_config: Res<RapierConfiguratio
     create_boxes(&mut commands, physics_scale);
 
 
+    create_foundations(&mut commands, physics_scale,&GameShape::Box);
+}
+
+pub fn create_foundations(mut commands: &mut Commands,  physics_scale: f32, shape: &GameShape)
+{
     let x = 0f32;
     let y = SHAPE_SIZE - (crate::WINDOW_HEIGHT / 2.0);
 
     create_shape(
         &mut commands,
-        &GameShape::Box,
+        shape,
         SHAPE_SIZE,
         physics_scale,
         nalgebra::Vector2::<f32>::new(x,y),
@@ -25,6 +30,10 @@ pub fn create_game(mut commands: Commands, rapier_config: Res<RapierConfiguratio
         ShapeAppearance { fill: (Color::GRAY), ..Default::default() }
     );
 }
+
+
+#[derive(Component)]
+pub struct Foundation{}
 
 pub fn create_boxes(mut commands: &mut Commands, physics_scale: f32) {
     let mut rng = rand::thread_rng();
@@ -103,6 +112,9 @@ pub fn create_shape(
             drag_mode: crate::DragMode::Release,
         });
     }
+    else{
+        entity_builder.insert(Foundation{});
+    }
     
-    println!("Spawn {:?} {:?}", entity_builder.id(), shape);
+    //println!("Spawn {:?} {:?}", entity_builder.id(), shape);
 }

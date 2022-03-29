@@ -18,30 +18,33 @@ pub struct Wall{
 
 }
 
+
 fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration>) {
     let scale = rapier_config.scale;
 
     let color = Color::GRAY;
+    const OFFSET : f32 = crate::WALL_WIDTH /2.0;
+    const EXTRA_WIDTH :f32 = crate::WALL_WIDTH * 2.0;
     
-    
-    let bottom_wall_pos: Point2<f32> = Point2::new(0.0, -crate::WINDOW_HEIGHT / 2.0) / scale;
-    let top_wall_pos: Point2<f32> = Point2::new(0.0, crate::WINDOW_HEIGHT / 2.0)/ scale;
-    let left_wall_pos: Point2<f32> = Point2::new(-crate::WINDOW_WIDTH / 2.0, 0.0)/ scale;
-    let right_wall_pos: Point2<f32> = Point2::new(crate::WINDOW_WIDTH / 2.0, 0.0)/ scale;
+    let bottom_wall_pos: Point2<f32> = Point2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 -OFFSET) / scale;
+    let top_wall_pos: Point2<f32> = Point2::new(0.0, crate::WINDOW_HEIGHT / 2.0 +OFFSET)/ scale;
+    let left_wall_pos: Point2<f32> = Point2::new(-crate::WINDOW_WIDTH / 2.0-OFFSET, 0.0)/ scale;
+    let right_wall_pos: Point2<f32> = Point2::new(crate::WINDOW_WIDTH / 2.0 +OFFSET, 0.0)/ scale;
 
 
-    spawn_wall(&mut commands, scale, bottom_wall_pos,crate::WINDOW_WIDTH, crate::WALL_WIDTH, color );
-    spawn_wall(&mut commands, scale, top_wall_pos,crate::WINDOW_WIDTH, crate::WALL_WIDTH, color );
+    spawn_wall(&mut commands, scale, bottom_wall_pos,crate::WINDOW_WIDTH + EXTRA_WIDTH, crate::WALL_WIDTH , color, "Bottom-Wall".to_string() );
+    spawn_wall(&mut commands, scale, top_wall_pos,crate::WINDOW_WIDTH+ EXTRA_WIDTH, crate::WALL_WIDTH, color, "Top-Wall".to_string() );
 
-    spawn_wall(&mut commands, scale, left_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color );
-    spawn_wall(&mut commands, scale, right_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color );
+    spawn_wall(&mut commands, scale, left_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color, "Left-Wall".to_string() );
+    spawn_wall(&mut commands, scale, right_wall_pos,crate::WALL_WIDTH, crate::WINDOW_HEIGHT, color, "Right-Wall".to_string() );
 }
 
 fn spawn_wall(commands: &mut Commands, physics_scale : f32,
     point : Point2<f32>,
     width: f32,
     height: f32,
-    color : Color
+    color : Color,
+    name : String
     
     ){
     
@@ -78,6 +81,7 @@ fn spawn_wall(commands: &mut Commands, physics_scale : f32,
                 ..Default::default()
             })
             .insert(ColliderPositionSync::Discrete)
+            .insert(Name::new(name.to_string()))
             .insert(Wall{})
             .with_children(|f|{
                 f.spawn_bundle(ColliderBundle {
@@ -87,7 +91,7 @@ fn spawn_wall(commands: &mut Commands, physics_scale : f32,
                     
           
                     ..Default::default()
-                });
+                }).insert(Name::new(name));
             })
             ;
     }
