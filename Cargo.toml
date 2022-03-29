@@ -17,7 +17,7 @@ runner = "wasm-server-runner"
 
 
 [target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.25", features=["x11"]}
+winit = { version = "0.26.1", features=["x11"]}
 
 [build-dependencies]
 embed-resource = "1.4"

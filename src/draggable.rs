@@ -8,6 +8,8 @@ use bevy_rapier2d::prelude::*;
 #[derive(Component)]
 pub struct MainCamera;
 
+pub struct EndDragEvent{}
+
 #[derive(PartialEq, Eq)]
 pub enum DragMode {
     Release,
@@ -29,6 +31,7 @@ pub struct DragPlugin;
 impl Plugin for DragPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<RotateEvent>()
+        .add_event::<EndDragEvent>()
             .add_system(mouse_press_start_drag_system)
             .add_system(mouse_release_stop_drag_system)
             .add_system(mouse_wheeel_scroll_rotate_system)
@@ -125,6 +128,7 @@ pub fn mouse_release_stop_drag_system(
         &mut RigidBodyPositionComponent,
     )>,
     mut commands: Commands,
+    mut ew_end_drag: EventWriter<EndDragEvent>,
 ) {
     if !mouse_button_input.just_released(MouseButton::Left) {
         return;
@@ -141,6 +145,9 @@ pub fn mouse_release_stop_drag_system(
             .remove::<Dragged>()
             .remove::<RigidBodyTypeComponent>()
             .insert(RigidBodyTypeComponent(RigidBodyType::Dynamic));
+
+            ew_end_drag.send(EndDragEvent{});
+        
     }
 }
 

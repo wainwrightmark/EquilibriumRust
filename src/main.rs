@@ -16,6 +16,9 @@ use walls::*;
 mod shape_maker;
 use shape_maker::*;
 
+mod buttons;
+use buttons::*;
+
 mod game_shape;
 
 mod win;
@@ -36,7 +39,7 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.95)))
         .add_plugins(DefaultPlugins)
         .add_plugin(WallsPlugin)
-        
+        .add_plugin(ButtonPlugin)
         .add_plugin(ShapePlugin)
         
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())

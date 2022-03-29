@@ -8,6 +8,7 @@
 - [ ] Touch controls
 - [ ] Keyboard Controls
 - [ ] Gamepad Controls
+- [ ] Cursor icon https://github.com/bevyengine/bevy/blob/latest/examples/window/window_settings.rs
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection

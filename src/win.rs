@@ -28,7 +28,7 @@ impl Plugin for WinPlugin {
             )
             .add_system_set(
                 SystemSet::new()
-                    .with_run_criteria(bevy::core::FixedTimestep::step(0.2f64))
+                    //.with_run_criteria(bevy::core::FixedTimestep::step(0.4f64))
                     .with_system(check_for_tower.system().label("check_for_tower").after("check_for_contacts")),
             );
     }
@@ -39,7 +39,11 @@ pub struct WinTimer {
     pub win_time: f64,
 }
 
-pub struct NewGameEvent {}
+pub struct NewGameEvent {
+    pub box_count_change: i32
+}
+
+
 
 const COUNTDOWN: f64 = 3.0;
 
@@ -58,13 +62,13 @@ pub fn handle_new_game(
         }
         first = false;
 
-        let mut shape_count = 0;
+        let mut shape_count = -1;
         for (e, _) in draggables.iter() {
-            //println!("Despawn {:?}", e);
+    
             commands.entity(e).despawn();
             shape_count += 1;
         }
-        shape_count += 1; //reate one more shape for new game
+        shape_count += _ng.box_count_change; //reate one more shape for new game
 
         let mut rng = rand::thread_rng();
 
@@ -112,7 +116,7 @@ pub fn check_for_win(
             //println!("Win - Despawn Win Timer {:?}", timer_entity);
             commands.entity(timer_entity).despawn();
             //println!("Win");
-            new_game_events.send(NewGameEvent {});
+            new_game_events.send(NewGameEvent {box_count_change: 1});
         } else {
             let new_scale = (remaining / COUNTDOWN)  as f32; 
 
@@ -123,22 +127,42 @@ pub fn check_for_win(
 
 pub fn check_for_tower(
     mut commands: Commands,
+    mut end_drag_events: EventReader<crate::EndDragEvent>,
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
     dragged: Query<With<Dragged>>,
     mut intersection_events:  ResMut<bevy::app::Events<IntersectionEvent>>,
     mut contact_events:  ResMut<bevy::app::Events<ContactEvent>>,
     narrow_phase: Res<NarrowPhase>,
-
     walls: Query<(Entity, With<Wall>)>,
 ) {
+
+    if !end_drag_events.iter().any(|_|true){
+        return;
+    }
+
+    //println!("Drag Ended");
+
     if !win_timer.is_empty() {
+
+        //println!("Wintimer Exists");
         return; // no need to check, we're already winning
     }
 
     if !dragged.is_empty() {
+        //println!("Something is dragged");
         return; //Something is being dragged so the player can't win yet
     }
+
+    //Clear the events so the win timer isn't immediately despawned
+    // if intersection_events.drain().any(|_| true){
+    //     return;
+    // }
+    // if contact_events.drain().any(|_| true){
+    //     return;
+    // }
+
+    //println!("Checking Contacts");
 
     //Check for contacts
     for (wall, _) in walls.iter() {
@@ -149,7 +173,8 @@ pub fn check_for_tower(
         }
     }
     
-    //Clear the events so the win timer isn't immediately despawned
+    //println!("Spawning Win Timer");
+
     intersection_events.clear();
     contact_events.clear();
 
@@ -159,7 +184,11 @@ pub fn check_for_tower(
             win_time: time.seconds_since_startup() + COUNTDOWN,
         })
         .insert(Transform{translation: Vec3::new(50.0, 200.0, 0.0) , ..Default::default()})
-        .insert_bundle(GameShape::Box.get_shapebundle(100f32, ShapeAppearance::default()));
+        .insert_bundle(GameShape::Circle.get_shapebundle(100f32, 
+            ShapeAppearance{fill: Color::Hsla { hue: (100f32), saturation: (70f32), lightness: (70f32), alpha: (0.5) },
+            stroke: Color::BLACK,
+            line_width: 0f32        
+        }));
 
     //println!("Tower Built");
 }
