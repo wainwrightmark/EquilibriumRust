@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::{prelude::*};
 use bevy_rapier2d::prelude::*;
 use nalgebra::Point2;
-
+use crate::*;
 
 pub struct WallsPlugin;
 
@@ -13,10 +13,7 @@ impl Plugin for WallsPlugin {
 }
 
 
-#[derive(Component)]
-pub struct Wall{
 
-}
 
 
 fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration>) {

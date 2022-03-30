@@ -2,19 +2,13 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{
-    draggable::{Draggable, Dragged},
-    game_shape::{GameShape, ShapeAppearance},
-    shape_maker::{create_shape, SHAPE_SIZE},
-    walls::Wall,
-};
+use crate::*;
 
 pub struct WinPlugin;
 
 impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<NewGameEvent>()
-            .add_system(check_for_contacts.label("check_for_contacts"))
+        app            .add_system(check_for_contacts.label("check_for_contacts"))
             .add_system(
                 check_for_win
                     .label("check_for_win")
@@ -26,22 +20,12 @@ impl Plugin for WinPlugin {
                     .label("handle_new_game")
                     .after("check_for_win"),
             )
-            .add_system_set(
-                SystemSet::new()
-                    //.with_run_criteria(bevy::core::FixedTimestep::step(0.4f64))
-                    .with_system(check_for_tower.system().label("check_for_tower").after("check_for_contacts")),
-            );
+            .add_system_to_stage(CoreStage::PostUpdate,check_for_tower.system().label("check_for_tower"));
     }
 }
 
-#[derive(Component)]
-pub struct WinTimer {
-    pub win_time: f64,
-}
 
-pub struct NewGameEvent {
-    pub box_count_change: i32
-}
+
 
 
 
@@ -127,7 +111,7 @@ pub fn check_for_win(
 
 pub fn check_for_tower(
     mut commands: Commands,
-    mut end_drag_events: EventReader<crate::EndDragEvent>,
+    mut end_drag_events: EventReader<crate::DragEndedEvent>,
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
     dragged: Query<With<Dragged>>,
@@ -141,28 +125,20 @@ pub fn check_for_tower(
         return;
     }
 
-    //println!("Drag Ended");
+    
+    println!("Drag Ended");
 
     if !win_timer.is_empty() {
 
-        //println!("Wintimer Exists");
+        println!("Wintimer Exists");
         return; // no need to check, we're already winning
     }
 
     if !dragged.is_empty() {
-        //println!("Something is dragged");
+        println!("Something is dragged");
         return; //Something is being dragged so the player can't win yet
     }
-
-    //Clear the events so the win timer isn't immediately despawned
-    // if intersection_events.drain().any(|_| true){
-    //     return;
-    // }
-    // if contact_events.drain().any(|_| true){
-    //     return;
-    // }
-
-    //println!("Checking Contacts");
+    println!("Checking Contacts");
 
     //Check for contacts
     for (wall, _) in walls.iter() {
@@ -173,7 +149,7 @@ pub fn check_for_tower(
         }
     }
     
-    //println!("Spawning Win Timer");
+    println!("Spawning Win Timer");
 
     intersection_events.clear();
     contact_events.clear();

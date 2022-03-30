@@ -20,9 +20,19 @@ mod buttons;
 use buttons::*;
 
 mod game_shape;
+use game_shape::*;
 
 mod win;
 use win::*;
+
+mod input;
+use input::*;
+
+mod events;
+use events::*;
+
+mod components;
+use components::*;
 
 fn main() {
     // // When building for WASM, print panics to the browser console
@@ -41,6 +51,9 @@ fn main() {
         .add_plugin(WallsPlugin)
         .add_plugin(ButtonPlugin)
         .add_plugin(ShapePlugin)
+        .add_plugin(InputPlugin)
+        .add_plugin(EventsPlugin)
+    
         
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
 

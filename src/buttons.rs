@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-
+use crate::*;
 pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin{
@@ -14,8 +14,7 @@ const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 
-#[derive(Component)]
-pub struct RestartButton{}
+
 
 fn button_system(
     mut interaction_query: Query<

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::game_shape::*;
-use bevy_rapier2d::prelude::*;
+use crate::*;
+
 use rand::Rng;
 
 pub const SHAPE_SIZE: f32 = 60f32;
@@ -30,10 +30,6 @@ pub fn create_foundations(mut commands: &mut Commands,  physics_scale: f32, shap
         ShapeAppearance { fill: (Color::GRAY), ..Default::default() }
     );
 }
-
-
-#[derive(Component)]
-pub struct Foundation{}
 
 pub fn create_boxes(mut commands: &mut Commands, physics_scale: f32) {
     let mut rng = rand::thread_rng();

@@ -1,63 +1,51 @@
-use bevy::{
-    input::{keyboard::KeyboardInput, mouse::MouseWheel},
-    prelude::*,
-};
-use bevy_rapier2d::prelude::*;
-
-/// Used to help identify our main camera
-#[derive(Component)]
-pub struct MainCamera;
-
-pub struct EndDragEvent{}
-
-#[derive(PartialEq, Eq)]
-pub enum DragMode {
-    Release,
-    Return,
-}
-
-#[derive(Component)]
-pub struct Draggable {
-    pub drag_mode: DragMode,
-}
-
-#[derive(Component)]
-pub struct Dragged {
-    origin: Vec2,
-    offset: Vec2,
-}
+use crate::*;
 
 pub struct DragPlugin;
 impl Plugin for DragPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<RotateEvent>()
-        .add_event::<EndDragEvent>()
-            .add_system(mouse_press_start_drag_system)
-            .add_system(mouse_release_stop_drag_system)
-            .add_system(mouse_wheeel_scroll_rotate_system)
-            .add_system(drag_system)
-            .add_system(
-                mouse_wheeel_scroll_rotate_system
-                    .system()
-                    .label("mouse_wheeel_scroll_rotate_system")
-                    .before("handle_rotate_events"),
-            ).add_system(
-                keyboard_rotate_system
-                    .system()
-                    .label("keyboard_rotate_system")
-                    .before("handle_rotate_events"),
-            )
-            .add_system(handle_rotate_events.system().label("handle_rotate_events"));
+        app
+            // .add_system(mouse_press_start_drag_system)
+            // .add_system(mouse_release_stop_drag_system)
+            // .add_system(mouse_wheeel_scroll_rotate_system)
+            // .add_system(drag_system)
+            // .add_system(
+            //     mouse_wheeel_scroll_rotate_system
+            //         .system()
+            //         .label("mouse_wheeel_scroll_rotate_system")
+            //         .before("handle_rotate_events"),
+            // ).add_system(
+            //     keyboard_listener
+            //         .system()
+            //         .label("keyboard_rotate_system")
+            //         .before("handle_rotate_events"),
+            // )
+            .add_system(drag_start.system()
+            .label("drag_start")
+            .after("mousebutton_listener")      
+            .after("touch_listener")      
+        )
+
+            .add_system(drag_move.system()
+            .label("drag_move")
+            .after("mousebutton_listener")      
+            .after("touch_listener")      
+        )
+            .add_system(handle_rotate_events.system()
+            .label("handle_rotate_events")
+            .after("mousewheel_listener")
+            .after("keyboard_listener")      
+            .after("touch_listener")      
+        ).add_system(drag_end.system()
+            .label("drag_end")
+            .after("mousebutton_listener")      
+            .after("touch_listener")      
+        )
+        
+        ;
     }
 }
 
-pub struct RotateEvent {
-    //entity: Entity,
-    clockwise: bool, // rotation: f32,
-                     // rotation_interval: f32
-}
-
-pub fn handle_rotate_events(
+fn handle_rotate_events(
     mut ev_rotate: EventReader<RotateEvent>,
     mut dragged: Query<(&mut RigidBodyPositionComponent, With<Dragged>)>,
 ) {
@@ -75,52 +63,8 @@ pub fn handle_rotate_events(
     }
 }
 
-pub fn keyboard_rotate_system(
-    mut key_evr: EventReader<KeyboardInput>,
-    mut rotate_evw: EventWriter<RotateEvent>,
-) {
-    use bevy::input::ElementState;
-
-    for ev in key_evr.iter() {
-        if let Some(code) = ev.key_code {
-            match ev.state {
-                ElementState::Pressed => match code {
-                    KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
-                    KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-    }
-}
-
-pub fn mouse_wheeel_scroll_rotate_system(
-    mut scroll_evr: EventReader<MouseWheel>,
-    mut ev_rotate: EventWriter<RotateEvent>,
-) {
-    use bevy::input::mouse::MouseScrollUnit;
-    for ev in scroll_evr.iter() {
-        let event = if ev.x + ev.y > 0f32 {
-            RotateEvent { clockwise: true }
-        } else {
-            RotateEvent { clockwise: false }
-        };
-
-        match ev.unit {
-            MouseScrollUnit::Line => {
-                ev_rotate.send(event);
-            }
-            MouseScrollUnit::Pixel => {
-                ev_rotate.send(event);
-            }
-        }
-    }
-}
-
-
-pub fn mouse_release_stop_drag_system(
-    mouse_button_input: Res<Input<MouseButton>>,
+fn drag_end(
+    mut er_drag_end: EventReader<DragEndEvent>,
     mut dragged: Query<(
         Entity,
         &Draggable,
@@ -128,83 +72,90 @@ pub fn mouse_release_stop_drag_system(
         &mut RigidBodyPositionComponent,
     )>,
     mut commands: Commands,
-    mut ew_end_drag: EventWriter<EndDragEvent>,
+    mut ew_end_drag: EventWriter<DragEndedEvent>,
 ) {
-    if !mouse_button_input.just_released(MouseButton::Left) {
-        return;
-    }
 
-    for mut d in dragged.iter_mut() {
-        if d.1.drag_mode == DragMode::Return {
-            d.3.next_position = d.2.origin.into();
+    for event in er_drag_end.iter(){
+
+        //println!("{:?}", event);
+
+        for mut d in dragged.iter_mut().filter(|f| f.2.drag_source == event.drag_source) {
+
+            //println!("Drag End");
+            if d.1.drag_mode == DragMode::Return {
+                d.3.next_position = d.2.origin.into();
+            }
+    
+            commands
+                .entity(d.0)
+                .remove::<Dragged>()
+                .remove::<RigidBodyTypeComponent>()
+                .insert(RigidBodyTypeComponent(RigidBodyType::Dynamic));
+    
+            ew_end_drag.send(DragEndedEvent {});
         }
-
-        
-        commands
-            .entity(d.0)
-            .remove::<Dragged>()
-            .remove::<RigidBodyTypeComponent>()
-            .insert(RigidBodyTypeComponent(RigidBodyType::Dynamic));
-
-            ew_end_drag.send(EndDragEvent{});
-        
     }
+
+    
 }
 
-pub fn drag_system(
-    mouse_button_input: Res<Input<MouseButton>>,
-    windows: Res<Windows>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut dragged: Query<(&Dragged, &mut RigidBodyPositionComponent)>,
+fn drag_move(
+    mut er_drag_move: EventReader<DragMoveEvent>,
+    mut dragged_entities: Query<(& Dragged, &mut RigidBodyPositionComponent)>,
     rapier_config: Res<RapierConfiguration>,
 ) {
-    if !mouse_button_input.pressed(MouseButton::Left) {
-        return;
-    }
+    for event in er_drag_move.iter() {
+        let scale = rapier_config.scale;
 
-    let scale = rapier_config.scale;
+        //println!("{:?}", event);
 
-    if let Some(position) = get_cursor_position(windows, q_camera, rapier_config) {
-        for mut thing in dragged.iter_mut() {
-            let max_x: f32 = (crate::WINDOW_WIDTH / 2.0 ) / scale; //You can leave the box but can't go too far
-            let max_y: f32 = (crate::WINDOW_HEIGHT / 2.0 ) / scale;
+        if let Some((dragged,mut rb)) = dragged_entities
+            .iter_mut()
+            .filter(|d| d.0.drag_source == event.drag_source)
+            .next()
+        {
+
+            //println!("Drag Move");
+
+            let max_x: f32 = (crate::WINDOW_WIDTH / 2.0) / scale; //You can't leave the game area
+            let max_y: f32 = (crate::WINDOW_HEIGHT / 2.0) / scale;
 
             let min_x: f32 = -max_x;
             let min_y: f32 = -max_y;
 
-             let clamped_position =
-                 bevy::math::Vec2::clamp(position, Vec2::new(min_x, min_y), Vec2::new(max_x, max_y));
+            let clamped_position = bevy::math::Vec2::clamp(
+                event.new_position,
+                Vec2::new(min_x, min_y),
+                Vec2::new(max_x, max_y),
+            );
 
-            let new_position = thing.0.offset + clamped_position;// clamped_position;
+            let new_position = dragged.offset + clamped_position; // clamped_position;
 
-            thing.1.next_position.translation = new_position.into();
+            rb.next_position.translation = new_position.into();
         }
     }
 }
 
-pub fn mouse_press_start_drag_system(
-    mouse_button_input: Res<Input<MouseButton>>,
-    windows: Res<Windows>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+fn drag_start(
+    mut er_drag_start: EventReader<DragStartEvent>,
     collider_query: QueryPipelineColliderComponentsQuery,
     draggables: Query<(With<Draggable>, &RigidBodyPositionComponent)>,
     query_pipeline: Res<QueryPipeline>,
     mut commands: Commands,
-    rapier_config: Res<RapierConfiguration>,
 ) {
-    if !mouse_button_input.just_pressed(MouseButton::Left) {
-        return;
-    }
+    for event in er_drag_start.iter() {
+        //println!("{:?}", event);
 
-    let collider_set = QueryPipelineColliderComponentsSet(&collider_query);
 
-    if let Some(position) = get_cursor_position(windows, q_camera, rapier_config) {
         let groups = InteractionGroups::all();
         let filter = None;
+        let collider_set = QueryPipelineColliderComponentsSet(&collider_query);
+
+        
 
         query_pipeline.intersections_with_point(
             &collider_set,
-            &position.into(),
+            &event.position.into(),
             groups,
             filter,
             |handle| {
@@ -213,13 +164,14 @@ pub fn mouse_press_start_drag_system(
                     //println!("Entity {:?} set to dragged", entity);
 
                     let origin = rb.position.translation.into();
-                    let offset: Vec2 = origin - position;
+                    let offset: Vec2 = origin - event.position;
 
                     commands
                         .entity(entity)
                         .insert(Dragged {
                             origin: origin,
                             offset: offset,
+                            drag_source: event.drag_source,
                         })
                         .remove::<RigidBodyTypeComponent>()
                         .insert(RigidBodyTypeComponent(
@@ -230,40 +182,5 @@ pub fn mouse_press_start_drag_system(
                 return true;
             },
         );
-    }
-}
-
-pub fn get_cursor_position(
-    // need to get window dimensions
-    wnds: Res<Windows>,
-    // query to get camera transform
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    rapier_config: Res<RapierConfiguration>,
-) -> Option<Vec2> {
-    // get the camera info and transform
-    // assuming there is exactly one main camera entity, so query::single() is OK
-    let (camera, camera_transform) = q_camera.single();
-
-    // get the window that the camera is displaying to
-    let wnd = wnds.get(camera.window).unwrap();
-
-    // check if the cursor is inside the window and get its position
-    if let Some(screen_pos) = wnd.cursor_position() {
-        // get the size of the window
-        let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
-
-        // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
-        let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
-
-        // matrix for undoing the projection and camera transform
-        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix.inverse();
-
-        // use it to convert ndc to world-space coordinates
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-
-        // reduce it to a 2D value and rescale it to the world
-        return Some(world_pos.truncate() / rapier_config.scale);
-    } else {
-        return None;
     }
 }
