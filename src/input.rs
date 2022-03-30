@@ -88,21 +88,30 @@ pub fn get_cursor_position(
 
 fn touch_listener(
     mut touch_evr: EventReader<TouchInput>,
+
+    mut ew_drag_start : EventWriter<DragStartEvent>,
+    mut ew_drag_move : EventWriter<DragMoveEvent>,
+    mut ew_drag_end : EventWriter<DragEndEvent>,
+
+    rapier_config: Res<RapierConfiguration>,
 ) {
-    use bevy::input::touch::TouchPhase;
     for ev in touch_evr.iter() {
         // in real apps you probably want to store and track touch ids somewhere
         match ev.phase {
             TouchPhase::Started => {
+                ew_drag_start.send(DragStartEvent{drag_source: DragSource::Touch{id: ev.id}, position: ev.position / rapier_config.scale});
                 println!("Touch {} started at: {:?}", ev.id, ev.position);
             }
             TouchPhase::Moved => {
+                ew_drag_move.send(DragMoveEvent{drag_source: DragSource::Touch{id: ev.id},new_position: ev.position / rapier_config.scale});
                 println!("Touch {} moved to: {:?}", ev.id, ev.position);
             }
             TouchPhase::Ended => {
+                ew_drag_end.send(DragEndEvent{drag_source: DragSource::Touch{id: ev.id}});
                 println!("Touch {} ended at: {:?}", ev.id, ev.position);
             }
             TouchPhase::Cancelled => {
+                ew_drag_end.send(DragEndEvent{drag_source: DragSource::Touch{id: ev.id}});
                 println!("Touch {} cancelled at: {:?}", ev.id, ev.position);
             }
         }

@@ -126,19 +126,19 @@ pub fn check_for_tower(
     }
 
     
-    println!("Drag Ended");
+    //println!("Drag Ended");
 
     if !win_timer.is_empty() {
 
-        println!("Wintimer Exists");
+      //  println!("Wintimer Exists");
         return; // no need to check, we're already winning
     }
 
     if !dragged.is_empty() {
-        println!("Something is dragged");
+        //println!("Something is dragged");
         return; //Something is being dragged so the player can't win yet
     }
-    println!("Checking Contacts");
+    //println!("Checking Contacts");
 
     //Check for contacts
     for (wall, _) in walls.iter() {
@@ -149,7 +149,7 @@ pub fn check_for_tower(
         }
     }
     
-    println!("Spawning Win Timer");
+    //println!("Spawning Win Timer");
 
     intersection_events.clear();
     contact_events.clear();

@@ -45,7 +45,7 @@ pub struct DragEndedEvent{}
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum DragSource{
     Mouse,
-    Touch{id: i32}
+    Touch{id: u64}
 }
 
 
