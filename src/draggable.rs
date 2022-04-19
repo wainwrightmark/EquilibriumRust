@@ -4,44 +4,35 @@ pub struct DragPlugin;
 impl Plugin for DragPlugin {
     fn build(&self, app: &mut App) {
         app
-            // .add_system(mouse_press_start_drag_system)
-            // .add_system(mouse_release_stop_drag_system)
-            // .add_system(mouse_wheeel_scroll_rotate_system)
-            // .add_system(drag_system)
-            // .add_system(
-            //     mouse_wheeel_scroll_rotate_system
-            //         .system()
-            //         .label("mouse_wheeel_scroll_rotate_system")
-            //         .before("handle_rotate_events"),
-            // ).add_system(
-            //     keyboard_listener
-            //         .system()
-            //         .label("keyboard_rotate_system")
-            //         .before("handle_rotate_events"),
-            // )
-            .add_system(drag_start.system()
-            .label("drag_start")
-            .after("mousebutton_listener")      
-            .after("touch_listener")      
-        )
-
-            .add_system(drag_move.system()
-            .label("drag_move")
-            .after("mousebutton_listener")      
-            .after("touch_listener")      
-        )
-            .add_system(handle_rotate_events.system()
-            .label("handle_rotate_events")
-            .after("mousewheel_listener")
-            .after("keyboard_listener")      
-            .after("touch_listener")      
-        ).add_system(drag_end.system()
-            .label("drag_end")
-            .after("mousebutton_listener")      
-            .after("touch_listener")      
-        )
-        
-        ;
+            .add_system(
+                drag_start
+                    .system()
+                    .label("drag_start")
+                    .after("mousebutton_listener")
+                    .after("touch_listener"),
+            )
+            .add_system(
+                drag_move
+                    .system()
+                    .label("drag_move")
+                    .after("mousebutton_listener")
+                    .after("touch_listener"),
+            )
+            .add_system(
+                handle_rotate_events
+                    .system()
+                    .label("handle_rotate_events")
+                    .after("mousewheel_listener")
+                    .after("keyboard_listener")
+                    .after("touch_listener"),
+            )
+            .add_system(
+                drag_end
+                    .system()
+                    .label("drag_end")
+                    .after("mousebutton_listener")
+                    .after("touch_listener"),
+            );
     }
 }
 
@@ -74,34 +65,32 @@ fn drag_end(
     mut commands: Commands,
     mut ew_end_drag: EventWriter<DragEndedEvent>,
 ) {
-
-    for event in er_drag_end.iter(){
-
+    for event in er_drag_end.iter() {
         //println!("{:?}", event);
 
-        for mut d in dragged.iter_mut().filter(|f| f.2.drag_source == event.drag_source) {
-
+        for mut d in dragged
+            .iter_mut()
+            .filter(|f| f.2.drag_source == event.drag_source)
+        {
             //println!("Drag End");
             if d.1.drag_mode == DragMode::Return {
                 d.3.next_position = d.2.origin.into();
             }
-    
+
             commands
                 .entity(d.0)
                 .remove::<Dragged>()
                 .remove::<RigidBodyTypeComponent>()
                 .insert(RigidBodyTypeComponent(RigidBodyType::Dynamic));
-    
+
             ew_end_drag.send(DragEndedEvent {});
         }
     }
-
-    
 }
 
 fn drag_move(
     mut er_drag_move: EventReader<DragMoveEvent>,
-    mut dragged_entities: Query<(& Dragged, &mut RigidBodyPositionComponent)>,
+    mut dragged_entities: Query<(&Dragged, &mut RigidBodyPositionComponent)>,
     rapier_config: Res<RapierConfiguration>,
 ) {
     for event in er_drag_move.iter() {
@@ -109,12 +98,11 @@ fn drag_move(
 
         //println!("{:?}", event);
 
-        if let Some((dragged,mut rb)) = dragged_entities
+        if let Some((dragged, mut rb)) = dragged_entities
             .iter_mut()
             .filter(|d| d.0.drag_source == event.drag_source)
             .next()
         {
-
             //println!("Drag Move");
 
             let max_x: f32 = (crate::WINDOW_WIDTH / 2.0) / scale; //You can't leave the game area
@@ -146,12 +134,9 @@ fn drag_start(
     for event in er_drag_start.iter() {
         //println!("{:?}", event);
 
-
         let groups = InteractionGroups::all();
         let filter = None;
         let collider_set = QueryPipelineColliderComponentsSet(&collider_query);
-
-        
 
         query_pipeline.intersections_with_point(
             &collider_set,

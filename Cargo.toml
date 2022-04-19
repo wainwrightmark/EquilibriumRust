@@ -1,5 +1,5 @@
 [package]
-name = "my_bevy_game"
+name = "equilibrium"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 itertools = "0.10.3"
-bevy_prototype_lyon = "0.4.0"
+bevy_prototype_lyon = "0.5.0"
 bevy_rapier2d = { version = "0.12.1", features = [ "enhanced-determinism" ] }
 console_error_panic_hook = "0.1.7"
 
@@ -29,8 +29,16 @@ resolver = "2" # Important! wgpu/Bevy needs this!
 opt-level = 'z'
 lto = 'thin'
 
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
 [dependencies.bevy]
-version = "0.6.1"
+version = "0.7.0"
+
+
+
+
 # Disable the default features if there are any that you do not want
 default-features = false
 features = [

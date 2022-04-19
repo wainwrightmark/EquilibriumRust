@@ -1,8 +1,8 @@
 use bevy::prelude::*;
+use bevy::log::*;
+use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::rapier::na::Vector2;
-use bevy_prototype_lyon::prelude::*;
-
 
 pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
@@ -35,14 +35,20 @@ mod components;
 use components::*;
 
 fn main() {
-    // // When building for WASM, print panics to the browser console
-    // #[cfg(target_arch = "wasm32")]
-    // console_error_panic_hook::set_once();
+    // When building for WASM, print panics to the browser console
+    #[cfg(target_arch = "wasm32")]
+    console_error_panic_hook::set_once();
 
     App::new()
+    .insert_resource(LogSettings {
+        level: Level::DEBUG,
+        ..Default::default()
+    })
         .insert_resource(WindowDescriptor {
+            #[cfg(target_arch = "wasm32")]
+            canvas: Some("#game".to_string()),
             title: "Equilibrium".to_string(),
-            width: WINDOW_WIDTH,
+            width:  WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..Default::default()
         })
@@ -53,42 +59,32 @@ fn main() {
         .add_plugin(ShapePlugin)
         .add_plugin(InputPlugin)
         .add_plugin(EventsPlugin)
-    
-        
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-
         .add_startup_system(setup.system().label("main_setup"))
-
+        
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game)
-		
-		//.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                //.add_plugin(LogDiagnosticsPlugin::default());
-                // .add_system_set(
-                //     SystemSet::new()
-                //         .with_run_criteria(bevy::core::FixedTimestep::step(10f64))
-                //         .with_system(print_all_positions)
-                // )
-                
-                
-                
-		
+        //.add_plugin(FrameTimeDiagnosticsPlugin::default())
+        //.add_plugin(LogDiagnosticsPlugin::default());
+        // .add_system_set(
+        //     SystemSet::new()
+        //         .with_run_criteria(bevy::core::FixedTimestep::step(10f64))
+        //         .with_system(print_all_positions)
+        // )
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    mut rapier_config: ResMut<RapierConfiguration>,
-) {
+
+fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vector2::new(0.0, -9.8);
 
     commands
         .spawn()
         .insert_bundle(OrthographicCameraBundle::new_2d())
-        .insert(MainCamera)        ;
+        .insert(MainCamera);
 
-    rapier_config.scale = WINDOW_HEIGHT/10.0;    //The world is 10 metres tall
+    rapier_config.scale = WINDOW_HEIGHT / 10.0; //The world is 10 metres tall
 }
 
 // fn print_all_positions(stuff: Query<(&Transform, &RigidBodyPositionComponent, &Name)>,){
@@ -98,8 +94,6 @@ fn setup(
 //         let trans = t.translation;
 //         let rot = t.rotation;
 //         let scale = t.scale;
-
-
 
 //         println!("{name}: {physics_position}")
 //     }

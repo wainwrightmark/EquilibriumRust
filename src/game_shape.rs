@@ -7,9 +7,8 @@ use bevy_prototype_lyon::{
 use bevy_rapier2d::prelude::*;
 use itertools::*;
 use nalgebra::Point2;
-use rand::Rng;
 use rand::prelude::ThreadRng;
-
+use rand::Rng;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum GameShape {
@@ -20,59 +19,42 @@ pub enum GameShape {
 }
 
 impl GameShape {
-
-    pub fn name(&self) -> String{
-        match self{
-            GameShape::Circle => String::from("Circle") ,
+    pub fn name(&self) -> String {
+        match self {
+            GameShape::Circle => String::from("Circle"),
             GameShape::Cross => String::from("Cross"),
             GameShape::Triangle => String::from("Triangle"),
             GameShape::Box => String::from("Box"),
         }
     }
 
-    pub fn default_fill_color(&self) -> Color{
-        match self{
+    pub fn default_fill_color(&self) -> Color {
+        match self {
             GameShape::Circle => Color::hsla(0f32, 0.35, 0.45, 0.8),
             GameShape::Cross => Color::hsla(90f32, 0.35, 0.45, 0.8),
-            GameShape::Triangle =>Color::hsla(180f32, 0.35, 0.45, 0.8),
+            GameShape::Triangle => Color::hsla(180f32, 0.35, 0.45, 0.8),
             GameShape::Box => Color::hsla(270f32, 0.35, 0.45, 0.8),
         }
     }
 
     pub fn to_collider_shape(&self, shape_size: f32, physics_scale: f32) -> ColliderShape {
         match self {
-            GameShape::Circle => {
-                GameShape::circle_collider_shape(shape_size, physics_scale)
-            }
-            GameShape::Cross => {
-                GameShape::cross_collider_shape(shape_size, physics_scale)
-            }
-            GameShape::Triangle => {
-                GameShape::triangle_collider_shape(shape_size, physics_scale)
-            }
-            GameShape::Box => {
-                GameShape::box_collider_shape(shape_size, physics_scale)
-            }
+            GameShape::Circle => GameShape::circle_collider_shape(shape_size, physics_scale),
+            GameShape::Cross => GameShape::cross_collider_shape(shape_size, physics_scale),
+            GameShape::Triangle => GameShape::triangle_collider_shape(shape_size, physics_scale),
+            GameShape::Box => GameShape::box_collider_shape(shape_size, physics_scale),
         }
     }
-    pub fn get_shapebundle(&self, shape_size: f32, appearance : ShapeAppearance) -> ShapeBundle {
+    pub fn get_shapebundle(&self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         match self {
-            GameShape::Circle => {
-                GameShape::circle_shapebundle(shape_size, appearance)
-            }
-            GameShape::Cross => {
-                GameShape::cross_shapebundle(shape_size, appearance)
-            }
-            GameShape::Triangle => {
-                GameShape::triangle_shapebundle(shape_size, appearance)
-            }
-            GameShape::Box => {
-                GameShape::box_shapebundle(shape_size, appearance)
-            }
+            GameShape::Circle => GameShape::circle_shapebundle(shape_size, appearance),
+            GameShape::Cross => GameShape::cross_shapebundle(shape_size, appearance),
+            GameShape::Triangle => GameShape::triangle_shapebundle(shape_size, appearance),
+            GameShape::Box => GameShape::box_shapebundle(shape_size, appearance),
         }
     }
 
-    fn cross_shapebundle(shape_size: f32, appearance : ShapeAppearance) -> ShapeBundle {
+    fn cross_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         {
             let u = shape_size / 3.0;
             let offset = Vec2::new(1.5 * u, 1.5 * u);
@@ -129,12 +111,12 @@ impl GameShape {
 
     fn box_geometry(shape_size: f32) -> Rectangle {
         shapes::Rectangle {
-            extents: Vec2::new(shape_size/ 2.0, shape_size / 2.0),
+            extents: Vec2::new(shape_size / 2.0, shape_size / 2.0),
             origin: shapes::RectangleOrigin::Center,
         }
     }
 
-    fn box_shapebundle(shape_size: f32, appearance : ShapeAppearance) -> ShapeBundle {
+    fn box_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::box_geometry(shape_size),
             DrawMode::Outlined {
@@ -159,7 +141,7 @@ impl GameShape {
             radius: shape_size / 2.0,
         }
     }
-    fn circle_shapebundle(shape_size: f32, appearance : ShapeAppearance) -> ShapeBundle {
+    fn circle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::circle_geometry(shape_size),
             DrawMode::Outlined {
@@ -176,7 +158,6 @@ impl GameShape {
     }
 
     fn triangle_geometry(shape_size: f32) -> Polygon {
-
         let p = shape_size / 3.0;
         shapes::Polygon {
             closed: true,
@@ -200,7 +181,7 @@ impl GameShape {
         return r.unwrap();
     }
 
-    fn triangle_shapebundle(shape_size: f32, appearance : ShapeAppearance) -> ShapeBundle {
+    fn triangle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::triangle_geometry(shape_size),
             DrawMode::Outlined {
@@ -212,32 +193,32 @@ impl GameShape {
     }
 }
 
-
-pub struct ShapeAppearance{
+pub struct ShapeAppearance {
     pub fill: Color,
     pub stroke: Color,
-    pub line_width: f32
+    pub line_width: f32,
 }
 
-impl Default for ShapeAppearance{
+impl Default for ShapeAppearance {
     fn default() -> Self {
-        Self { fill: Color::WHITE, stroke: Color::BLACK, line_width: 2.0 }
+        Self {
+            fill: Color::WHITE,
+            stroke: Color::BLACK,
+            line_width: 2.0,
+        }
     }
 }
 
-
-pub fn game_shapes() -> Vec<GameShape>
-{
+pub fn game_shapes() -> Vec<GameShape> {
     vec![
-        GameShape::Circle ,
+        GameShape::Circle,
         GameShape::Triangle,
-        GameShape::Box ,
-        GameShape::Cross ,
-        
-        ]
-} 
+        GameShape::Box,
+        GameShape::Cross,
+    ]
+}
 
-pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape{
+pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {
     let shapes = game_shapes();
     let length = shapes.len();
     let index = rng.gen_range(0..length);

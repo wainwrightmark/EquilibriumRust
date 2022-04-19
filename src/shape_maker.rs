@@ -10,12 +10,10 @@ pub fn create_game(mut commands: Commands, rapier_config: Res<RapierConfiguratio
     let physics_scale = rapier_config.scale;
     create_boxes(&mut commands, physics_scale);
 
-
-    create_foundations(&mut commands, physics_scale,&GameShape::Box);
+    create_foundations(&mut commands, physics_scale, &GameShape::Box);
 }
 
-pub fn create_foundations(mut commands: &mut Commands,  physics_scale: f32, shape: &GameShape)
-{
+pub fn create_foundations(mut commands: &mut Commands, physics_scale: f32, shape: &GameShape) {
     let x = 0f32;
     let y = SHAPE_SIZE - (crate::WINDOW_HEIGHT / 2.0);
 
@@ -24,10 +22,13 @@ pub fn create_foundations(mut commands: &mut Commands,  physics_scale: f32, shap
         shape,
         SHAPE_SIZE,
         physics_scale,
-        nalgebra::Vector2::<f32>::new(x,y),
+        nalgebra::Vector2::<f32>::new(x, y),
         0f32,
         false,
-        ShapeAppearance { fill: (Color::GRAY), ..Default::default() }
+        ShapeAppearance {
+            fill: (Color::GRAY),
+            ..Default::default()
+        },
     );
 }
 
@@ -50,7 +51,10 @@ pub fn create_boxes(mut commands: &mut Commands, physics_scale: f32) {
             point.into(),
             angle,
             true,
-            ShapeAppearance { fill: (shape.default_fill_color()), ..Default::default() }
+            ShapeAppearance {
+                fill: (shape.default_fill_color()),
+                ..Default::default()
+            },
         );
     }
 }
@@ -61,12 +65,12 @@ pub fn create_shape(
     shape_size: f32,
     physics_scale: f32,
     position: nalgebra::Vector2<f32>,
-    angle : f32,
+    angle: f32,
     dynamic: bool,
-    appearance: ShapeAppearance
+    appearance: ShapeAppearance,
 ) {
     let collider_shape = shape.to_collider_shape(shape_size, physics_scale);
-    let position_component : Isometry<Real> = Isometry::<Real>::new(position /physics_scale, angle);
+    let position_component: Isometry<Real> = Isometry::<Real>::new(position / physics_scale, angle);
 
     let rbb: RigidBodyBundle = if dynamic {
         RigidBodyBundle {
@@ -76,41 +80,38 @@ pub fn create_shape(
             }
             .into(),
             body_type: RigidBodyType::Dynamic.into(),
-            position : position_component.into(),
+            position: position_component.into(),
             ..Default::default()
         }
     } else {
         RigidBodyBundle {
             body_type: RigidBodyType::Static.into(),
-            position : position_component.into(),
+            position: position_component.into(),
             ..Default::default()
         }
     };
 
-    
-
     let mut entity_builder = commands.spawn();
     let name = shape.name();
 
-    entity_builder.insert_bundle(shape.get_shapebundle(shape_size, appearance))
-    .insert_bundle(rbb)
+    entity_builder
+        .insert_bundle(shape.get_shapebundle(shape_size, appearance))
+        .insert_bundle(rbb)
         .insert_bundle(ColliderBundle {
             shape: collider_shape.into(),
             //position: position_component.into(),
             ..Default::default()
         })
         .insert(ColliderPositionSync::Discrete)
-        .insert(Name::new(name))
-        ;
+        .insert(Name::new(name));
 
-    if dynamic{
+    if dynamic {
         entity_builder.insert(crate::Draggable {
             drag_mode: crate::DragMode::Release,
         });
+    } else {
+        entity_builder.insert(Foundation {});
     }
-    else{
-        entity_builder.insert(Foundation{});
-    }
-    
+
     //println!("Spawn {:?} {:?}", entity_builder.id(), shape);
 }

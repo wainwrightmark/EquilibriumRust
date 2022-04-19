@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::ecs::event::Events;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
@@ -8,7 +9,7 @@ pub struct WinPlugin;
 
 impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
-        app            .add_system(check_for_contacts.label("check_for_contacts"))
+        app.add_system(check_for_contacts.label("check_for_contacts"))
             .add_system(
                 check_for_win
                     .label("check_for_win")
@@ -20,21 +21,19 @@ impl Plugin for WinPlugin {
                     .label("handle_new_game")
                     .after("check_for_win"),
             )
-            .add_system_to_stage(CoreStage::PostUpdate,check_for_tower.system().label("check_for_tower"));
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                check_for_tower.system().label("check_for_tower"),
+            );
     }
 }
-
-
-
-
-
 
 const COUNTDOWN: f64 = 3.0;
 
 pub fn handle_new_game(
     mut commands: Commands,
     mut new_game_events: EventReader<NewGameEvent>,
-    draggables: Query<(Entity, Or<(With<Draggable>, With<crate::Foundation>)> )>,
+    draggables: Query<(Entity, Or<(With<Draggable>, With<crate::Foundation>)>)>,
     rapier_config: Res<RapierConfiguration>,
 ) {
     let scale = rapier_config.scale;
@@ -48,7 +47,6 @@ pub fn handle_new_game(
 
         let mut shape_count = -1;
         for (e, _) in draggables.iter() {
-    
             commands.entity(e).despawn();
             shape_count += 1;
         }
@@ -93,16 +91,18 @@ pub fn check_for_win(
     time: Res<Time>,
     mut new_game_events: EventWriter<NewGameEvent>,
 ) {
-    if let Some((timer_entity, timer,mut timer_transform)) = win_timer.get_single_mut().ok() {
+    if let Some((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut().ok() {
         let remaining = timer.win_time - time.seconds_since_startup();
 
         if remaining <= 0f64 {
             //println!("Win - Despawn Win Timer {:?}", timer_entity);
             commands.entity(timer_entity).despawn();
             //println!("Win");
-            new_game_events.send(NewGameEvent {box_count_change: 1});
+            new_game_events.send(NewGameEvent {
+                box_count_change: 1,
+            });
         } else {
-            let new_scale = (remaining / COUNTDOWN)  as f32; 
+            let new_scale = (remaining / COUNTDOWN) as f32;
 
             timer_transform.scale = Vec3::new(new_scale, new_scale, 1.0);
         }
@@ -115,22 +115,19 @@ pub fn check_for_tower(
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
     dragged: Query<With<Dragged>>,
-    mut intersection_events:  ResMut<bevy::app::Events<IntersectionEvent>>,
-    mut contact_events:  ResMut<bevy::app::Events<ContactEvent>>,
+    mut intersection_events: ResMut<Events<IntersectionEvent>>,
+    mut contact_events: ResMut<Events<ContactEvent>>,
     narrow_phase: Res<NarrowPhase>,
     walls: Query<(Entity, With<Wall>)>,
 ) {
-
-    if !end_drag_events.iter().any(|_|true){
+    if !end_drag_events.iter().any(|_| true) {
         return;
     }
 
-    
     //println!("Drag Ended");
 
     if !win_timer.is_empty() {
-
-      //  println!("Wintimer Exists");
+        //  println!("Wintimer Exists");
         return; // no need to check, we're already winning
     }
 
@@ -148,7 +145,7 @@ pub fn check_for_tower(
             }
         }
     }
-    
+
     //println!("Spawning Win Timer");
 
     intersection_events.clear();
@@ -159,12 +156,23 @@ pub fn check_for_tower(
         .insert(WinTimer {
             win_time: time.seconds_since_startup() + COUNTDOWN,
         })
-        .insert(Transform{translation: Vec3::new(50.0, 200.0, 0.0) , ..Default::default()})
-        .insert_bundle(GameShape::Circle.get_shapebundle(100f32, 
-            ShapeAppearance{fill: Color::Hsla { hue: (100f32), saturation: (70f32), lightness: (70f32), alpha: (0.5) },
-            stroke: Color::BLACK,
-            line_width: 0f32        
-        }));
+        .insert(Transform {
+            translation: Vec3::new(50.0, 200.0, 0.0),
+            ..Default::default()
+        })
+        .insert_bundle(GameShape::Circle.get_shapebundle(
+            100f32,
+            ShapeAppearance {
+                fill: Color::Hsla {
+                    hue: (100f32),
+                    saturation: (70f32),
+                    lightness: (70f32),
+                    alpha: (0.5),
+                },
+                stroke: Color::BLACK,
+                line_width: 0f32,
+            },
+        ));
 
     //println!("Tower Built");
 }
@@ -195,7 +203,7 @@ fn check_for_contacts(
     }
 
     if fail.is_none() {
-        if !dragged.is_empty() {            
+        if !dragged.is_empty() {
             fail = Some("Something Dragged");
         }
     }
