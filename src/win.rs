@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::ecs::event::Events;
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
@@ -17,13 +17,12 @@ impl Plugin for WinPlugin {
             )
             .add_system(
                 handle_new_game
-                    .system()
                     .label("handle_new_game")
                     .after("check_for_win"),
             )
             .add_system_to_stage(
                 CoreStage::PostUpdate,
-                check_for_tower.system().label("check_for_tower"),
+                check_for_tower.label("check_for_tower"),
             );
     }
 }
@@ -34,10 +33,7 @@ pub fn handle_new_game(
     mut commands: Commands,
     mut new_game_events: EventReader<NewGameEvent>,
     draggables: Query<(Entity, Or<(With<Draggable>, With<crate::Foundation>)>)>,
-    rapier_config: Res<RapierConfiguration>,
 ) {
-    let scale = rapier_config.scale;
-
     let mut first = true;
     for _ng in new_game_events.iter() {
         if !first {
@@ -56,7 +52,7 @@ pub fn handle_new_game(
 
         let foundation_shape = crate::game_shape::get_random_shape(&mut rng);
 
-        crate::create_foundations(&mut commands, scale, &foundation_shape);
+        crate::create_foundations(&mut commands, &foundation_shape);
 
         for _ in 0..shape_count {
             let shape = crate::game_shape::get_random_shape(&mut rng);
@@ -64,7 +60,7 @@ pub fn handle_new_game(
             let rangex = -100f32..100f32;
             let rangey = -100f32..100f32;
 
-            let point = nalgebra::Vector2::<f32>::new(rng.gen_range(rangex), rng.gen_range(rangey));
+            let point = Vec2::new(rng.gen_range(rangex), rng.gen_range(rangey));
 
             let angle = rng.gen_range(0f32..std::f32::consts::TAU);
 
@@ -72,8 +68,7 @@ pub fn handle_new_game(
                 &mut commands,
                 &shape,
                 SHAPE_SIZE,
-                scale,
-                point.into(),
+                point,
                 angle,
                 true,
                 ShapeAppearance {
@@ -115,9 +110,9 @@ pub fn check_for_tower(
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
     dragged: Query<With<Dragged>>,
-    mut intersection_events: ResMut<Events<IntersectionEvent>>,
-    mut contact_events: ResMut<Events<ContactEvent>>,
-    narrow_phase: Res<NarrowPhase>,
+
+    mut collision_events: ResMut<Events<CollisionEvent>>,
+    rapier_context: Res<RapierContext>,
     walls: Query<(Entity, With<Wall>)>,
 ) {
     if !end_drag_events.iter().any(|_| true) {
@@ -135,21 +130,17 @@ pub fn check_for_tower(
         //println!("Something is dragged");
         return; //Something is being dragged so the player can't win yet
     }
-    //println!("Checking Contacts");
 
     //Check for contacts
     for (wall, _) in walls.iter() {
-        for contact in narrow_phase.contacts_with(wall.handle()) {
-            if contact.has_any_active_contact {
+        for contact in rapier_context.contacts_with(wall) {
+            if contact.has_any_active_contacts() {
                 return;
             }
         }
     }
 
-    //println!("Spawning Win Timer");
-
-    intersection_events.clear();
-    contact_events.clear();
+    collision_events.clear();
 
     commands
         .spawn()
@@ -180,8 +171,7 @@ pub fn check_for_tower(
 fn check_for_contacts(
     mut commands: Commands,
     win_timer: Query<(Entity, &WinTimer)>,
-    mut intersection_events: EventReader<IntersectionEvent>,
-    mut contact_events: EventReader<ContactEvent>,
+    mut collision_events: EventReader<CollisionEvent>,
     dragged: Query<With<Dragged>>,
     //named: Query<&Name>
 ) {
@@ -191,14 +181,14 @@ fn check_for_contacts(
 
     let mut fail: Option<&str> = None;
 
-    for _ie in intersection_events.iter() {
+    for _ie in collision_events.iter() {
         //let name1 = named.get(ie.collider1.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
         //let name2 = named.get(ie.collider2.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
         //println!("Intersection Found {name1} {name2}");
         fail = Some("Intersection Found");
     }
 
-    for _ in contact_events.iter() {
+    for _ in collision_events.iter() {
         fail = Some("Contact Found");
     }
 

@@ -2,16 +2,17 @@ use bevy::input::keyboard::*;
 use bevy::input::mouse::*;
 use bevy::input::touch::*;
 use bevy::prelude::*;
+use bevy::render::camera::RenderTarget;
 
 use crate::*;
 
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(keyboard_listener.system().label("keyboard_listener"))
-            .add_system(mousewheel_listener.system().label("mousewheel_listener"))
-            .add_system(mousebutton_listener.system().label("mousebutton_listener"))
-            .add_system(touch_listener.system().label("touch_listener"));
+        app.add_system(keyboard_listener.label("keyboard_listener"))
+            .add_system(mousewheel_listener.label("mousewheel_listener"))
+            .add_system(mousebutton_listener.label("mousebutton_listener"))
+            .add_system(touch_listener.label("touch_listener"));
     }
 }
 
@@ -21,7 +22,6 @@ fn mousebutton_listener(
     windows: Res<Windows>,
     // query to get camera transform
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    rapier_config: Res<RapierConfiguration>,
     mut ew_drag_start: EventWriter<DragStartEvent>,
     mut ew_drag_move: EventWriter<DragMoveEvent>,
     mut ew_drag_end: EventWriter<DragEndEvent>,
@@ -33,7 +33,7 @@ fn mousebutton_listener(
         })
     } else if mouse_button_input.just_pressed(MouseButton::Left) {
         
-        if let Some(position) = get_cursor_position(windows, q_camera, rapier_config) {
+        if let Some(position) = get_cursor_position(windows, q_camera) {
             debug!("Sent mouse left just pressed event {position}");
             ew_drag_start.send(DragStartEvent {
                 drag_source: DragSource::Mouse,
@@ -42,7 +42,7 @@ fn mousebutton_listener(
         }
     } else if mouse_button_input.pressed(MouseButton::Left) {
         
-        if let Some(position) = get_cursor_position(windows, q_camera, rapier_config) {
+        if let Some(position) = get_cursor_position(windows, q_camera) {
 
             debug!("Sent mouse left is pressed event {position}");
             ew_drag_move.send(DragMoveEvent {
@@ -58,14 +58,18 @@ pub fn get_cursor_position(
     wnds: Res<Windows>,
     // query to get camera transform
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    rapier_config: Res<RapierConfiguration>,
 ) -> Option<Vec2> {
     // get the camera info and transform
     // assuming there is exactly one main camera entity, so query::single() is OK
     let (camera, camera_transform) = q_camera.single();
 
-    // get the window that the camera is displaying to
-    let wnd = wnds.get(camera.window).unwrap();
+    // get the window that the camera is displaying to (or the primary window)
+    let wnd = if let RenderTarget::Window(id) = camera.target {
+        wnds.get(id).unwrap()
+    } else {
+        wnds.get_primary().unwrap()
+    };
+
 
     // check if the cursor is inside the window and get its position
     if let Some(screen_pos) = wnd.cursor_position() {
@@ -85,7 +89,7 @@ pub fn get_cursor_position(
         debug!("Mouse at {screen_pos} in ${window_size} / {:?},{:?} ({:?}, {:?})", wnd.physical_width(), wnd.physical_height(), wnd.scale_factor(), wnd.backend_scale_factor());
 
         // reduce it to a 2D value and rescale it to the world
-        return Some(world_pos.truncate() / rapier_config.scale);
+        return Some(world_pos.truncate() );
     } else {
         return None;
     }
@@ -97,8 +101,6 @@ fn touch_listener(
     mut ew_drag_start: EventWriter<DragStartEvent>,
     mut ew_drag_move: EventWriter<DragMoveEvent>,
     mut ew_drag_end: EventWriter<DragEndEvent>,
-
-    rapier_config: Res<RapierConfiguration>,
 ) {
 
     for ev in touch_evr.iter() {
@@ -110,14 +112,14 @@ fn touch_listener(
             TouchPhase::Started => {
                 ew_drag_start.send(DragStartEvent {
                     drag_source: DragSource::Touch { id: ev.id },
-                    position: ev.position / rapier_config.scale,
+                    position: ev.position ,
                 });
                 debug!("Touch {} started at: {:?}", ev.id, ev.position);
             }
             TouchPhase::Moved => {
                 ew_drag_move.send(DragMoveEvent {
                     drag_source: DragSource::Touch { id: ev.id },
-                    new_position: ev.position / rapier_config.scale,
+                    new_position: ev.position,
                 });
                 debug!("Touch {} moved to: {:?}", ev.id, ev.position);
             }

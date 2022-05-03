@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::prelude::FillMode;
 use bevy_prototype_lyon::{
     entity::ShapeBundle,
     shapes::{Circle, Polygon, Rectangle},
 };
 use bevy_rapier2d::prelude::*;
 use itertools::*;
-use nalgebra::Point2;
 use rand::prelude::ThreadRng;
 use rand::Rng;
 
@@ -17,6 +17,7 @@ pub enum GameShape {
     Triangle,
     Box,
 }
+
 
 impl GameShape {
     pub fn name(&self) -> String {
@@ -37,12 +38,12 @@ impl GameShape {
         }
     }
 
-    pub fn to_collider_shape(&self, shape_size: f32, physics_scale: f32) -> ColliderShape {
+    pub fn to_collider_shape(&self, shape_size: f32) -> Collider {
         match self {
-            GameShape::Circle => GameShape::circle_collider_shape(shape_size, physics_scale),
-            GameShape::Cross => GameShape::cross_collider_shape(shape_size, physics_scale),
-            GameShape::Triangle => GameShape::triangle_collider_shape(shape_size, physics_scale),
-            GameShape::Box => GameShape::box_collider_shape(shape_size, physics_scale),
+            GameShape::Circle => GameShape::circle_collider_shape(shape_size),
+            GameShape::Cross => GameShape::cross_collider_shape(shape_size),
+            GameShape::Triangle => GameShape::triangle_collider_shape(shape_size),
+            GameShape::Box => GameShape::box_collider_shape(shape_size),
         }
     }
     pub fn get_shapebundle(&self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
@@ -90,20 +91,22 @@ impl GameShape {
         }
     }
 
-    fn cross_collider_shape(shape_size: f32, physics_scale: f32) -> ColliderShape {
-        ColliderShape::compound(vec![
+    fn cross_collider_shape(shape_size: f32) -> Collider {
+        Collider::compound(vec![
             (
-                Vec2::new(0f32, 0f32).into(),
-                ColliderShape::cuboid(
-                    shape_size / physics_scale / 6.0,
-                    shape_size / physics_scale / 2.0,
+                Vec2::ZERO,
+                0.0,
+                Collider::cuboid(
+                    shape_size / 6.0,
+                    shape_size / 2.0,
                 ),
             ),
             (
-                Vec2::new(0f32, 0f32).into(),
-                ColliderShape::cuboid(
-                    shape_size / physics_scale / 2.0,
-                    shape_size / physics_scale / 6.0,
+                Vec2::ZERO,
+                0.0,
+                Collider::cuboid(
+                    shape_size  / 2.0,
+                    shape_size  / 6.0,
                 ),
             ),
         ])
@@ -127,11 +130,11 @@ impl GameShape {
         )
     }
 
-    fn box_collider_shape(shape_size: f32, physics_scale: f32) -> ColliderShape {
+    fn box_collider_shape(shape_size: f32) -> Collider {
         let geo = GameShape::box_geometry(shape_size);
-        ColliderShape::cuboid(
-            geo.extents.x / physics_scale / 2.0,
-            geo.extents.y / physics_scale / 2.0,
+        Collider::cuboid(
+            geo.extents.x  / 2.0,
+            geo.extents.y  / 2.0,
         )
     }
 
@@ -152,9 +155,9 @@ impl GameShape {
         )
     }
 
-    fn circle_collider_shape(shape_size: f32, physics_scale: f32) -> ColliderShape {
+    fn circle_collider_shape(shape_size: f32) -> Collider {
         let geo = GameShape::circle_geometry(shape_size);
-        ColliderShape::ball(geo.radius / physics_scale)
+        Collider::ball(geo.radius)
     }
 
     fn triangle_geometry(shape_size: f32) -> Polygon {
@@ -169,13 +172,13 @@ impl GameShape {
         }
     }
 
-    fn triangle_collider_shape(shape_size: f32, physics_scale: f32) -> ColliderShape {
+    fn triangle_collider_shape(shape_size: f32) -> Collider {
         let geo = GameShape::triangle_geometry(shape_size);
 
-        let r = ColliderShape::convex_hull(
+        let r = Collider::convex_hull(
             &geo.points
                 .iter()
-                .map(|v| Point2::new(v.x / physics_scale, v.y / physics_scale))
+                .map(|v| Vect::new(v.x , v.y))
                 .collect_vec(),
         );
         return r.unwrap();

@@ -1,30 +1,27 @@
 use crate::*;
-use nalgebra::Point2;
 
 pub struct WallsPlugin;
 
 impl Plugin for WallsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_walls.system().after("main_setup").label("walls"));
+        app.add_startup_system(spawn_walls.after("main_setup").label("walls"));
     }
 }
 
-fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration>) {
-    let scale = rapier_config.scale;
+fn spawn_walls(mut commands: Commands) {
 
     let color = Color::GRAY;
     const OFFSET: f32 = crate::WALL_WIDTH / 2.0;
     const EXTRA_WIDTH: f32 = crate::WALL_WIDTH * 2.0;
 
-    let bottom_wall_pos: Point2<f32> =
-        Point2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 - OFFSET) / scale;
-    let top_wall_pos: Point2<f32> = Point2::new(0.0, crate::WINDOW_HEIGHT / 2.0 + OFFSET) / scale;
-    let left_wall_pos: Point2<f32> = Point2::new(-crate::WINDOW_WIDTH / 2.0 - OFFSET, 0.0) / scale;
-    let right_wall_pos: Point2<f32> = Point2::new(crate::WINDOW_WIDTH / 2.0 + OFFSET, 0.0) / scale;
+    let bottom_wall_pos: Vec2 =
+        Vec2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 - OFFSET);
+    let top_wall_pos: Vec2 = Vec2::new(0.0, crate::WINDOW_HEIGHT / 2.0 + OFFSET);
+    let left_wall_pos: Vec2 = Vec2::new(-crate::WINDOW_WIDTH / 2.0 - OFFSET, 0.0);
+    let right_wall_pos: Vec2 = Vec2::new(crate::WINDOW_WIDTH / 2.0 + OFFSET, 0.0);
 
     spawn_wall(
         &mut commands,
-        scale,
         bottom_wall_pos,
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
@@ -33,7 +30,6 @@ fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration
     );
     spawn_wall(
         &mut commands,
-        scale,
         top_wall_pos,
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
@@ -43,7 +39,6 @@ fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration
 
     spawn_wall(
         &mut commands,
-        scale,
         left_wall_pos,
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
@@ -52,7 +47,6 @@ fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration
     );
     spawn_wall(
         &mut commands,
-        scale,
         right_wall_pos,
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
@@ -63,8 +57,7 @@ fn spawn_walls(mut commands: Commands, rapier_config: ResMut<RapierConfiguration
 
 fn spawn_wall(
     commands: &mut Commands,
-    physics_scale: f32,
-    point: Point2<f32>,
+    point: Vec2,
     width: f32,
     height: f32,
     color: Color,
@@ -74,13 +67,9 @@ fn spawn_wall(
         extents: Vec2::new(width, height),
         origin: shapes::RectangleOrigin::Center,
     };
-    let collider_shape1 = ColliderShape::cuboid(
-        shape.extents.x / physics_scale / 2.0,
-        shape.extents.y / physics_scale / 2.0,
-    );
-    let collider_shape2 = ColliderShape::cuboid(
-        shape.extents.x / physics_scale / 2.0,
-        shape.extents.y / physics_scale / 2.0,
+    let collider_shape = Collider::cuboid(
+        shape.extents.x /  2.0,
+        shape.extents.y /  2.0,
     );
 
     commands
@@ -88,31 +77,21 @@ fn spawn_wall(
         .insert_bundle(GeometryBuilder::build_as(
             &shape,
             DrawMode::Outlined {
-                fill_mode: FillMode::color(color),
+                fill_mode: bevy_prototype_lyon::prelude:: FillMode::color(color),
                 outline_mode: StrokeMode::color(color),
             },
             Transform::default(),
         ))
-        .insert_bundle(RigidBodyBundle {
-            body_type: RigidBodyType::Static.into(),
-            position: point.into(),
-            ..Default::default()
-        })
-        .insert_bundle(ColliderBundle {
-            shape: collider_shape1.into(),
-            ..Default::default()
-        })
-        .insert(ColliderPositionSync::Discrete)
+        .insert(RigidBody::Fixed)
+        .insert(Transform::from_translation(point.extend(0.0)))
+        .insert( collider_shape.clone())
         .insert(Name::new(name.to_string()))
         .insert(Wall {})
         .with_children(|f| {
-            f.spawn_bundle(ColliderBundle {
-                shape: collider_shape2.into(),
-                flags: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
-                collider_type: ColliderType::Sensor.into(),
-
-                ..Default::default()
-            })
+            f.spawn()
+            .insert( collider_shape)
+            .insert(Sensor(true))
+            .insert(ActiveEvents::COLLISION_EVENTS )            
             .insert(Name::new(name));
         });
 }

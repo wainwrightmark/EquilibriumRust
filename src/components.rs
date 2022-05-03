@@ -22,8 +22,8 @@ pub struct Draggable {
 
 #[derive(Component)]
 pub struct Dragged {
-    pub origin: Vec2,
-    pub offset: Vec2,
+    pub origin: Vec3,
+    pub offset: Vec3,
     pub drag_source: DragSource,
 }
 

@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy::log::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::na::Vector2;
 
 pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
@@ -41,7 +40,7 @@ fn main() {
 
     App::new()
     .insert_resource(LogSettings {
-        level: Level::DEBUG,
+        level: Level::INFO,
         ..Default::default()
     })
         .insert_resource(WindowDescriptor {
@@ -59,8 +58,8 @@ fn main() {
         .add_plugin(ShapePlugin)
         .add_plugin(InputPlugin)
         .add_plugin(EventsPlugin)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_startup_system(setup.system().label("main_setup"))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::with_physics_scale(WINDOW_HEIGHT / 10.0))
+        .add_startup_system(setup.label("main_setup"))
         
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
@@ -77,14 +76,12 @@ fn main() {
 
 
 fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
-    rapier_config.gravity = Vector2::new(0.0, -9.8);
+    rapier_config.gravity = Vec2::new(0.0, -1000.0);
 
     commands
         .spawn()
         .insert_bundle(OrthographicCameraBundle::new_2d())
         .insert(MainCamera);
-
-    rapier_config.scale = WINDOW_HEIGHT / 10.0; //The world is 10 metres tall
 }
 
 // fn print_all_positions(stuff: Query<(&Transform, &RigidBodyPositionComponent, &Name)>,){
