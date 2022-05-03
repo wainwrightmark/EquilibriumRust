@@ -63,17 +63,13 @@ fn drag_end(
     for event in er_drag_end.iter() {
         //println!("{:?}", event);
 
-        for mut d in dragged
+        for (mut entity, mut draggable, mut dragged, mut transform) in dragged
             .iter_mut()
             .filter(|f| f.2.drag_source == event.drag_source)
         {
-            //println!("Drag End");
-            if d.1.drag_mode == DragMode::Return {
-                d.3.translation = d.2.origin;
-            }
 
             commands
-                .entity(d.0)
+                .entity(entity)
                 .remove::<Dragged>()
                 .remove::<RigidBody>()
                 .insert(RigidBody::Dynamic);

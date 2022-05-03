@@ -85,9 +85,7 @@ pub fn create_shape(
         .insert(Name::new(name));
 
     if dynamic {
-        entity_builder.insert(crate::Draggable {
-            drag_mode: crate::DragMode::Release,
-        });
+        entity_builder.insert(crate::Draggable{});
     } else {
         entity_builder.insert(Foundation {});
     }

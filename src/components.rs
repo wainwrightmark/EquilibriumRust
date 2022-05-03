@@ -9,15 +9,8 @@ pub struct RestartButton {}
 #[derive(Component)]
 pub struct MainCamera;
 
-#[derive(PartialEq, Eq)]
-pub enum DragMode {
-    Release,
-    Return,
-}
-
 #[derive(Component)]
 pub struct Draggable {
-    pub drag_mode: DragMode,
 }
 
 #[derive(Component)]
