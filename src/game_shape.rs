@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::prelude::FillMode;
+use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::{
     entity::ShapeBundle,
     shapes::{Circle, Polygon, Rectangle},
@@ -17,7 +17,6 @@ pub enum GameShape {
     Triangle,
     Box,
 }
-
 
 impl GameShape {
     pub fn name(&self) -> String {
@@ -96,18 +95,12 @@ impl GameShape {
             (
                 Vec2::ZERO,
                 0.0,
-                Collider::cuboid(
-                    shape_size / 6.0,
-                    shape_size / 2.0,
-                ),
+                Collider::cuboid(shape_size / 6.0, shape_size / 2.0),
             ),
             (
                 Vec2::ZERO,
                 0.0,
-                Collider::cuboid(
-                    shape_size  / 2.0,
-                    shape_size  / 6.0,
-                ),
+                Collider::cuboid(shape_size / 2.0, shape_size / 6.0),
             ),
         ])
     }
@@ -132,10 +125,7 @@ impl GameShape {
 
     fn box_collider_shape(shape_size: f32) -> Collider {
         let geo = GameShape::box_geometry(shape_size);
-        Collider::cuboid(
-            geo.extents.x  / 2.0,
-            geo.extents.y  / 2.0,
-        )
+        Collider::cuboid(geo.extents.x / 2.0, geo.extents.y / 2.0)
     }
 
     fn circle_geometry(shape_size: f32) -> Circle {
@@ -175,12 +165,8 @@ impl GameShape {
     fn triangle_collider_shape(shape_size: f32) -> Collider {
         let geo = GameShape::triangle_geometry(shape_size);
 
-        let r = Collider::convex_hull(
-            &geo.points
-                .iter()
-                .map(|v| Vect::new(v.x , v.y))
-                .collect_vec(),
-        );
+        let r =
+            Collider::convex_hull(&geo.points.iter().map(|v| Vect::new(v.x, v.y)).collect_vec());
         return r.unwrap();
     }
 

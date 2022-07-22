@@ -9,13 +9,11 @@ impl Plugin for WallsPlugin {
 }
 
 fn spawn_walls(mut commands: Commands) {
-
     let color = Color::GRAY;
     const OFFSET: f32 = crate::WALL_WIDTH / 2.0;
     const EXTRA_WIDTH: f32 = crate::WALL_WIDTH * 2.0;
 
-    let bottom_wall_pos: Vec2 =
-        Vec2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 - OFFSET);
+    let bottom_wall_pos: Vec2 = Vec2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 - OFFSET);
     let top_wall_pos: Vec2 = Vec2::new(0.0, crate::WINDOW_HEIGHT / 2.0 + OFFSET);
     let left_wall_pos: Vec2 = Vec2::new(-crate::WINDOW_WIDTH / 2.0 - OFFSET, 0.0);
     let right_wall_pos: Vec2 = Vec2::new(crate::WINDOW_WIDTH / 2.0 + OFFSET, 0.0);
@@ -67,31 +65,28 @@ fn spawn_wall(
         extents: Vec2::new(width, height),
         origin: shapes::RectangleOrigin::Center,
     };
-    let collider_shape = Collider::cuboid(
-        shape.extents.x /  2.0,
-        shape.extents.y /  2.0,
-    );
+    let collider_shape = Collider::cuboid(shape.extents.x / 2.0, shape.extents.y / 2.0);
 
     commands
         .spawn()
         .insert_bundle(GeometryBuilder::build_as(
             &shape,
             DrawMode::Outlined {
-                fill_mode: bevy_prototype_lyon::prelude:: FillMode::color(color),
+                fill_mode: bevy_prototype_lyon::prelude::FillMode::color(color),
                 outline_mode: StrokeMode::color(color),
             },
             Transform::default(),
         ))
         .insert(RigidBody::Fixed)
         .insert(Transform::from_translation(point.extend(0.0)))
-        .insert( collider_shape.clone())
+        .insert(collider_shape.clone())
         .insert(Name::new(name.to_string()))
         .insert(Wall {})
         .with_children(|f| {
             f.spawn()
-            .insert( collider_shape)
-            .insert(Sensor{})
-            .insert(ActiveEvents::COLLISION_EVENTS )            
-            .insert(Name::new(name));
+                .insert(collider_shape)
+                .insert(Sensor {})
+                .insert(ActiveEvents::COLLISION_EVENTS)
+                .insert(Name::new(name));
         });
 }

@@ -32,7 +32,6 @@ fn mousebutton_listener(
             drag_source: DragSource::Mouse,
         })
     } else if mouse_button_input.just_pressed(MouseButton::Left) {
-        
         if let Some(position) = get_cursor_position(windows, q_camera) {
             debug!("Sent mouse left just pressed event {position}");
             ew_drag_start.send(DragStartEvent {
@@ -41,9 +40,7 @@ fn mousebutton_listener(
             });
         }
     } else if mouse_button_input.pressed(MouseButton::Left) {
-        
         if let Some(position) = get_cursor_position(windows, q_camera) {
-
             debug!("Sent mouse left is pressed event {position}");
             ew_drag_move.send(DragMoveEvent {
                 drag_source: DragSource::Mouse,
@@ -70,13 +67,11 @@ pub fn get_cursor_position(
         wnds.get_primary().unwrap()
     };
 
-
     // check if the cursor is inside the window and get its position
     if let Some(screen_pos) = wnd.cursor_position() {
         // get the size of the window
         let window_size = Vec2::new(wnd.width() as f32, wnd.height() as f32);
 
-        
         // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
         let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
 
@@ -86,10 +81,16 @@ pub fn get_cursor_position(
         // use it to convert ndc to world-space coordinates
         let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
 
-        debug!("Mouse at {screen_pos} in ${window_size} / {:?},{:?} ({:?}, {:?})", wnd.physical_width(), wnd.physical_height(), wnd.scale_factor(), wnd.backend_scale_factor());
+        debug!(
+            "Mouse at {screen_pos} in ${window_size} / {:?},{:?} ({:?}, {:?})",
+            wnd.physical_width(),
+            wnd.physical_height(),
+            wnd.scale_factor(),
+            wnd.backend_scale_factor()
+        );
 
         // reduce it to a 2D value and rescale it to the world
-        return Some(world_pos.truncate() );
+        return Some(world_pos.truncate());
     } else {
         return None;
     }
@@ -102,9 +103,7 @@ fn touch_listener(
     mut ew_drag_move: EventWriter<DragMoveEvent>,
     mut ew_drag_end: EventWriter<DragEndEvent>,
 ) {
-
     for ev in touch_evr.iter() {
-
         debug!("Touch Event {:?}", ev);
 
         // in real apps you probably want to store and track touch ids somewhere
@@ -112,7 +111,7 @@ fn touch_listener(
             TouchPhase::Started => {
                 ew_drag_start.send(DragStartEvent {
                     drag_source: DragSource::Touch { id: ev.id },
-                    position: ev.position ,
+                    position: ev.position,
                 });
                 debug!("Touch {} started at: {:?}", ev.id, ev.position);
             }
@@ -144,8 +143,6 @@ fn keyboard_listener(
     mut rotate_evw: EventWriter<RotateEvent>,
 ) {
     use bevy::input::ElementState;
-
-    
 
     for ev in key_evr.iter() {
         if let Some(code) = ev.key_code {

@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::log::*;
+use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -39,15 +39,15 @@ fn main() {
     console_error_panic_hook::set_once();
 
     App::new()
-    .insert_resource(LogSettings {
-        level: Level::INFO,
-        ..Default::default()
-    })
+        .insert_resource(LogSettings {
+            level: Level::INFO,
+            ..Default::default()
+        })
         .insert_resource(WindowDescriptor {
             #[cfg(target_arch = "wasm32")]
             canvas: Some("#game".to_string()),
             title: "Equilibrium".to_string(),
-            width:  WINDOW_WIDTH,
+            width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..Default::default()
         })
@@ -58,9 +58,10 @@ fn main() {
         .add_plugin(ShapePlugin)
         .add_plugin(InputPlugin)
         .add_plugin(EventsPlugin)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(WINDOW_HEIGHT / 10.0))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
+            WINDOW_HEIGHT / 10.0,
+        ))
         .add_startup_system(setup.label("main_setup"))
-        
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game)
@@ -73,7 +74,6 @@ fn main() {
         // )
         .run();
 }
-
 
 fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);

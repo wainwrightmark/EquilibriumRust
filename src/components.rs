@@ -10,8 +10,7 @@ pub struct RestartButton {}
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct Draggable {
-}
+pub struct Draggable {}
 
 #[derive(Component)]
 pub struct Dragged {
