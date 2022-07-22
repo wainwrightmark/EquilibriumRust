@@ -90,9 +90,9 @@ pub fn get_cursor_position(
         );
 
         // reduce it to a 2D value and rescale it to the world
-        return Some(world_pos.truncate());
+        Some(world_pos.truncate())
     } else {
-        return None;
+        None
     }
 }
 
@@ -146,13 +146,12 @@ fn keyboard_listener(
 
     for ev in key_evr.iter() {
         if let Some(code) = ev.key_code {
-            match ev.state {
-                ElementState::Pressed => match code {
-                    KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
-                    KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
-                    _ => {}
-                },
+            if let ElementState::Pressed = ev.state {
+                match code {
+                KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
+                KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
                 _ => {}
+            }
             }
         }
     }

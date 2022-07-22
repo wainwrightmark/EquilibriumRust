@@ -41,8 +41,7 @@ fn handle_rotate_events(
     for ev in ev_rotate.iter() {
         for (mut rb, _) in dragged.iter_mut() {
             const INTERVAL: f32 = std::f32::consts::TAU / 16.0;
-            rb.rotation = rb.rotation
-                * Quat::from_rotation_z(if ev.clockwise { INTERVAL } else { -INTERVAL });
+            rb.rotation *= Quat::from_rotation_z(if ev.clockwise { INTERVAL } else { -INTERVAL });
         }
     }
 }
@@ -79,9 +78,7 @@ fn drag_move(
         //println!("{:?}", event);
 
         if let Some((dragged, mut rb)) = dragged_entities
-            .iter_mut()
-            .filter(|d| d.0.drag_source == event.drag_source)
-            .next()
+            .iter_mut().find(|d| d.0.drag_source == event.drag_source)
         {
             //println!("Drag Move");
 
@@ -113,7 +110,7 @@ fn drag_start(
 ) {
     for event in er_drag_start.iter() {
         rapier_context.intersections_with_point(event.position, default(), |entity| {
-            if let Some((_, rb)) = draggables.get(entity).ok() {
+            if let Ok((_, rb)) = draggables.get(entity) {
                 //println!("Entity {:?} set to dragged", entity);
 
                 let origin = rb.translation;
@@ -122,15 +119,15 @@ fn drag_start(
                 commands
                     .entity(entity)
                     .insert(Dragged {
-                        origin: origin,
-                        offset: offset,
+                        origin,
+                        offset,
                         drag_source: event.drag_source,
                     })
                     .remove::<RigidBody>()
                     .insert(RigidBody::KinematicPositionBased);
                 return false;
             }
-            return true;
+            true
         });
     }
 }

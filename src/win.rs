@@ -86,7 +86,7 @@ pub fn check_for_win(
     time: Res<Time>,
     mut new_game_events: EventWriter<NewGameEvent>,
 ) {
-    if let Some((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut().ok() {
+    if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.seconds_since_startup();
 
         if remaining <= 0f64 {
@@ -192,10 +192,8 @@ fn check_for_contacts(
         fail = Some("Contact Found");
     }
 
-    if fail.is_none() {
-        if !dragged.is_empty() {
-            fail = Some("Something Dragged");
-        }
+    if fail.is_none() && !dragged.is_empty() {
+        fail = Some("Something Dragged");
     }
 
     if let Some(_error_message) = fail {

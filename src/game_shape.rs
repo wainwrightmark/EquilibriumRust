@@ -167,7 +167,7 @@ impl GameShape {
 
         let r =
             Collider::convex_hull(&geo.points.iter().map(|v| Vect::new(v.x, v.y)).collect_vec());
-        return r.unwrap();
+        r.unwrap()
     }
 
     fn triangle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
@@ -211,6 +211,6 @@ pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {
     let shapes = game_shapes();
     let length = shapes.len();
     let index = rng.gen_range(0..length);
-    let r = shapes[index];
-    return r;
+    
+    shapes[index]
 }

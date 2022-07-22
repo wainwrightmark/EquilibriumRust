@@ -13,12 +13,12 @@ pub fn create_game(mut commands: Commands) {
     create_foundations(&mut commands, &GameShape::Box);
 }
 
-pub fn create_foundations(mut commands: &mut Commands, shape: &GameShape) {
+pub fn create_foundations(commands: &mut Commands, shape: &GameShape) {
     let x = 0f32;
     let y = SHAPE_SIZE - (crate::WINDOW_HEIGHT / 2.0);
 
     create_shape(
-        &mut commands,
+        commands,
         shape,
         SHAPE_SIZE,
         Vec2::new(x, y),
@@ -31,7 +31,7 @@ pub fn create_foundations(mut commands: &mut Commands, shape: &GameShape) {
     );
 }
 
-pub fn create_boxes(mut commands: &mut Commands) {
+pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
     for shape in crate::game_shape::game_shapes() {
@@ -43,10 +43,10 @@ pub fn create_boxes(mut commands: &mut Commands) {
         let angle = rng.gen_range(0f32..std::f32::consts::TAU);
 
         create_shape(
-            &mut commands,
+            commands,
             &shape,
             SHAPE_SIZE,
-            point.into(),
+            point,
             angle,
             true,
             ShapeAppearance {
