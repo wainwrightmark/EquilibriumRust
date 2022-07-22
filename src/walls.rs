@@ -90,7 +90,7 @@ fn spawn_wall(
         .with_children(|f| {
             f.spawn()
             .insert( collider_shape)
-            .insert(Sensor(true))
+            .insert(Sensor{})
             .insert(ActiveEvents::COLLISION_EVENTS )            
             .insert(Name::new(name));
         });

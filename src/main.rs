@@ -58,7 +58,7 @@ fn main() {
         .add_plugin(ShapePlugin)
         .add_plugin(InputPlugin)
         .add_plugin(EventsPlugin)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::with_physics_scale(WINDOW_HEIGHT / 10.0))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(WINDOW_HEIGHT / 10.0))
         .add_startup_system(setup.label("main_setup"))
         
         .add_plugin(DragPlugin)

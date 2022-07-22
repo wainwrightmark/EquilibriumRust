@@ -63,10 +63,10 @@ fn drag_end(
     for event in er_drag_end.iter() {
         //println!("{:?}", event);
 
-        for (mut entity, mut draggable, mut dragged, mut transform) in dragged
+        dragged
             .iter_mut()
             .filter(|f| f.2.drag_source == event.drag_source)
-        {
+            .for_each(|(entity, _,_,_)| {
 
             commands
                 .entity(entity)
@@ -75,7 +75,7 @@ fn drag_end(
                 .insert(RigidBody::Dynamic);
 
             ew_end_drag.send(DragEndedEvent {});
-        }
+        });
     }
 }
 
@@ -121,15 +121,10 @@ fn drag_start(
     mut commands: Commands,
 ) {
     for event in er_drag_start.iter() {
-        //println!("{:?}", event);
-
-        let groups = InteractionGroups::all();
-        let filter = None;
 
         rapier_context.intersections_with_point(            
             event.position,
-            groups,
-            filter,
+            default(),
             |entity| {                
                 if let Some((_, rb)) = draggables.get(entity).ok() {
                     //println!("Entity {:?} set to dragged", entity);
