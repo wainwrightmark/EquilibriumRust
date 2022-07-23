@@ -198,19 +198,15 @@ impl Default for ShapeAppearance {
     }
 }
 
-pub fn game_shapes() -> Vec<GameShape> {
-    vec![
-        GameShape::Circle,
-        GameShape::Triangle,
-        GameShape::Box,
-        GameShape::Cross,
-    ]
-}
+pub const ALLGAMESHAPES : [GameShape; 4] = [
+    GameShape::Circle,
+    GameShape::Triangle,
+    GameShape::Box,
+    GameShape::Cross,
+];
 
 pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {
-    let shapes = game_shapes();
-    let length = shapes.len();
-    let index = rng.gen_range(0..length);
+    let index = rng.gen_range(0..ALLGAMESHAPES.len());
     
-    shapes[index]
+    ALLGAMESHAPES[index]
 }

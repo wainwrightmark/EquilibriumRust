@@ -14,7 +14,7 @@ pub fn create_game(mut commands: Commands) {
 pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::game_shape::game_shapes() {
+    for shape in crate::game_shape::ALLGAMESHAPES {
         let rangex = -100f32..100f32;
         let rangey = -100f32..100f32;
 
