@@ -10,13 +10,19 @@ pub struct RestartButton {}
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct Draggable {}
+pub struct Draggable {
+}
+
+#[derive(Component)]
+pub struct Locked {
+}
 
 #[derive(Component)]
 pub struct Dragged {
     pub origin: Vec3,
     pub offset: Vec3,
     pub drag_source: DragSource,
+    pub was_locked: bool
 }
 
 #[derive(Component)]
@@ -24,8 +30,8 @@ pub struct WinTimer {
     pub win_time: f64,
 }
 
-#[derive(Component)]
-pub struct Foundation {}
+// #[derive(Component)]
+// pub struct Foundation {}
 
 #[derive(Component)]
 pub struct Wall {}

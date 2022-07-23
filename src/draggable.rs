@@ -49,21 +49,38 @@ fn handle_rotate_events(
 fn drag_end(
     mut er_drag_end: EventReader<DragEndEvent>,
     mut dragged: Query<(Entity, &Draggable, &Dragged, &mut Transform)>,
+    locked: Query<&Locked>,
     mut commands: Commands,
     mut ew_end_drag: EventWriter<DragEndedEvent>,
 ) {
     for event in er_drag_end.iter() {
         //println!("{:?}", event);
 
+        let mut any_locked = !locked.is_empty();
         dragged
             .iter_mut()
             .filter(|f| f.2.drag_source == event.drag_source)
-            .for_each(|(entity, _, _, _)| {
-                commands
+            .for_each(|(entity, _, dragged, _)| {
+
+                if any_locked  || dragged.was_locked{
+                    commands
                     .entity(entity)
                     .remove::<Dragged>()
                     .remove::<RigidBody>()
                     .insert(RigidBody::Dynamic);
+                }
+                else{
+
+                    commands
+                    .entity(entity)
+                    .remove::<Dragged>()
+                    .remove::<RigidBody>()
+                    .insert(RigidBody::Fixed)
+                    .insert(Locked{});
+                    any_locked = true;
+                }
+
+
 
                 ew_end_drag.send(DragEndedEvent {});
             });
@@ -104,13 +121,13 @@ fn drag_move(
 fn drag_start(
     mut er_drag_start: EventReader<DragStartEvent>,
     rapier_context: Res<RapierContext>,
-    draggables: Query<(With<Draggable>, &Transform)>,
+    draggables: Query<(With<Draggable>, Option<&Locked>,  &Transform)>,
 
     mut commands: Commands,
 ) {
     for event in er_drag_start.iter() {
         rapier_context.intersections_with_point(event.position, default(), |entity| {
-            if let Ok((_, rb)) = draggables.get(entity) {
+            if let Ok((_, locked, rb)) = draggables.get(entity) {
                 //println!("Entity {:?} set to dragged", entity);
 
                 let origin = rb.translation;
@@ -122,8 +139,10 @@ fn drag_start(
                         origin,
                         offset,
                         drag_source: event.drag_source,
+                        was_locked: locked.is_some()
                     })
                     .remove::<RigidBody>()
+                    .remove::<Locked>()
                     .insert(RigidBody::KinematicPositionBased);
                 return false;
             }

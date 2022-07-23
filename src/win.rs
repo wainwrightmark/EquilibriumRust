@@ -32,7 +32,7 @@ const COUNTDOWN: f64 = 3.0;
 pub fn handle_new_game(
     mut commands: Commands,
     mut new_game_events: EventReader<NewGameEvent>,
-    draggables: Query<(Entity, Or<(With<Draggable>, With<crate::Foundation>)>)>,
+    draggables: Query<(Entity, With<Draggable>)>,
 ) {
     let mut first = true;
     for _ng in new_game_events.iter() {
@@ -50,11 +50,8 @@ pub fn handle_new_game(
 
         let mut rng = rand::thread_rng();
 
-        let foundation_shape = crate::game_shape::get_random_shape(&mut rng);
 
-        crate::create_foundations(&mut commands, &foundation_shape);
-
-        for _ in 0..shape_count {
+        for _ in 0..=shape_count {
             let shape = crate::game_shape::get_random_shape(&mut rng);
 
             let rangex = -100f32..100f32;
@@ -70,7 +67,6 @@ pub fn handle_new_game(
                 SHAPE_SIZE,
                 point,
                 angle,
-                true,
                 ShapeAppearance {
                     fill: (shape.default_fill_color()),
                     ..Default::default()

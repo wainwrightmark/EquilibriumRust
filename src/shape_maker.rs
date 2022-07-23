@@ -9,26 +9,6 @@ pub const SHAPE_SIZE: f32 = 60f32;
 
 pub fn create_game(mut commands: Commands) {
     create_boxes(&mut commands);
-
-    create_foundations(&mut commands, &GameShape::Box);
-}
-
-pub fn create_foundations(commands: &mut Commands, shape: &GameShape) {
-    let x = 0f32;
-    let y = SHAPE_SIZE - (crate::WINDOW_HEIGHT / 2.0);
-
-    create_shape(
-        commands,
-        shape,
-        SHAPE_SIZE,
-        Vec2::new(x, y),
-        0f32,
-        false,
-        ShapeAppearance {
-            fill: (Color::GRAY),
-            ..Default::default()
-        },
-    );
 }
 
 pub fn create_boxes(commands: &mut Commands) {
@@ -48,7 +28,6 @@ pub fn create_boxes(commands: &mut Commands) {
             SHAPE_SIZE,
             point,
             angle,
-            true,
             ShapeAppearance {
                 fill: (shape.default_fill_color()),
                 ..Default::default()
@@ -63,7 +42,6 @@ pub fn create_shape(
     shape_size: f32,
     position: Vec2,
     angle: f32,
-    dynamic: bool,
     appearance: ShapeAppearance,
 ) {
     let collider_shape = shape.to_collider_shape(shape_size);
@@ -73,11 +51,7 @@ pub fn create_shape(
         scale: Vec3::ONE,
     };
 
-    let rbb: RigidBody = if dynamic {
-        RigidBody::Dynamic
-    } else {
-        RigidBody::Fixed
-    };
+    let rbb = RigidBody::Dynamic;
 
     let mut entity_builder = commands.spawn();
     let name = shape.name();
@@ -89,11 +63,5 @@ pub fn create_shape(
         .insert(transform)
         .insert(Name::new(name));
 
-    if dynamic {
-        entity_builder.insert(crate::Draggable {});
-    } else {
-        entity_builder.insert(Foundation {});
-    }
-
-    //println!("Spawn {:?} {:?}", entity_builder.id(), shape);
+    entity_builder.insert(crate::Draggable {});
 }
