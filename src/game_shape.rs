@@ -16,24 +16,27 @@ pub enum GameShape {
     Cross,
     Triangle,
     Box,
+    Ell
 }
 
 impl GameShape {
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> &str {
         match self {
-            GameShape::Circle => String::from("Circle"),
-            GameShape::Cross => String::from("Cross"),
-            GameShape::Triangle => String::from("Triangle"),
-            GameShape::Box => String::from("Box"),
+            GameShape::Circle => "Circle",
+            GameShape::Cross => "Cross",
+            GameShape::Triangle => "Triangle",
+            GameShape::Box => "Box",
+            GameShape::Ell => "Ell"
         }
     }
 
     pub fn default_fill_color(&self) -> Color {
         match self {
             GameShape::Circle => Color::hsla(0f32, 0.35, 0.45, 0.8),
-            GameShape::Cross => Color::hsla(90f32, 0.35, 0.45, 0.8),
-            GameShape::Triangle => Color::hsla(180f32, 0.35, 0.45, 0.8),
-            GameShape::Box => Color::hsla(270f32, 0.35, 0.45, 0.8),
+            GameShape::Cross => Color::hsla(60f32, 0.35, 0.45, 0.8),
+            GameShape::Triangle => Color::hsla(120f32, 0.35, 0.45, 0.8),
+            GameShape::Box => Color::hsla(180f32, 0.35, 0.45, 0.8),
+            GameShape::Ell => Color::hsla(240f32, 0.35, 0.45, 0.8),
         }
     }
 
@@ -43,6 +46,7 @@ impl GameShape {
             GameShape::Cross => GameShape::cross_collider_shape(shape_size),
             GameShape::Triangle => GameShape::triangle_collider_shape(shape_size),
             GameShape::Box => GameShape::box_collider_shape(shape_size),
+            GameShape::Ell => GameShape::cross_collider_shape(shape_size),
         }
     }
     pub fn get_shapebundle(&self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
@@ -51,9 +55,50 @@ impl GameShape {
             GameShape::Cross => GameShape::cross_shapebundle(shape_size, appearance),
             GameShape::Triangle => GameShape::triangle_shapebundle(shape_size, appearance),
             GameShape::Box => GameShape::box_shapebundle(shape_size, appearance),
+            GameShape::Ell => GameShape::cross_shapebundle(shape_size, appearance),
         }
     }
 
+    // fn get_geometry(&self) -> &impl Geometry{
+
+    // }
+
+    // fn ell_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
+    //     {
+    //         let u = shape_size / 3.0;
+    //         let offset = Vec2::new(1.5 * u, 1.5 * u);
+    //         let geo = Polygon {
+    //             points: [
+    //                 Vec2::new(u, 0.0),
+    //                 Vec2::new(2.0 * u, 0.0),
+    //                 Vec2::new(2.0 * u, u),
+    //                 Vec2::new(3.0 * u, u),
+    //                 Vec2::new(3.0 * u, 2.0 * u),
+    //                 Vec2::new(2.0 * u, 2.0 * u),
+    //                 Vec2::new(2.0 * u, 3.0 * u),
+    //                 Vec2::new(1.0 * u, 3.0 * u),
+    //                 Vec2::new(1.0 * u, 2.0 * u),
+    //                 Vec2::new(0.0, 2.0 * u),
+    //                 Vec2::new(0.0, u),
+    //                 Vec2::new(u, u),
+    //             ]
+    //             .iter()
+    //             .map(|p| *p - offset)
+    //             .collect_vec(),
+    //             closed: true,
+    //         };
+
+    //         GeometryBuilder::build_as(
+    //             &geo,
+    //             DrawMode::Outlined {
+    //                 fill_mode: FillMode::color(appearance.fill),
+    //                 outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
+    //             },
+    //             Transform::default(),
+    //         )
+    //     }
+    // }
+    
     fn cross_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         {
             let u = shape_size / 3.0;
@@ -105,6 +150,21 @@ impl GameShape {
         ])
     }
 
+    fn ell_collider_shape(shape_size: f32) -> Collider{
+        Collider::compound(vec![
+            (
+                Vec2::new(shape_size / 2.0, shape_size / 2.0),
+                0.0,
+                Collider::cuboid(shape_size / 6.0, shape_size / 2.0),
+            ),
+            (
+                Vec2::new(shape_size / 2.0, shape_size / 2.0),
+                0.0,
+                Collider::cuboid(shape_size / 2.0, shape_size / 6.0),
+            ),
+        ])
+    }
+
     fn box_geometry(shape_size: f32) -> Rectangle {
         shapes::Rectangle {
             extents: Vec2::new(shape_size / 2.0, shape_size / 2.0),
@@ -127,6 +187,8 @@ impl GameShape {
         let geo = GameShape::box_geometry(shape_size);
         Collider::cuboid(geo.extents.x / 2.0, geo.extents.y / 2.0)
     }
+
+    
 
     fn circle_geometry(shape_size: f32) -> Circle {
         shapes::Circle {
@@ -198,11 +260,12 @@ impl Default for ShapeAppearance {
     }
 }
 
-pub const ALLGAMESHAPES : [GameShape; 4] = [
+pub const ALLGAMESHAPES : [GameShape; 5] = [
     GameShape::Circle,
     GameShape::Triangle,
     GameShape::Box,
     GameShape::Cross,
+    GameShape::Ell,
 ];
 
 pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {

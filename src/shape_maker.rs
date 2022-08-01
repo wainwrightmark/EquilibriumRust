@@ -54,7 +54,7 @@ pub fn create_shape(
     let rbb = RigidBody::Dynamic;
 
     let mut entity_builder = commands.spawn();
-    let name = shape.name();
+    let name = shape.name().to_string();
 
     entity_builder
         .insert_bundle(shape.get_shapebundle(shape_size, appearance))
