@@ -80,7 +80,7 @@ fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>)
 
     commands
         .spawn()
-        .insert_bundle(OrthographicCameraBundle::new_2d())
+        .insert_bundle(Camera2dBundle::default())
         .insert(MainCamera);
 }
 

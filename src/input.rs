@@ -76,7 +76,7 @@ pub fn get_cursor_position(
         let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
 
         // matrix for undoing the projection and camera transform
-        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix.inverse();
+        let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
 
         // use it to convert ndc to world-space coordinates
         let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
@@ -142,11 +142,11 @@ fn keyboard_listener(
     mut key_evr: EventReader<KeyboardInput>,
     mut rotate_evw: EventWriter<RotateEvent>,
 ) {
-    use bevy::input::ElementState;
+    
 
     for ev in key_evr.iter() {
         if let Some(code) = ev.key_code {
-            if let ElementState::Pressed = ev.state {
+            if let bevy::input::ButtonState::Pressed = ev.state {
                 match code {
                 KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
                 KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),

@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 itertools = "0.10.3"
-bevy_prototype_lyon = "0.5.0"
-bevy_rapier2d = { version = "0.15", features = [ "enhanced-determinism" ] }
+bevy_prototype_lyon = "0.6.0"
+bevy_rapier2d = { version = "0.16", features = [ "enhanced-determinism" ] }
 console_error_panic_hook = "0.1.7"
 
 [target.wasm32-unknown-unknown]
@@ -17,7 +17,7 @@ runner = "wasm-server-runner"
 
 
 [target.'cfg(target_os = "linux")'.dependencies]
-winit = { version = "0.26.1", features=["x11"]}
+winit = { version = "0.27.1", features=["x11"]}
 
 [build-dependencies]
 embed-resource = "1.4"
@@ -34,7 +34,7 @@ lto = 'thin'
 opt-level = 3
 
 [dependencies.bevy]
-version = "0.7.0"
+version = "0.8.0"
 
 
 

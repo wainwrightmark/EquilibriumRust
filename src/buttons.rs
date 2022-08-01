@@ -38,12 +38,12 @@ fn button_system(
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ui camera
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera2dBundle::default());
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                position: Rect {
+                position: UiRect {
                     left: Val::Px(10.),
                     top: Val::Px(10.),
                     ..Default::default()
@@ -58,7 +58,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     style: Style {
                         size: Size::new(Val::Px(150.0), Val::Px(65.0)),
                         // center button
-                        margin: Rect::all(Val::Auto),
+                        margin: UiRect::all(Val::Auto),
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
@@ -71,14 +71,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .insert(RestartButton {})
                 .with_children(|parent| {
                     parent.spawn_bundle(TextBundle {
-                        text: Text::with_section(
+                        text: Text::from_section(
                             "Change Level",
                             TextStyle {
                                 font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                                 font_size: 30.0,
                                 color: Color::rgb(0.9, 0.9, 0.9),
                             },
-                            Default::default(),
                         ),
                         ..Default::default()
                     });
