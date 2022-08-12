@@ -20,7 +20,7 @@ pub enum GameShape {
 }
 
 impl GameShape {
-    pub fn name(&self) -> &str {
+    pub fn name(self) -> &'static str {
         match self {
             GameShape::Circle => "Circle",
             GameShape::Cross => "Cross",
@@ -30,7 +30,7 @@ impl GameShape {
         }
     }
 
-    pub fn default_fill_color(&self) -> Color {
+    pub fn default_fill_color(self) -> Color {
         match self {
             GameShape::Circle => Color::hsla(0f32, 0.35, 0.45, 0.8),
             GameShape::Cross => Color::hsla(60f32, 0.35, 0.45, 0.8),
@@ -40,7 +40,7 @@ impl GameShape {
         }
     }
 
-    pub fn to_collider_shape(&self, shape_size: f32) -> Collider {
+    pub fn to_collider_shape(self, shape_size: f32) -> Collider {
         match self {
             GameShape::Circle => GameShape::circle_collider_shape(shape_size),
             GameShape::Cross => GameShape::cross_collider_shape(shape_size),
@@ -49,7 +49,7 @@ impl GameShape {
             GameShape::Ell => GameShape::ell_collider_shape(shape_size),
         }
     }
-    pub fn get_shapebundle(&self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
+    pub fn get_shapebundle(self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         match self {
             GameShape::Circle => GameShape::circle_shapebundle(shape_size, appearance),
             GameShape::Cross => GameShape::cross_shapebundle(shape_size, appearance),
@@ -86,10 +86,7 @@ impl GameShape {
 
             GeometryBuilder::build_as(
                 &geo,
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(appearance.fill),
-                    outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-                },
+                appearance.into(),
                 Transform::default(),
             )
         }
@@ -131,10 +128,7 @@ impl GameShape {
 
             GeometryBuilder::build_as(
                 &geo,
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(appearance.fill),
-                    outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-                },
+                appearance.into(),
                 Transform::default(),
             )
         }
@@ -159,10 +153,7 @@ impl GameShape {
     fn box_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::box_geometry(shape_size),
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(appearance.fill),
-                outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-            },
+            appearance.into(),
             Transform::default(),
         )
     }
@@ -181,10 +172,7 @@ impl GameShape {
     fn circle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::circle_geometry(shape_size),
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(appearance.fill),
-                outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-            },
+            appearance.into(),
             Transform::default(),
         )
     }
@@ -217,10 +205,7 @@ impl GameShape {
     fn triangle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::triangle_geometry(shape_size),
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(appearance.fill),
-                outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-            },
+            appearance.into(),            
             Transform::default(),
         )
     }
@@ -231,6 +216,13 @@ pub struct ShapeAppearance {
     pub stroke: Color,
     pub line_width: f32,
 }
+
+impl Into<DrawMode> for ShapeAppearance{
+    fn into(self) -> DrawMode {
+        DrawMode::Fill(FillMode::color(self.fill))
+    }
+}
+
 
 impl Default for ShapeAppearance {
     fn default() -> Self {

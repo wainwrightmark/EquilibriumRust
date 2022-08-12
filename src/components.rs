@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::events::DragSource;
+use crate::{events::DragSource, game_shape::GameShape};
 
 #[derive(Component)]
 pub struct RestartButton {}
@@ -10,7 +10,9 @@ pub struct RestartButton {}
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct Draggable {}
+pub struct Draggable {
+    pub game_shape: GameShape
+}
 
 #[derive(Component)]
 pub struct Locked {}

@@ -63,5 +63,5 @@ pub fn create_shape(
         .insert(transform)
         .insert(Name::new(name));
 
-    entity_builder.insert(crate::Draggable {});
+    entity_builder.insert(crate::Draggable {game_shape: shape.clone()});
 }

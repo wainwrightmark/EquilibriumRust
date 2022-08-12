@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-
+use bevy_prototype_lyon::prelude::FillMode;
 use crate::*;
 
 pub struct DragPlugin;
@@ -73,7 +73,9 @@ fn drag_end(
                         .remove::<Dragged>()
                         .remove::<RigidBody>()
                         .insert(RigidBody::Fixed)
-                        .insert(Locked {});
+                        .insert(Locked {})
+                        .insert(DrawMode::Fill(FillMode::color(Color::GRAY),))
+                        ;
                     any_locked = true;
                 }
 
@@ -117,17 +119,18 @@ fn drag_move(
 fn drag_start(
     mut er_drag_start: EventReader<DragStartEvent>,
     rapier_context: Res<RapierContext>,
-    draggables: Query<(With<Draggable>, Option<&Locked>, &Transform)>,
+    draggables: Query<(&Draggable, Option<&Locked>, &Transform)>,
 
     mut commands: Commands,
 ) {
     for event in er_drag_start.iter() {
         rapier_context.intersections_with_point(event.position, default(), |entity| {
-            if let Ok((_, locked, rb)) = draggables.get(entity) {
+            if let Ok((draggable, locked, rb)) = draggables.get(entity) {
                 //println!("Entity {:?} set to dragged", entity);
 
                 let origin = rb.translation;
                 let offset = origin - event.position.extend(0.0);
+                let was_locked = locked.is_some();
 
                 commands
                     .entity(entity)
@@ -135,11 +138,19 @@ fn drag_start(
                         origin,
                         offset,
                         drag_source: event.drag_source,
-                        was_locked: locked.is_some(),
+                        was_locked,
                     })
                     .remove::<RigidBody>()
-                    .remove::<Locked>()
+                    
                     .insert(RigidBody::KinematicPositionBased);
+
+                if was_locked{
+                    commands.entity(entity)
+                    .remove::<Locked>()
+                    .insert(DrawMode::Fill(FillMode::color(draggable.game_shape.default_fill_color()),))
+                    ;
+                }
+
                 return false;
             }
             true
