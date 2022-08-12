@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="en"><head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="utf-8">
         <title>Equilibrium</title>
         
@@ -23,8 +24,8 @@ canvas {
 }
 </style>
     
-<link rel="preload" href="/EquilibriumRust/index-7144be2bcf66c60b_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/EquilibriumRust/index-7144be2bcf66c60b.js"></head>
+<link rel="preload" href="/EquilibriumRust/equilibrium-1bd18ad0c275e8c1_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/EquilibriumRust/equilibrium-1bd18ad0c275e8c1.js"></head>
     <body>
         <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
 // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
@@ -89,6 +90,10 @@ canvas {
     });
 })();
 </script>
+
+        <div style="display: flex; justify-content: center;">
+            <canvas id="game"></canvas>
+        </div>
     
 
-<script type="module">import init from '/EquilibriumRust/index-7144be2bcf66c60b.js';init('/EquilibriumRust/index-7144be2bcf66c60b_bg.wasm');</script></body></html>
+<script type="module">import init from '/EquilibriumRust/equilibrium-1bd18ad0c275e8c1.js';init('/EquilibriumRust/equilibrium-1bd18ad0c275e8c1_bg.wasm');</script></body></html>
