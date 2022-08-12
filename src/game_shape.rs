@@ -46,7 +46,7 @@ impl GameShape {
             GameShape::Cross => GameShape::cross_collider_shape(shape_size),
             GameShape::Triangle => GameShape::triangle_collider_shape(shape_size),
             GameShape::Box => GameShape::box_collider_shape(shape_size),
-            GameShape::Ell => GameShape::cross_collider_shape(shape_size),
+            GameShape::Ell => GameShape::ell_collider_shape(shape_size),
         }
     }
     pub fn get_shapebundle(&self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
@@ -55,49 +55,10 @@ impl GameShape {
             GameShape::Cross => GameShape::cross_shapebundle(shape_size, appearance),
             GameShape::Triangle => GameShape::triangle_shapebundle(shape_size, appearance),
             GameShape::Box => GameShape::box_shapebundle(shape_size, appearance),
-            GameShape::Ell => GameShape::cross_shapebundle(shape_size, appearance),
+            GameShape::Ell => GameShape::ell_shapebundle(shape_size, appearance),
         }
     }
-
-    // fn get_geometry(&self) -> &impl Geometry{
-
-    // }
-
-    // fn ell_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
-    //     {
-    //         let u = shape_size / 3.0;
-    //         let offset = Vec2::new(1.5 * u, 1.5 * u);
-    //         let geo = Polygon {
-    //             points: [
-    //                 Vec2::new(u, 0.0),
-    //                 Vec2::new(2.0 * u, 0.0),
-    //                 Vec2::new(2.0 * u, u),
-    //                 Vec2::new(3.0 * u, u),
-    //                 Vec2::new(3.0 * u, 2.0 * u),
-    //                 Vec2::new(2.0 * u, 2.0 * u),
-    //                 Vec2::new(2.0 * u, 3.0 * u),
-    //                 Vec2::new(1.0 * u, 3.0 * u),
-    //                 Vec2::new(1.0 * u, 2.0 * u),
-    //                 Vec2::new(0.0, 2.0 * u),
-    //                 Vec2::new(0.0, u),
-    //                 Vec2::new(u, u),
-    //             ]
-    //             .iter()
-    //             .map(|p| *p - offset)
-    //             .collect_vec(),
-    //             closed: true,
-    //         };
-
-    //         GeometryBuilder::build_as(
-    //             &geo,
-    //             DrawMode::Outlined {
-    //                 fill_mode: FillMode::color(appearance.fill),
-    //                 outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
-    //             },
-    //             Transform::default(),
-    //         )
-    //     }
-    // }
+    
     
     fn cross_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         {
@@ -150,17 +111,49 @@ impl GameShape {
         ])
     }
 
+    fn ell_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
+        {
+            let u = shape_size / 3.0;
+            //let offset = Vec2::new(1.5 * u, 1.5 * u);
+            let geo = Polygon {
+                points: [
+                    Vec2::new(0.0, 0.0),
+                    Vec2::new(2.0 * u, 0.0),
+                    Vec2::new(2.0 * u, 1.0 * u),
+                    Vec2::new(1.0 * u, 1.0 * u),
+                    Vec2::new(1.0 * u, 3.0 * u),
+                    Vec2::new(0.0 * u, 3.0 * u),
+                ]
+                .into_iter()
+                //.map(|p| *p - offset)
+                .collect_vec(),
+                closed: true,
+            };
+
+            GeometryBuilder::build_as(
+                &geo,
+                DrawMode::Outlined {
+                    fill_mode: FillMode::color(appearance.fill),
+                    outline_mode: StrokeMode::new(appearance.stroke, appearance.line_width),
+                },
+                Transform::default(),
+            )
+        }
+    }
+
     fn ell_collider_shape(shape_size: f32) -> Collider{
+        let u = shape_size / 6.0;
+
         Collider::compound(vec![
             (
-                Vec2::new(shape_size / 2.0, shape_size / 2.0),
+                Vec2::new(u * 2.0, u),
                 0.0,
-                Collider::cuboid(shape_size / 6.0, shape_size / 2.0),
+                Collider::cuboid(u * 2.0, u),
             ),
             (
-                Vec2::new(shape_size / 2.0, shape_size / 2.0),
+                Vec2::new(u, u * 3.0),
                 0.0,
-                Collider::cuboid(shape_size / 2.0, shape_size / 6.0),
+                Collider::cuboid(u, u * 3.0),
             ),
         ])
     }
