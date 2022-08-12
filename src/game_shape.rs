@@ -16,7 +16,7 @@ pub enum GameShape {
     Cross,
     Triangle,
     Box,
-    Ell
+    Ell,
 }
 
 impl GameShape {
@@ -26,7 +26,7 @@ impl GameShape {
             GameShape::Cross => "Cross",
             GameShape::Triangle => "Triangle",
             GameShape::Box => "Box",
-            GameShape::Ell => "Ell"
+            GameShape::Ell => "Ell",
         }
     }
 
@@ -58,8 +58,7 @@ impl GameShape {
             GameShape::Ell => GameShape::ell_shapebundle(shape_size, appearance),
         }
     }
-    
-    
+
     fn cross_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         {
             let u = shape_size / 3.0;
@@ -141,20 +140,12 @@ impl GameShape {
         }
     }
 
-    fn ell_collider_shape(shape_size: f32) -> Collider{
+    fn ell_collider_shape(shape_size: f32) -> Collider {
         let u = shape_size / 6.0;
 
         Collider::compound(vec![
-            (
-                Vec2::new(u * 2.0, u),
-                0.0,
-                Collider::cuboid(u * 2.0, u),
-            ),
-            (
-                Vec2::new(u, u * 3.0),
-                0.0,
-                Collider::cuboid(u, u * 3.0),
-            ),
+            (Vec2::new(u * 2.0, u), 0.0, Collider::cuboid(u * 2.0, u)),
+            (Vec2::new(u, u * 3.0), 0.0, Collider::cuboid(u, u * 3.0)),
         ])
     }
 
@@ -180,8 +171,6 @@ impl GameShape {
         let geo = GameShape::box_geometry(shape_size);
         Collider::cuboid(geo.extents.x / 2.0, geo.extents.y / 2.0)
     }
-
-    
 
     fn circle_geometry(shape_size: f32) -> Circle {
         shapes::Circle {
@@ -253,7 +242,7 @@ impl Default for ShapeAppearance {
     }
 }
 
-pub const ALLGAMESHAPES : [GameShape; 5] = [
+pub const ALLGAMESHAPES: [GameShape; 5] = [
     GameShape::Circle,
     GameShape::Triangle,
     GameShape::Box,
@@ -263,6 +252,6 @@ pub const ALLGAMESHAPES : [GameShape; 5] = [
 
 pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {
     let index = rng.gen_range(0..ALLGAMESHAPES.len());
-    
+
     ALLGAMESHAPES[index]
 }

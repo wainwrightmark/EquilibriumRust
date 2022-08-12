@@ -50,7 +50,6 @@ pub fn handle_new_game(
 
         let mut rng = rand::thread_rng();
 
-
         for _ in 0..=shape_count {
             let shape = crate::game_shape::get_random_shape(&mut rng);
 

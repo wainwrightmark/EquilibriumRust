@@ -142,16 +142,14 @@ fn keyboard_listener(
     mut key_evr: EventReader<KeyboardInput>,
     mut rotate_evw: EventWriter<RotateEvent>,
 ) {
-    
-
     for ev in key_evr.iter() {
         if let Some(code) = ev.key_code {
             if let bevy::input::ButtonState::Pressed = ev.state {
                 match code {
-                KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
-                KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
-                _ => {}
-            }
+                    KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
+                    KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
+                    _ => {}
+                }
             }
         }
     }
