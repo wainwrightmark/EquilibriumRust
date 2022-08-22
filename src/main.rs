@@ -81,7 +81,8 @@ fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>)
     commands
         .spawn()
         .insert_bundle(Camera2dBundle::default())
-        .insert(MainCamera);
+        .insert(MainCamera)
+        ;
 }
 
 // fn print_all_positions(stuff: Query<(&Transform, &RigidBodyPositionComponent, &Name)>,){
