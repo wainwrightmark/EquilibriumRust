@@ -52,7 +52,7 @@ fn mousebutton_listener(
 
 pub fn get_cursor_position(
     // need to get window dimensions
-    wnds: Res<Windows>,
+    windows: Res<Windows>,
     // query to get camera transform
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) -> Option<Vec2> {
@@ -62,9 +62,9 @@ pub fn get_cursor_position(
 
     // get the window that the camera is displaying to (or the primary window)
     let wnd = if let RenderTarget::Window(id) = camera.target {
-        wnds.get(id).unwrap()
+        windows.get(id).unwrap()
     } else {
-        wnds.get_primary().unwrap()
+        windows.get_primary().unwrap()
     };
 
     // check if the cursor is inside the window and get its position
@@ -106,7 +106,6 @@ fn touch_listener(
     for ev in touch_evr.iter() {
         debug!("Touch Event {:?}", ev);
 
-        // in real apps you probably want to store and track touch ids somewhere
         match ev.phase {
             TouchPhase::Started => {
                 ew_drag_start.send(DragStartEvent {
