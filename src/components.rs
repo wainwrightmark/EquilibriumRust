@@ -11,7 +11,7 @@ pub struct MainCamera;
 
 #[derive(Component)]
 pub struct Draggable {
-    pub game_shape: GameShape
+    pub game_shape: GameShape,
 }
 
 #[derive(Component)]

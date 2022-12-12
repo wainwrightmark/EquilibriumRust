@@ -84,11 +84,7 @@ impl GameShape {
                 closed: true,
             };
 
-            GeometryBuilder::build_as(
-                &geo,
-                appearance.into(),
-                Transform::default(),
-            )
+            GeometryBuilder::build_as(&geo, appearance.into(), Transform::default())
         }
     }
 
@@ -126,11 +122,7 @@ impl GameShape {
                 closed: true,
             };
 
-            GeometryBuilder::build_as(
-                &geo,
-                appearance.into(),
-                Transform::default(),
-            )
+            GeometryBuilder::build_as(&geo, appearance.into(), Transform::default())
         }
     }
 
@@ -205,7 +197,7 @@ impl GameShape {
     fn triangle_shapebundle(shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         GeometryBuilder::build_as(
             &GameShape::triangle_geometry(shape_size),
-            appearance.into(),            
+            appearance.into(),
             Transform::default(),
         )
     }
@@ -217,12 +209,11 @@ pub struct ShapeAppearance {
     pub line_width: f32,
 }
 
-impl Into<DrawMode> for ShapeAppearance{
+impl Into<DrawMode> for ShapeAppearance {
     fn into(self) -> DrawMode {
         DrawMode::Fill(FillMode::color(self.fill))
     }
 }
-
 
 impl Default for ShapeAppearance {
     fn default() -> Self {

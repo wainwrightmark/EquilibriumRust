@@ -63,7 +63,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         justify_content: JustifyContent::Center,
                         // vertically center child text
                         align_items: AlignItems::Center,
-                    
+
                         ..Default::default()
                     },
                     background_color: NORMAL_BUTTON.into(),

@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
-use bevy_prototype_lyon::prelude::FillMode;
 use crate::*;
+use bevy::prelude::*;
+use bevy_prototype_lyon::prelude::FillMode;
+use bevy_rapier2d::prelude::*;
 
 pub struct DragPlugin;
 impl Plugin for DragPlugin {
@@ -74,8 +74,7 @@ fn drag_end(
                         .remove::<RigidBody>()
                         .insert(RigidBody::Fixed)
                         .insert(Locked {})
-                        .insert(DrawMode::Fill(FillMode::color(Color::GRAY),))
-                        ;
+                        .insert(DrawMode::Fill(FillMode::color(Color::GRAY)));
                     any_locked = true;
                 }
 
@@ -141,14 +140,15 @@ fn drag_start(
                         was_locked,
                     })
                     .remove::<RigidBody>()
-                    
                     .insert(RigidBody::KinematicPositionBased);
 
-                if was_locked{
-                    commands.entity(entity)
-                    .remove::<Locked>()
-                    .insert(DrawMode::Fill(FillMode::color(draggable.game_shape.default_fill_color()),))
-                    ;
+                if was_locked {
+                    commands
+                        .entity(entity)
+                        .remove::<Locked>()
+                        .insert(DrawMode::Fill(FillMode::color(
+                            draggable.game_shape.default_fill_color(),
+                        )));
                 }
 
                 return false;
