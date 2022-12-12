@@ -165,7 +165,7 @@ impl GameShape {
 
     fn circle_geometry(shape_size: f32) -> Circle {
         shapes::Circle {
-            center: Vec2::new(0f32, 0f32),
+            center: Vec2::ZERO,
             radius: shape_size / 2.0,
         }
     }
