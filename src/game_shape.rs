@@ -209,9 +209,9 @@ pub struct ShapeAppearance {
     pub line_width: f32,
 }
 
-impl Into<DrawMode> for ShapeAppearance {
-    fn into(self) -> DrawMode {
-        DrawMode::Fill(FillMode::color(self.fill))
+impl From<ShapeAppearance> for DrawMode {
+    fn from(val: ShapeAppearance) -> Self {
+        DrawMode::Fill(FillMode::color(val.fill))
     }
 }
 

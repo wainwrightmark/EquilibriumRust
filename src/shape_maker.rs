@@ -62,6 +62,6 @@ pub fn create_shape(
         .insert(transform)
         .insert(Name::new(name))
         .insert(crate::Draggable {
-            game_shape: shape.clone(),
+            game_shape: *shape,
         });
 }

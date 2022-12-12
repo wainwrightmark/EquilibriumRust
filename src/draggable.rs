@@ -1,7 +1,7 @@
 use crate::*;
-use bevy::prelude::*;
+
 use bevy_prototype_lyon::prelude::FillMode;
-use bevy_rapier2d::prelude::*;
+
 
 pub struct DragPlugin;
 impl Plugin for DragPlugin {
