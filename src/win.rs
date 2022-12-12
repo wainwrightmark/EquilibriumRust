@@ -46,17 +46,17 @@ pub fn handle_new_game(
             commands.entity(e).despawn();
             shape_count += 1;
         }
-        shape_count += _ng.box_count_change; //reate one more shape for new game
+        shape_count += _ng.box_count_change; //create one more shape for new game
 
         let mut rng = rand::thread_rng();
 
         for _ in 0..=shape_count {
             let shape = crate::game_shape::get_random_shape(&mut rng);
 
-            let rangex = -100f32..100f32;
-            let rangey = -100f32..100f32;
+            let range_x = -100f32..100f32;
+            let range_y = -100f32..100f32;
 
-            let point = Vec2::new(rng.gen_range(rangex), rng.gen_range(rangey));
+            let point = Vec2::new(rng.gen_range(range_x), rng.gen_range(range_y));
 
             let angle = rng.gen_range(0f32..std::f32::consts::TAU);
 
@@ -82,7 +82,7 @@ pub fn check_for_win(
     mut new_game_events: EventWriter<NewGameEvent>,
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
-        let remaining = timer.win_time - time.seconds_since_startup();
+        let remaining = timer.win_time - time.elapsed_seconds_f64();
 
         if remaining <= 0f64 {
             //println!("Win - Despawn Win Timer {:?}", timer_entity);
@@ -138,15 +138,14 @@ pub fn check_for_tower(
     collision_events.clear();
 
     commands
-        .spawn()
-        .insert(WinTimer {
-            win_time: time.seconds_since_startup() + COUNTDOWN,
+        .spawn(WinTimer {
+            win_time: time.elapsed_seconds_f64() + COUNTDOWN,
         })
         .insert(Transform {
             translation: Vec3::new(50.0, 200.0, 0.0),
             ..Default::default()
         })
-        .insert_bundle(GameShape::Circle.get_shapebundle(
+        .insert(GameShape::Circle.get_shape_bundle(
             100f32,
             ShapeAppearance {
                 fill: Color::Hsla {

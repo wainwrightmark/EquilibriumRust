@@ -68,8 +68,7 @@ fn spawn_wall(
     let collider_shape = Collider::cuboid(shape.extents.x / 2.0, shape.extents.y / 2.0);
 
     commands
-        .spawn()
-        .insert_bundle(GeometryBuilder::build_as(
+        .spawn(GeometryBuilder::build_as(
             &shape,
             DrawMode::Outlined {
                 fill_mode: bevy_prototype_lyon::prelude::FillMode::color(color),
@@ -83,8 +82,8 @@ fn spawn_wall(
         .insert(Name::new(name.to_string()))
         .insert(Wall {})
         .with_children(|f| {
-            f.spawn()
-                .insert(collider_shape)
+            f
+                .spawn(collider_shape)
                 .insert(Sensor {})
                 .insert(ActiveEvents::COLLISION_EVENTS)
                 .insert(Name::new(name));

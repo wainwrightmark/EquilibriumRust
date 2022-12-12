@@ -49,7 +49,7 @@ impl GameShape {
             GameShape::Ell => GameShape::ell_collider_shape(shape_size),
         }
     }
-    pub fn get_shapebundle(self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
+    pub fn get_shape_bundle(self, shape_size: f32, appearance: ShapeAppearance) -> ShapeBundle {
         match self {
             GameShape::Circle => GameShape::circle_shapebundle(shape_size, appearance),
             GameShape::Cross => GameShape::cross_shapebundle(shape_size, appearance),

@@ -13,7 +13,7 @@ const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 fn button_system(
     mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
+        (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>, With<RestartButton>),
     >,
     mut new_game_events: EventWriter<crate::NewGameEvent>,
@@ -40,7 +40,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ui camera
     //commands.spawn_bundle(Camera2dBundle::default());
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
                 position: UiRect {
@@ -54,7 +54,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .with_children(|parent| {
             parent
-                .spawn_bundle(ButtonBundle {
+                .spawn(ButtonBundle {
                     style: Style {
                         size: Size::new(Val::Px(150.0), Val::Px(65.0)),
                         // center button
@@ -63,14 +63,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         justify_content: JustifyContent::Center,
                         // vertically center child text
                         align_items: AlignItems::Center,
+                    
                         ..Default::default()
                     },
-                    color: NORMAL_BUTTON.into(),
+                    background_color: NORMAL_BUTTON.into(),
                     ..Default::default()
                 })
                 .insert(RestartButton {})
                 .with_children(|parent| {
-                    parent.spawn_bundle(TextBundle {
+                    parent.spawn(TextBundle {
                         text: Text::from_section(
                             "Change Level",
                             TextStyle {

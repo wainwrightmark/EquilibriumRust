@@ -38,21 +38,26 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     console_error_panic_hook::set_once();
 
-    App::new()
-        .insert_resource(LogSettings {
-            level: Level::INFO,
-            ..Default::default()
-        })
-        .insert_resource(WindowDescriptor {
+    let window_plugin = WindowPlugin {
+        window: WindowDescriptor {
             #[cfg(target_arch = "wasm32")]
             canvas: Some("#game".to_string()),
             title: "Equilibrium".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..Default::default()
-        })
+        },
+        ..Default::default()
+    };
+
+    let log_plugin = LogPlugin {
+        level: Level::INFO,
+        ..Default::default()
+    };
+
+    App::new()
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.95)))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(window_plugin).set(log_plugin))
         .add_plugin(WallsPlugin)
         .add_plugin(ButtonPlugin)
         .add_plugin(ShapePlugin)
@@ -78,11 +83,7 @@ fn main() {
 fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);
 
-    commands
-        .spawn()
-        .insert_bundle(Camera2dBundle::default())
-        .insert(MainCamera)
-        ;
+    commands.spawn(Camera2dBundle::default()).insert(MainCamera);
 }
 
 // fn print_all_positions(stuff: Query<(&Transform, &RigidBodyPositionComponent, &Name)>,){

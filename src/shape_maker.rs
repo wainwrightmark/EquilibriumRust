@@ -15,10 +15,10 @@ pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
     for shape in crate::game_shape::ALLGAMESHAPES {
-        let rangex = -100f32..100f32;
-        let rangey = -100f32..100f32;
+        let range_x = -100f32..100f32;
+        let range_y = -100f32..100f32;
 
-        let point = Vec2::new(rng.gen_range(rangex), rng.gen_range(rangey));
+        let point = Vec2::new(rng.gen_range(range_x), rng.gen_range(range_y));
 
         let angle = rng.gen_range(0f32..std::f32::consts::TAU);
 
@@ -53,15 +53,15 @@ pub fn create_shape(
 
     let rbb = RigidBody::Dynamic;
 
-    let mut entity_builder = commands.spawn();
     let name = shape.name().to_string();
 
-    entity_builder
-        .insert_bundle(shape.get_shapebundle(shape_size, appearance))
+    commands
+        .spawn(shape.get_shape_bundle(shape_size, appearance))
         .insert(rbb)
         .insert(collider_shape)
         .insert(transform)
-        .insert(Name::new(name));
-
-    entity_builder.insert(crate::Draggable {game_shape: shape.clone()});
+        .insert(Name::new(name))
+        .insert(crate::Draggable {
+            game_shape: shape.clone(),
+        });
 }
