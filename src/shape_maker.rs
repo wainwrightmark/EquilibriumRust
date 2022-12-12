@@ -61,7 +61,5 @@ pub fn create_shape(
         .insert(collider_shape)
         .insert(transform)
         .insert(Name::new(name))
-        .insert(crate::Draggable {
-            game_shape: *shape,
-        });
+        .insert(crate::Draggable { game_shape: *shape });
 }

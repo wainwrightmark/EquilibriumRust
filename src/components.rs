@@ -9,7 +9,7 @@ pub struct RestartButton {}
 #[derive(Component)]
 pub struct MainCamera;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Draggable {
     pub game_shape: GameShape,
 }

@@ -1,0 +1,180 @@
+use bevy::input::touch::{ForceTouch, TouchPhase};
+use bevy::window::WindowResized;
+use bevy::{input::InputSystem, prelude::*};
+use wasm_bindgen::prelude::*;
+use web_sys::{TouchEvent, TouchList};
+
+use crate::components::MainCamera;
+use crate::input::convert_screen_to_world_position;
+
+// use crate::mouse::{Mouse};
+
+#[wasm_bindgen]
+extern "C" {
+    fn resize_canvas(width: f32, height: f32);
+}
+
+#[wasm_bindgen]
+extern "C" {
+    fn has_touch() -> bool;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    fn pop_touch_event() -> Option<TouchEvent>;
+}
+
+#[derive(Resource)]
+struct LastSize {
+    pub width: f32,
+    pub height: f32,
+}
+
+fn resizer(
+    mut windows: ResMut<Windows>,
+    mut window_resized_events: EventWriter<WindowResized>,
+    mut last_size: ResMut<LastSize>,
+) {
+    let window = web_sys::window().expect("no global `window` exists");
+    let mut width: f32 = window.inner_width().unwrap().as_f64().unwrap() as f32;
+    let mut height: f32 = window.inner_height().unwrap().as_f64().unwrap() as f32;
+
+    if let Some(window) = windows.get_primary_mut() {
+        if width != last_size.width || height != last_size.height {
+            *last_size = LastSize { width, height };
+
+            // width = if width < wd.resize_constraints.min_width {
+            //     wd.resize_constraints.min_width
+            // } else {
+            //     width
+            // };
+            // width = if width > wd.resize_constraints.max_width {
+            //     wd.resize_constraints.max_width
+            // } else {
+            //     width
+            // };
+            // height = if height < wd.resize_constraints.min_height {
+            //     wd.resize_constraints.min_height
+            // } else {
+            //     height
+            // };
+            // height = if height > wd.resize_constraints.max_height {
+            //     wd.resize_constraints.max_height
+            // } else {
+            //     height
+            // };
+
+            let p_width = width * window.scale_factor() as f32;
+            let p_height = height * window.scale_factor() as f32;
+            window.update_actual_size_from_backend(p_width as u32, p_height as u32);
+            window_resized_events.send(WindowResized {
+                id: window.id(),
+                height: height,
+                width: width,
+            });
+
+            resize_canvas(width, height);
+            debug!(
+                "Resizing to {:?},{:?} with scale factor of {}",
+                width,
+                height,
+                window.scale_factor()
+            );
+        }
+    }
+}
+
+fn pool_touch_system(
+    mut touch_input_writer: EventWriter<TouchInput>,
+    windows: Res<Windows>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+) {
+    if let Some(window) = windows.get_primary() {
+        let (camera, camera_transform) = q_camera.single();
+        while let Some(touch_event) = pop_touch_event() {
+            let t = touch_event.type_();
+
+            let phase = if t == "touchstart" {
+                TouchPhase::Started
+            } else if t == "touchend" {
+                TouchPhase::Ended
+            } else if t == "touchmove" {
+                TouchPhase::Moved
+            } else {
+                TouchPhase::Cancelled
+            };
+
+            let touches: TouchList = touch_event.changed_touches();
+
+            debug!(
+                "{} touches: {} target touches {} changed touches {}",
+                touch_event.type_(),
+                touches.length(),
+                touch_event.target_touches().length(),
+                touch_event.changed_touches().length()
+            );
+
+            // if phase == TouchPhase::Ended {
+            //     touch_event
+            //     touch_input_writer.send(TouchInput {
+            //         phase,
+            //         position: world_position,
+            //         id,
+            //         force,
+            //     });
+            // } else
+
+            {
+                for i in 0..touches.length() {
+                    if let Some(touch) = touches.get(i) {
+                        let id = touch.identifier() as u64;
+                        let x = touch.client_x() as f32;
+                        let force = Some(ForceTouch::Normalized(touch.force() as f64));
+
+                        let y = window.height() as f32 - touch.client_y() as f32;
+
+                        debug!(
+                            "Converting {},{} to {x},{y}",
+                            touch.client_x(),
+                            touch.client_y()
+                        );
+                        let screen_pos = Vec2::new(x, y);
+
+                        let world_position = convert_screen_to_world_position(
+                            screen_pos,
+                            window,
+                            camera,
+                            camera_transform,
+                        );
+
+                        touch_input_writer.send(TouchInput {
+                            phase,
+                            position: world_position,
+                            id,
+                            force,
+                        });
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub struct WASMPlugin;
+
+impl Plugin for WASMPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(LastSize {
+            width: 0.0,
+            height: 0.0,
+        });
+        app.add_system(resizer);
+
+        if has_touch() {
+            app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.after(InputSystem));
+        }
+    }
+    // fn build(&self, app: &mut AppBuilder) {
+
+    // }
+}

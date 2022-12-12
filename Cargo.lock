@@ -1261,6 +1261,8 @@ dependencies = [
  "embed-resource",
  "itertools",
  "rand",
+ "wasm-bindgen",
+ "web-sys",
  "winit",
 ]
 

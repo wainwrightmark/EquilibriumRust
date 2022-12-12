@@ -2,7 +2,6 @@ use crate::*;
 
 use bevy_prototype_lyon::prelude::FillMode;
 
-
 pub struct DragPlugin;
 impl Plugin for DragPlugin {
     fn build(&self, app: &mut App) {
@@ -54,7 +53,7 @@ fn drag_end(
     mut ew_end_drag: EventWriter<DragEndedEvent>,
 ) {
     for event in er_drag_end.iter() {
-        //println!("{:?}", event);
+        debug!("{:?}", event);
 
         let mut any_locked = !locked.is_empty();
         dragged
@@ -94,7 +93,7 @@ fn drag_move(
             .iter_mut()
             .find(|d| d.0.drag_source == event.drag_source)
         {
-            //println!("Drag Move");
+            debug!("Drag Move");
 
             let max_x: f32 = crate::WINDOW_WIDTH / 2.0; //You can't leave the game area
             let max_y: f32 = crate::WINDOW_HEIGHT / 2.0;
@@ -123,8 +122,10 @@ fn drag_start(
     mut commands: Commands,
 ) {
     for event in er_drag_start.iter() {
+        debug!("Drag Started {:?}", event);
         rapier_context.intersections_with_point(event.position, default(), |entity| {
             if let Ok((draggable, locked, rb)) = draggables.get(entity) {
+                debug!("Found intersection with {:?}", draggable);
                 //println!("Entity {:?} set to dragged", entity);
 
                 let origin = rb.translation;

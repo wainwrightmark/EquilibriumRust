@@ -33,6 +33,9 @@ use events::*;
 mod components;
 use components::*;
 
+// #[cfg(target_arch = "wasm32")]
+mod wasm;
+
 fn main() {
     // When building for WASM, print panics to the browser console
     #[cfg(target_arch = "wasm32")]
@@ -40,8 +43,8 @@ fn main() {
 
     let window_plugin = WindowPlugin {
         window: WindowDescriptor {
-            #[cfg(target_arch = "wasm32")]
-            canvas: Some("#game".to_string()),
+            // #[cfg(target_arch = "wasm32")]
+            // canvas: Some("#game".to_string()),
             title: "Equilibrium".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
@@ -54,8 +57,9 @@ fn main() {
         level: Level::INFO,
         ..Default::default()
     };
+    let mut builder = App::new();
 
-    App::new()
+    builder
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.95)))
         .add_plugins(DefaultPlugins.set(window_plugin).set(log_plugin))
         .add_plugin(WallsPlugin)
@@ -69,15 +73,19 @@ fn main() {
         .add_startup_system(setup.label("main_setup"))
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
-        .add_startup_system_to_stage(StartupStage::PostStartup, create_game)
-        //.add_plugin(FrameTimeDiagnosticsPlugin::default())
-        //.add_plugin(LogDiagnosticsPlugin::default());
-        // .add_system_set(
-        //     SystemSet::new()
-        //         .with_run_criteria(bevy::core::FixedTimestep::step(10f64))
-        //         .with_system(print_all_positions)
-        // )
-        .run();
+        .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
+
+    // #[cfg(target_arch = "wasm32")]
+    builder.add_plugin(wasm::WASMPlugin);
+
+    //.add_plugin(FrameTimeDiagnosticsPlugin::default())
+    //.add_plugin(LogDiagnosticsPlugin::default());
+    // .add_system_set(
+    //     SystemSet::new()
+    //         .with_run_criteria(bevy::core::FixedTimestep::step(10f64))
+    //         .with_system(print_all_positions)
+    // )
+    builder.run();
 }
 
 fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
