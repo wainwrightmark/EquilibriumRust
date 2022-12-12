@@ -117,7 +117,7 @@ pub fn check_for_tower(
     //println!("Drag Ended");
 
     if !win_timer.is_empty() {
-        //  println!("Wintimer Exists");
+        //  println!("Win timer Exists");
         return; // no need to check, we're already winning
     }
 
