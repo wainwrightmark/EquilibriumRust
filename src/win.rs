@@ -10,18 +10,9 @@ pub struct WinPlugin;
 impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(check_for_contacts)
-            .add_system(
-                check_for_win
-                    .after(check_for_contacts),
-            )
-            .add_system(
-                handle_new_game
-                    .after(check_for_win),
-            )
-            .add_system_to_stage(
-                CoreStage::PostUpdate,
-                check_for_tower,
-            );
+            .add_system(check_for_win.after(check_for_contacts))
+            .add_system(handle_new_game.after(check_for_win))
+            .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
     }
 }
 

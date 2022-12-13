@@ -16,9 +16,8 @@ impl Plugin for EventsPlugin {
 #[derive(Debug)]
 pub struct RotateEvent {
     //entity: Entity,
-    pub angle: f32
-    //pub clockwise: bool, // rotation: f32,
-                         // rotation_interval: f32
+    pub angle: f32, //pub clockwise: bool, // rotation: f32,
+                    // rotation_interval: f32
 }
 
 #[derive(Debug)]
@@ -45,6 +44,12 @@ pub struct DragEndedEvent {}
 pub enum DragSource {
     Mouse,
     Touch { id: u64 },
+}
+
+impl DragSource {
+    pub fn is_touch(&self) -> bool {
+        matches!(self, DragSource::Touch { id: _ })
+    }
 }
 
 #[derive(Debug)]

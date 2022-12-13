@@ -45,11 +45,13 @@ pub fn drag_end(
     locked: Query<&Locked>,
     mut commands: Commands,
     mut ew_end_drag: EventWriter<DragEndedEvent>,
+    mut cameras: Query<&mut bevy::render::camera::Camera, With<ZoomCamera>>,
 ) {
     for event in er_drag_end.iter() {
         debug!("{:?}", event);
 
         let mut any_locked = !locked.is_empty();
+        let mut count = dragged.iter().count();
         dragged
             .iter_mut()
             .filter(|f| f.2.drag_source == event.drag_source)
@@ -70,7 +72,7 @@ pub fn drag_end(
                         .insert(DrawMode::Fill(FillMode::color(Color::GRAY)));
                     any_locked = true;
                 }
-
+                count -= 1;
                 ew_end_drag.send(DragEndedEvent {});
             });
 
@@ -79,15 +81,22 @@ pub fn drag_end(
                 .iter()
                 .filter(|x| x.1.touch_id == id)
                 .for_each(|(e, _)| commands.entity(e).despawn());
+
+            if count == 0 {
+                for mut camera in cameras.iter_mut() {
+                    camera.is_active = false;
+                }
+            }
         };
     }
 }
 
 pub fn drag_move(
     mut er_drag_move: EventReader<DragMoveEvent>,
-    mut dragged_entities: Query<(&Dragged, &mut Transform)>,
+    mut dragged_entities: Query<(&Dragged, &mut Transform), Without<ZoomCamera>>,
     mut touch_rotate: Query<&mut TouchRotate>,
     mut ev_rotate: EventWriter<RotateEvent>,
+    mut cameras: Query<(&mut Transform, &OrthographicProjection), With<ZoomCamera>>,
 ) {
     for event in er_drag_move.iter() {
         debug!("{:?}", event);
@@ -109,18 +118,22 @@ pub fn drag_move(
                 Vec2::new(max_x, max_y),
             );
 
-            let new_position = dragged.offset + clamped_position; // clamped_position;
+            let new_position = (dragged.offset + clamped_position).extend(0.0);
 
-            rb.translation = new_position.extend(0.0);
+            rb.translation = new_position;
+            if dragged.drag_source.is_touch() {
+                for (mut camera_transform, camera) in cameras.iter_mut() {
+                    camera_transform.translation = new_position * (1. - camera.scale);
+                }
+            }
         } else if let DragSource::Touch { id } = event.drag_source {
-            if let Some(mut rotate) = touch_rotate.iter_mut().filter(|x|x.touch_id == id).next(){
+            if let Some(mut rotate) = touch_rotate.iter_mut().filter(|x| x.touch_id == id).next() {
                 let previous_angle = rotate.centre.angle_between(rotate.previous);
                 let new_angle = rotate.centre.angle_between(event.new_position);
                 rotate.previous = event.new_position;
                 let angle = new_angle - previous_angle;
 
-                ev_rotate.send(RotateEvent{angle})
-                
+                ev_rotate.send(RotateEvent { angle })
             }
         }
     }
@@ -129,17 +142,25 @@ pub fn drag_move(
 pub fn drag_start(
     mut er_drag_start: EventReader<DragStartEvent>,
     rapier_context: Res<RapierContext>,
-    draggables: Query<(&Draggable, Option<&Locked>, &Transform)>,
+    draggables: Query<(&Draggable, Option<&Locked>, &Transform), Without<Dragged>>,
     dragged: Query<(&Dragged, &Transform)>,
+    mut cameras: Query<&mut bevy::render::camera::Camera, With<ZoomCamera>>,
 
     mut commands: Commands,
 ) {
+    let mut found_touch = false;
     for event in er_drag_start.iter() {
         debug!("Drag Started {:?}", event);
         let mut found = false;
+        if event.drag_source.is_touch() {
+            found_touch = true;
+        } else if found_touch {
+            continue;
+        }
+
         rapier_context.intersections_with_point(event.position, default(), |entity| {
             if let Ok((draggable, locked, rb)) = draggables.get(entity) {
-                debug!("Found intersection with {:?}", draggable);
+                debug!("{:?} found intersection with {:?}", event, draggable);
                 //println!("Entity {:?} set to dragged", entity);
 
                 let origin = rb.translation.truncate();
@@ -165,22 +186,32 @@ pub fn drag_start(
                             draggable.game_shape.default_fill_color(),
                         )));
                 }
+
+                if event.drag_source.is_touch() {
+                    for mut camera in cameras.iter_mut() {
+                        camera.is_active = true;
+                    }
+                }
+
                 found = true;
                 return false; //Stop looking for intersections
             }
             true //keep looking for intersections
         });
 
-        if!found{
-            if let DragSource::Touch { id } = event.drag_source{
-                if let Some((_, transform)) = dragged.iter().filter(|x| matches!(x.0.drag_source, DragSource::Touch { id:_ }) ).next(){
-                    commands.spawn(TouchRotate{
+        if !found {
+            if let DragSource::Touch { id } = event.drag_source {
+                if let Some((_, transform)) = dragged
+                    .iter()
+                    .filter(|x| matches!(x.0.drag_source, DragSource::Touch { id: _ }))
+                    .next()
+                {
+                    commands.spawn(TouchRotate {
                         previous: event.position,
                         centre: transform.translation.truncate(),
-                        touch_id: id
+                        touch_id: id,
                     });
                 }
-
             }
         }
     }

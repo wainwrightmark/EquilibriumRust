@@ -4,7 +4,7 @@ pub struct WallsPlugin;
 
 impl Plugin for WallsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_walls.after( setup));
+        app.add_startup_system(spawn_walls.after(setup));
     }
 }
 

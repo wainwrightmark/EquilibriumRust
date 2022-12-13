@@ -9,10 +9,10 @@ use crate::*;
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(keyboard_listener)
+        app.add_system(touch_listener.after(wasm::pool_touch_system))
+            .add_system(keyboard_listener)
             .add_system(mousewheel_listener)
-            .add_system(mousebutton_listener)
-            .add_system(touch_listener.after(wasm::pool_touch_system));
+            .add_system(mousebutton_listener.after(touch_listener));
     }
 }
 
@@ -94,14 +94,6 @@ pub fn convert_screen_to_world_position(
 
     // use it to convert ndc to world-space coordinates
     let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-
-    //  debug!(
-    //      "Pointer at {screen_pos} in ${window_size} / {:?},{:?} ({:?}, {:?})",
-    //      wnd.physical_width(),
-    //      wnd.physical_height(),
-    //      wnd.scale_factor(),
-    //      wnd.backend_scale_factor()
-    //  );
     world_pos.truncate()
 }
 

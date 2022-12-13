@@ -8,7 +8,6 @@ pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
 pub const WALL_WIDTH: f32 = 360f32;
 mod draggable;
-pub mod shadows;
 use draggable::*;
 
 mod walls;
@@ -49,11 +48,11 @@ fn main() {
             canvas: Some("#game".to_string()),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
-            resize_constraints: WindowResizeConstraints{
+            resize_constraints: WindowResizeConstraints {
                 min_width: WINDOW_WIDTH,
                 max_width: WINDOW_WIDTH,
                 max_height: WINDOW_HEIGHT,
-                min_height: WINDOW_HEIGHT
+                min_height: WINDOW_HEIGHT,
             },
             ..Default::default()
         },
@@ -80,6 +79,7 @@ fn main() {
         .add_startup_system(setup)
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
+        // .add_plugin(shadows::ShadowsPlugin{})
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
 
     // #[cfg(target_arch = "wasm32")]
@@ -98,17 +98,52 @@ fn main() {
 pub fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);
 
-    commands.spawn(Camera2dBundle::default()).insert(MainCamera);
+    commands
+        .spawn(Camera2dBundle::new_with_far(1000.0))
+        .insert(MainCamera);
+    commands
+        .spawn(new_camera(1000.0, 0.33, false))
+        .insert(ZoomCamera {});
 }
 
-// fn print_all_positions(stuff: Query<(&Transform, &RigidBodyPositionComponent, &Name)>,){
-//     for (t, c, n) in stuff.iter(){
-//         let physics_position = c.position;
-//         let name = n.to_string();
-//         let trans = t.translation;
-//         let rot = t.rotation;
-//         let scale = t.scale;
+#[derive(Component)]
+pub struct ZoomCamera {}
 
-//         println!("{name}: {physics_position}")
-//     }
-// }
+fn new_camera(far: f32, scale: f32, is_active: bool) -> Camera2dBundle {
+    // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
+    // the camera's translation by far and use a right handed coordinate system
+    let projection = OrthographicProjection {
+        far,
+        scale,
+        ..Default::default()
+    };
+    let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
+    let view_projection =
+        bevy::render::camera::CameraProjection::get_projection_matrix(&projection)
+            * transform.compute_matrix().inverse();
+    let frustum = bevy::render::primitives::Frustum::from_view_projection(
+        &view_projection,
+        &transform.translation,
+        &transform.back(),
+        bevy::render::camera::CameraProjection::far(&projection),
+    );
+    Camera2dBundle {
+        camera_render_graph: bevy::render::camera::CameraRenderGraph::new(
+            bevy::core_pipeline::core_2d::graph::NAME,
+        ),
+        projection,
+        visible_entities: bevy::render::view::VisibleEntities::default(),
+        frustum,
+        transform,
+        global_transform: Default::default(),
+        camera: Camera {
+            priority: 1,
+            is_active,
+            ..Default::default()
+        },
+        camera_2d: Camera2d {
+            clear_color: bevy::core_pipeline::clear_color::ClearColorConfig::None,
+        },
+        tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::Disabled,
+    }
+}

@@ -61,8 +61,5 @@ pub fn create_shape(
         .insert(collider_shape)
         .insert(transform)
         .insert(Name::new(name))
-        .insert(crate::Draggable { game_shape: *shape })
-        
-        //.add_children(|p|{p.spawn(shape.get_shape_bundle(shape_size * 3., appearance)).insert(Shadow{}) .id()})
-        ;
+        .insert(crate::Draggable { game_shape: *shape });
 }

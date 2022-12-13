@@ -26,7 +26,7 @@ pub struct Dragged {
 }
 
 #[derive(Component)]
-pub struct TouchRotate{
+pub struct TouchRotate {
     pub previous: Vec2,
     pub centre: Vec2,
     pub touch_id: u64,
@@ -38,8 +38,7 @@ pub struct WinTimer {
 }
 
 #[derive(Component)]
-pub struct Shadow{
-}
+pub struct Shadow {}
 
 // #[derive(Component)]
 // pub struct Foundation {}

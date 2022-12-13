@@ -84,33 +84,33 @@ pub fn pool_touch_system(
                 TouchPhase::Ended
             } else if t == "touchmove" {
                 TouchPhase::Moved
-            } else {
+            } else if t == "touchcancel" {
                 TouchPhase::Cancelled
+            } else {
+                continue;
             };
 
-            let touches: TouchList = touch_event.changed_touches();
+            let touches: TouchList = if phase == TouchPhase::Ended {
+                touch_event.changed_touches()
+            } else {
+                touch_event.touches()
+            };
 
             debug!(
                 "{} touches: {} target touches {} changed touches {}",
                 touch_event.type_(),
                 touches.length(),
                 touch_event.target_touches().length(),
-                touch_event.changed_touches().length()
+                touch_event.changed_touches().length(),
             );
 
             for i in 0..touches.length() {
                 if let Some(touch) = touches.get(i) {
                     let id = touch.identifier() as u64;
                     let x = touch.client_x() as f32;
+                    let y = window.height() as f32 - touch.client_y() as f32;
                     let force = Some(ForceTouch::Normalized(touch.force() as f64));
 
-                    let y = window.height() as f32 - touch.client_y() as f32;
-
-                    debug!(
-                        "Converting {},{} to {x},{y}",
-                        touch.client_x(),
-                        touch.client_y()
-                    );
                     let screen_pos = Vec2::new(x, y);
 
                     let world_position = convert_screen_to_world_position(
