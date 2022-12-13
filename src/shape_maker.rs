@@ -14,7 +14,7 @@ pub fn create_game(mut commands: Commands) {
 pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::game_shape::ALLGAMESHAPES {
+    for shape in crate::game_shape::ALL_GAME_SHAPES {
         let range_x = -100f32..100f32;
         let range_y = -100f32..100f32;
 
@@ -61,5 +61,8 @@ pub fn create_shape(
         .insert(collider_shape)
         .insert(transform)
         .insert(Name::new(name))
-        .insert(crate::Draggable { game_shape: *shape });
+        .insert(crate::Draggable { game_shape: *shape })
+        
+        //.add_children(|p|{p.spawn(shape.get_shape_bundle(shape_size * 3., appearance)).insert(Shadow{}) .id()})
+        ;
 }

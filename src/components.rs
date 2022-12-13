@@ -19,15 +19,26 @@ pub struct Locked {}
 
 #[derive(Component)]
 pub struct Dragged {
-    pub origin: Vec3,
-    pub offset: Vec3,
+    pub origin: Vec2,
+    pub offset: Vec2,
     pub drag_source: DragSource,
     pub was_locked: bool,
 }
 
 #[derive(Component)]
+pub struct TouchRotate{
+    pub previous: Vec2,
+    pub centre: Vec2,
+    pub touch_id: u64,
+}
+
+#[derive(Component)]
 pub struct WinTimer {
     pub win_time: f64,
+}
+
+#[derive(Component)]
+pub struct Shadow{
 }
 
 // #[derive(Component)]

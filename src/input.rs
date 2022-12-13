@@ -153,10 +153,13 @@ pub fn keyboard_listener(
     for ev in key_evr.iter() {
         if let Some(code) = ev.key_code {
             if let bevy::input::ButtonState::Pressed = ev.state {
-                match code {
-                    KeyCode::E => rotate_evw.send(RotateEvent { clockwise: false }),
-                    KeyCode::Q => rotate_evw.send(RotateEvent { clockwise: true }),
-                    _ => {}
+                let angle = match code {
+                    KeyCode::E => Some(-std::f32::consts::TAU / 16.0),
+                    KeyCode::Q => Some(std::f32::consts::TAU / 16.0),
+                    _ => None,
+                };
+                if let Some(angle) = angle {
+                    rotate_evw.send(RotateEvent { angle });
                 }
             }
         }
@@ -168,19 +171,8 @@ pub fn mousewheel_listener(
     mut ev_rotate: EventWriter<RotateEvent>,
 ) {
     for ev in scroll_evr.iter() {
-        let event = if ev.x + ev.y > 0f32 {
-            RotateEvent { clockwise: true }
-        } else {
-            RotateEvent { clockwise: false }
-        };
-
-        match ev.unit {
-            MouseScrollUnit::Line => {
-                ev_rotate.send(event);
-            }
-            MouseScrollUnit::Pixel => {
-                ev_rotate.send(event);
-            }
-        }
+        let angle = (ev.x + ev.y).signum() * std::f32::consts::TAU / 16.0 * -1.;
+        let event = RotateEvent { angle };
+        ev_rotate.send(event);
     }
 }

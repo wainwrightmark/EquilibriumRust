@@ -8,7 +8,7 @@ use bevy_prototype_lyon::{
 use bevy_rapier2d::prelude::*;
 use itertools::*;
 use rand::prelude::ThreadRng;
-use rand::Rng;
+use rand::seq::IteratorRandom;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum GameShape {
@@ -203,6 +203,7 @@ impl GameShape {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct ShapeAppearance {
     pub fill: Color,
     pub stroke: Color,
@@ -225,7 +226,7 @@ impl Default for ShapeAppearance {
     }
 }
 
-pub const ALLGAMESHAPES: [GameShape; 5] = [
+pub const ALL_GAME_SHAPES: [GameShape; 5] = [
     GameShape::Circle,
     GameShape::Triangle,
     GameShape::Box,
@@ -234,7 +235,5 @@ pub const ALLGAMESHAPES: [GameShape; 5] = [
 ];
 
 pub fn get_random_shape(rng: &mut ThreadRng) -> GameShape {
-    let index = rng.gen_range(0..ALLGAMESHAPES.len());
-
-    ALLGAMESHAPES[index]
+    *ALL_GAME_SHAPES.iter().choose(rng).unwrap()
 }

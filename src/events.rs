@@ -16,7 +16,8 @@ impl Plugin for EventsPlugin {
 #[derive(Debug)]
 pub struct RotateEvent {
     //entity: Entity,
-    pub clockwise: bool, // rotation: f32,
+    pub angle: f32
+    //pub clockwise: bool, // rotation: f32,
                          // rotation_interval: f32
 }
 

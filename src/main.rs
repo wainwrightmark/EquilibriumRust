@@ -8,6 +8,7 @@ pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
 pub const WALL_WIDTH: f32 = 360f32;
 mod draggable;
+pub mod shadows;
 use draggable::*;
 
 mod walls;
