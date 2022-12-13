@@ -26,7 +26,7 @@
         background-color: white;
       }
 
-      .lds-dual-ring {
+      /* .lds-dual-ring {
         display: inline-block;
         width: 80px;
         height: 80px;
@@ -46,7 +46,7 @@
         border: 6px solid #fff;
         border-color: #fff transparent #fff transparent;
         animation: lds-dual-ring 1.2s linear infinite;
-      }
+      } */
 
       @keyframes lds-dual-ring {
         0% {
@@ -61,6 +61,7 @@
   </head>
 
   <body>
+    <canvas id="game"></canvas>
     <script>
       let touch_added = false;
       let touch_events = [];
@@ -160,21 +161,5 @@
         });
       })();
     </script>
-    <!-- <script type="module">
-    import init from './pkg/lib.js';
-    let spinner = document.createElement('div');
-    spinner.className = "lds-dual-ring"
-    document.body.appendChild(spinner);
-    
-    try {
-      var res = await init();
-      res.start();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      document.body.removeChild(spinner);
-    }
-
-  </script> -->
   </body>
 </html>

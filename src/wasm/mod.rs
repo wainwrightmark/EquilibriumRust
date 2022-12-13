@@ -43,26 +43,10 @@ fn resizer(
         if width != last_size.width || height != last_size.height {
             *last_size = LastSize { width, height };
 
-            // width = if width < wd.resize_constraints.min_width {
-            //     wd.resize_constraints.min_width
-            // } else {
-            //     width
-            // };
-            // width = if width > wd.resize_constraints.max_width {
-            //     wd.resize_constraints.max_width
-            // } else {
-            //     width
-            // };
-            // height = if height < wd.resize_constraints.min_height {
-            //     wd.resize_constraints.min_height
-            // } else {
-            //     height
-            // };
-            // height = if height > wd.resize_constraints.max_height {
-            //     wd.resize_constraints.max_height
-            // } else {
-            //     height
-            // };
+            let constraints = window.resize_constraints();
+
+            width = width.clamp(constraints.min_width, constraints.max_width);
+            height = height.clamp(constraints.min_height, constraints.max_height);
 
             let p_width = width * window.scale_factor() as f32;
             let p_height = height * window.scale_factor() as f32;
@@ -114,46 +98,34 @@ fn pool_touch_system(
                 touch_event.changed_touches().length()
             );
 
-            // if phase == TouchPhase::Ended {
-            //     touch_event
-            //     touch_input_writer.send(TouchInput {
-            //         phase,
-            //         position: world_position,
-            //         id,
-            //         force,
-            //     });
-            // } else
+            for i in 0..touches.length() {
+                if let Some(touch) = touches.get(i) {
+                    let id = touch.identifier() as u64;
+                    let x = touch.client_x() as f32;
+                    let force = Some(ForceTouch::Normalized(touch.force() as f64));
 
-            {
-                for i in 0..touches.length() {
-                    if let Some(touch) = touches.get(i) {
-                        let id = touch.identifier() as u64;
-                        let x = touch.client_x() as f32;
-                        let force = Some(ForceTouch::Normalized(touch.force() as f64));
+                    let y = window.height() as f32 - touch.client_y() as f32;
 
-                        let y = window.height() as f32 - touch.client_y() as f32;
+                    debug!(
+                        "Converting {},{} to {x},{y}",
+                        touch.client_x(),
+                        touch.client_y()
+                    );
+                    let screen_pos = Vec2::new(x, y);
 
-                        debug!(
-                            "Converting {},{} to {x},{y}",
-                            touch.client_x(),
-                            touch.client_y()
-                        );
-                        let screen_pos = Vec2::new(x, y);
+                    let world_position = convert_screen_to_world_position(
+                        screen_pos,
+                        window,
+                        camera,
+                        camera_transform,
+                    );
 
-                        let world_position = convert_screen_to_world_position(
-                            screen_pos,
-                            window,
-                            camera,
-                            camera_transform,
-                        );
-
-                        touch_input_writer.send(TouchInput {
-                            phase,
-                            position: world_position,
-                            id,
-                            force,
-                        });
-                    }
+                    touch_input_writer.send(TouchInput {
+                        phase,
+                        position: world_position,
+                        id,
+                        force,
+                    });
                 }
             }
         }

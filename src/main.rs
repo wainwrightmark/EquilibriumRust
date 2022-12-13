@@ -1,5 +1,6 @@
 use bevy::log::*;
 use bevy::prelude::*;
+use bevy::window::WindowResizeConstraints;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -43,11 +44,16 @@ fn main() {
 
     let window_plugin = WindowPlugin {
         window: WindowDescriptor {
-            // #[cfg(target_arch = "wasm32")]
-            // canvas: Some("#game".to_string()),
             title: "Equilibrium".to_string(),
+            canvas: Some("#game".to_string()),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
+            resize_constraints: WindowResizeConstraints{
+                min_width: WINDOW_WIDTH,
+                max_width: WINDOW_WIDTH,
+                max_height: WINDOW_HEIGHT,
+                min_height: WINDOW_HEIGHT
+            },
             ..Default::default()
         },
         ..Default::default()
