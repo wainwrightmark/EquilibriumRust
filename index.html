@@ -1,12 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta charset="utf-8">
-        <title>Equilibrium</title>
-        
-        
-        
-        <link rel="icon" href="icon.ico">
-        <style type="text/css">body {
+<html><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Equilibrium</title>
+    
+    
+    
+    <link rel="icon" href="icon.ico">
+    <style type="text/css">body {
     background: linear-gradient(
             135deg,
             white 0%,
@@ -23,77 +23,141 @@ canvas {
     background-color: white;
 }
 </style>
-    
-<link rel="preload" href="/EquilibriumRust/equilibrium-1bd18ad0c275e8c1_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/EquilibriumRust/equilibrium-1bd18ad0c275e8c1.js"></head>
-    <body>
-        <script>// Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
-// https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
+    <style>
+      body {
+        background: black;
+        margin: 0px;
+        overflow: hidden;
+      }
 
-// the following function keeps track of all AudioContexts and resumes them on the first user
-// interaction with the page. If the function is called and all contexts are already running,
-// it will remove itself from all event listeners.
-(function () {
-    // An array of all contexts to resume on the page
-    const audioContextList = [];
+      canvas {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+      }
+    </style>
+  
+<link rel="preload" href="/EquilibriumRust/equilibrium-4ce4e6d085bbf376_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/EquilibriumRust/equilibrium-4ce4e6d085bbf376.js"></head>
 
-    // An array of various user interaction events we should listen for
-    const userInputEventNames = [
-        "click",
-        "contextmenu",
-        "auxclick",
-        "dblclick",
-        "mousedown",
-        "mouseup",
-        "pointerup",
-        "touchend",
-        "keydown",
-        "keyup",
-    ];
+  <body>
+    <canvas id="game"></canvas>
+    <script>
+      let touch_added = false;
+      let touch_events = [];
+      let has_touch = () => {
+        return !!("ontouchstart" in window);
+      };
 
-    // A proxy object to intercept AudioContexts and
-    // add them to the array for tracking and resuming later
-    self.AudioContext = new Proxy(self.AudioContext, {
-        construct(target, args) {
+      let pop_touch_event = () => {
+        let e = touch_events.shift();
+        return e;
+      };
+
+      let resize_canvas = (width, height) => {
+        let canvas = document.getElementsByTagName("canvas")[0];
+        if (canvas != null) {
+          canvas.width = width * window.devicePixelRatio;
+          canvas.height = height * window.devicePixelRatio;
+          canvas.style = `width: ${width}; height: ${height}`;
+        }
+
+        if (has_touch() == true && touch_added == false) {
+          canvas.addEventListener(
+            "touchstart",
+            (ev) => {
+              ev.preventDefault();              
+              touch_events.push(ev);
+            },
+            { passive: false }
+          );
+          canvas.addEventListener(
+            "touchend",
+            (ev) => {
+              ev.preventDefault();
+              touch_events.push(ev);
+            },
+            { passive: false }
+          );
+          canvas.addEventListener(
+            "touchmove",
+            (ev) => {
+              ev.preventDefault();
+              touch_events.push(ev);
+            },
+            { passive: false }
+          );
+
+          touch_added = true;
+        }
+      };
+    </script>
+    <script>
+      // Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
+      // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
+
+      // the following function keeps track of all AudioContexts and resumes them on the first user
+      // interaction with the page. If the function is called and all contexts are already running,
+      // it will remove itself from all event listeners.
+      (function () {
+        // An array of all contexts to resume on the page
+        const audioContextList = [];
+
+        // An array of various user interaction events we should listen for
+        const userInputEventNames = [
+          "click",
+          "contextmenu",
+          "auxclick",
+          "dblclick",
+          "mousedown",
+          "mouseup",
+          "pointerup",
+          "touchend",
+          "keydown",
+          "keyup",
+        ];
+
+        // A proxy object to intercept AudioContexts and
+        // add them to the array for tracking and resuming later
+        self.AudioContext = new Proxy(self.AudioContext, {
+          construct(target, args) {
             const result = new target(...args);
             audioContextList.push(result);
             return result;
-        },
-    });
-
-    // To resume all AudioContexts being tracked
-    function resumeAllContexts(_event) {
-        let count = 0;
-
-        audioContextList.forEach((context) => {
-            if (context.state !== "running") {
-                context.resume();
-            } else {
-                count++;
-            }
+          },
         });
 
-        // If all the AudioContexts have now resumed then we unbind all
-        // the event listeners from the page to prevent unnecessary resume attempts
-        // Checking count > 0 ensures that the user interaction happens AFTER the game started up
-        if (count > 0 && count === audioContextList.length) {
+        // To resume all AudioContexts being tracked
+        function resumeAllContexts(_event) {
+          let count = 0;
+
+          audioContextList.forEach((context) => {
+            if (context.state !== "running") {
+              context.resume();
+            } else {
+              count++;
+            }
+          });
+
+          // If all the AudioContexts have now resumed then we unbind all
+          // the event listeners from the page to prevent unnecessary resume attempts
+          // Checking count > 0 ensures that the user interaction happens AFTER the game started up
+          if (count > 0 && count === audioContextList.length) {
             userInputEventNames.forEach((eventName) => {
-                document.removeEventListener(eventName, resumeAllContexts);
+              document.removeEventListener(eventName, resumeAllContexts);
             });
+          }
         }
-    }
 
-    // We bind the resume function for each user interaction
-    // event on the page
-    userInputEventNames.forEach((eventName) => {
-        document.addEventListener(eventName, resumeAllContexts);
-    });
-})();
-</script>
+        // We bind the resume function for each user interaction
+        // event on the page
+        userInputEventNames.forEach((eventName) => {
+          document.addEventListener(eventName, resumeAllContexts);
+        });
+      })();
+    </script>
+  
 
-        <div style="display: flex; justify-content: center;">
-            <canvas id="game"></canvas>
-        </div>
-    
-
-<script type="module">import init from '/EquilibriumRust/equilibrium-1bd18ad0c275e8c1.js';init('/EquilibriumRust/equilibrium-1bd18ad0c275e8c1_bg.wasm');</script></body></html>
+<script type="module">import init from '/EquilibriumRust/equilibrium-4ce4e6d085bbf376.js';init('/EquilibriumRust/equilibrium-4ce4e6d085bbf376_bg.wasm');</script></body></html>
