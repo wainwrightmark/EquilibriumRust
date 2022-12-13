@@ -9,14 +9,14 @@ use crate::*;
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(keyboard_listener.label("keyboard_listener"))
-            .add_system(mousewheel_listener.label("mousewheel_listener"))
-            .add_system(mousebutton_listener.label("mousebutton_listener"))
-            .add_system(touch_listener.label("touch_listener"));
+        app.add_system(keyboard_listener)
+            .add_system(mousewheel_listener)
+            .add_system(mousebutton_listener)
+            .add_system(touch_listener.after(wasm::pool_touch_system));
     }
 }
 
-fn mousebutton_listener(
+pub fn mousebutton_listener(
     mouse_button_input: Res<Input<MouseButton>>,
     // need to get window dimensions
     windows: Res<Windows>,
@@ -105,7 +105,7 @@ pub fn convert_screen_to_world_position(
     world_pos.truncate()
 }
 
-fn touch_listener(
+pub fn touch_listener(
     mut touch_evr: EventReader<TouchInput>,
 
     mut ew_drag_start: EventWriter<DragStartEvent>,
@@ -146,7 +146,7 @@ fn touch_listener(
     }
 }
 
-fn keyboard_listener(
+pub fn keyboard_listener(
     mut key_evr: EventReader<KeyboardInput>,
     mut rotate_evw: EventWriter<RotateEvent>,
 ) {
@@ -163,7 +163,7 @@ fn keyboard_listener(
     }
 }
 
-fn mousewheel_listener(
+pub fn mousewheel_listener(
     mut scroll_evr: EventReader<MouseWheel>,
     mut ev_rotate: EventWriter<RotateEvent>,
 ) {

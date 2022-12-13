@@ -76,7 +76,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
             WINDOW_HEIGHT / 10.0,
         ))
-        .add_startup_system(setup.label("main_setup"))
+        .add_startup_system(setup)
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
@@ -94,7 +94,7 @@ fn main() {
     builder.run();
 }
 
-fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
+pub fn setup(mut commands: Commands, mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);
 
     commands.spawn(Camera2dBundle::default()).insert(MainCamera);

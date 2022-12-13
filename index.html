@@ -85,12 +85,15 @@
         if (has_touch() == true && touch_added == false) {
           canvas.addEventListener("touchstart", (ev) => {
             touch_events.push(ev);
+            ev.preventDefault();
           });
           canvas.addEventListener("touchend", (ev) => {
             touch_events.push(ev);
+            ev.preventDefault();
           });
           canvas.addEventListener("touchmove", (ev) => {
             touch_events.push(ev);
+            ev.preventDefault();
           });
 
           touch_added = true;

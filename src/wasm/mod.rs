@@ -68,7 +68,7 @@ fn resizer(
     }
 }
 
-fn pool_touch_system(
+pub fn pool_touch_system(
     mut touch_input_writer: EventWriter<TouchInput>,
     windows: Res<Windows>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,

@@ -7,28 +7,22 @@ impl Plugin for DragPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(
             drag_start
-                .label("drag_start")
-                .after("mousebutton_listener")
-                .after("touch_listener"),
+            .after(input::mousebutton_listener)
+            .after(input::touch_listener),
         )
         .add_system(
             drag_move
-                .label("drag_move")
-                .after("mousebutton_listener")
-                .after("touch_listener"),
+            .after(input::mousebutton_listener)
+            .after(input::touch_listener),
         )
         .add_system(
             handle_rotate_events
-                .label("handle_rotate_events")
-                .after("mousewheel_listener")
-                .after("keyboard_listener")
-                .after("touch_listener"),
+            .after(input::keyboard_listener)
+            .after(input::mousewheel_listener),
         )
         .add_system(
-            drag_end
-                .label("drag_end")
-                .after("mousebutton_listener")
-                .after("touch_listener"),
+            drag_end.after(input::mousebutton_listener)
+            .after(input::touch_listener),
         );
     }
 }
