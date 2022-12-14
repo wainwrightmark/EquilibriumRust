@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use strum::IntoEnumIterator;
 
-use crate::*;
+use crate::{*, body::{GameShape, Body}};
 
 use rand::Rng;
 
@@ -14,7 +15,7 @@ pub fn create_game(mut commands: Commands) {
 pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::game_shape::ALL_GAME_SHAPES {
+    for shape in crate::body::GameShape::iter() {
         let range_x = -100f32..100f32;
         let range_y = -100f32..100f32;
 

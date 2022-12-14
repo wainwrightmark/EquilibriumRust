@@ -2,8 +2,11 @@ use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
+use rand::seq::IteratorRandom;
+use strum::IntoEnumIterator;
 
 use crate::*;
+use crate::body::Body;
 
 pub struct WinPlugin;
 
@@ -40,7 +43,7 @@ pub fn handle_new_game(
         let mut rng = rand::thread_rng();
 
         for _ in 0..=shape_count {
-            let shape = crate::game_shape::get_random_shape(&mut rng);
+            let shape = crate::body::GameShape::iter().choose(&mut rng).unwrap();
 
             let range_x = -100f32..100f32;
             let range_y = -100f32..100f32;
@@ -134,7 +137,7 @@ pub fn check_for_tower(
             translation: Vec3::new(50.0, 200.0, 0.0),
             ..Default::default()
         })
-        .insert(GameShape::Circle.get_shape_bundle(
+        .insert(body::circle::Circle{}.get_shape_bundle(
             100f32,
             ShapeAppearance {
                 fill: Color::Hsla {

@@ -1,3 +1,5 @@
+use bevy_prototype_lyon::shapes::Rectangle;
+
 use crate::*;
 
 pub struct WallsPlugin;
@@ -61,9 +63,9 @@ fn spawn_wall(
     color: Color,
     name: String,
 ) {
-    let shape = shapes::Rectangle {
+    let shape = Rectangle {
         extents: Vec2::new(width, height),
-        origin: shapes::RectangleOrigin::Center,
+        origin: RectangleOrigin::Center,
     };
     let collider_shape = Collider::cuboid(shape.extents.x / 2.0, shape.extents.y / 2.0);
 

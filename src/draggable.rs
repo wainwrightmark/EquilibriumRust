@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{*, body::Body};
 use bevy_prototype_lyon::prelude::FillMode;
 
 pub struct DragPlugin;

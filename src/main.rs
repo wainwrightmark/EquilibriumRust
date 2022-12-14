@@ -19,8 +19,8 @@ use shape_maker::*;
 mod buttons;
 use buttons::*;
 
-mod game_shape;
-use game_shape::*;
+mod shape_appearance;
+use shape_appearance::*;
 
 mod win;
 use win::*;
@@ -34,7 +34,9 @@ use events::*;
 mod components;
 use components::*;
 
-// #[cfg(target_arch = "wasm32")]
+pub mod body;
+
+#[cfg(target_arch = "wasm32")]
 mod wasm;
 
 fn main() {
@@ -82,7 +84,7 @@ fn main() {
         // .add_plugin(shadows::ShadowsPlugin{})
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
 
-    // #[cfg(target_arch = "wasm32")]
+    #[cfg(target_arch = "wasm32")]
     builder.add_plugin(wasm::WASMPlugin);
 
     //.add_plugin(FrameTimeDiagnosticsPlugin::default())

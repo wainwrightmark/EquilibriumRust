@@ -143,10 +143,7 @@ impl Plugin for WASMPlugin {
         app.add_system(resizer);
 
         if has_touch() {
-            app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.after(InputSystem));
+            app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.before(crate::input::touch_listener).after(InputSystem));
         }
     }
-    // fn build(&self, app: &mut AppBuilder) {
-
-    // }
 }
