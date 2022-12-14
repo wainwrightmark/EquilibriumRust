@@ -15,7 +15,7 @@
     <meta property="og:description" content="Find your balance." />
     <meta property="og:image" content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402" />
 
-    
+
     <link data-trunk rel="copy-dir" href="assets" />
     <link data-trunk rel="copy-dir" href="credits" />
     <link data-trunk rel="copy-file" href="build/windows/icon.ico" />
@@ -29,19 +29,17 @@
       }
 
       canvas {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        display: block;
+        margin: auto;
         background-color: white;
       }
     </style>
   </head>
 
   <body>
-    <div>
+    <div style="display: flex; flex-direction: column;" >
       <canvas id="game"></canvas>
-      <button id="fullscreen-btn">Fullscreen</button>
+      <button id="fullscreen-btn" style="display: block; margin: auto;">Fullscreen</button>
     </div>
     <script>
       let btn = document.getElementById("fullscreen-btn");
