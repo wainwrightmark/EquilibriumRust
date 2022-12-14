@@ -1,7 +1,17 @@
 <html><head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta charset="utf-8">
     <title>Equilibrium</title>
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Equilibrium">
+    <meta property="og:url" content="www.equilibrium-game.com">
+    <meta property="og:site_name" content="Equilibrium">
+    <meta property="og:description" content="Find your balance.">
+    <meta property="og:image" content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402">
+
+    
     
     
     
@@ -39,12 +49,21 @@ canvas {
       }
     </style>
   
-<link rel="preload" href="/EquilibriumRust/equilibrium-4ce4e6d085bbf376_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/EquilibriumRust/equilibrium-4ce4e6d085bbf376.js"></head>
+<link rel="preload" href="/equilibrium-bf7e38eed9fd0a29_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/equilibrium-bf7e38eed9fd0a29.js"></head>
 
   <body>
-    <canvas id="game"></canvas>
+    <div>
+      <canvas id="game"></canvas>
+      <button id="fullscreen-btn">Fullscreen</button>
+    </div>
     <script>
+      let btn = document.getElementById("fullscreen-btn");
+      btn.addEventListener("click", (event) => {
+        let canvas = document.getElementById("game");
+        canvas.requestFullscreen();
+      });
+
       let touch_added = false;
       let touch_events = [];
       let has_touch = () => {
@@ -57,18 +76,16 @@ canvas {
       };
 
       let resize_canvas = (width, height) => {
-        let canvas = document.getElementsByTagName("canvas")[0];
-        if (canvas != null) {
-          canvas.width = width * window.devicePixelRatio;
-          canvas.height = height * window.devicePixelRatio;
-          canvas.style = `width: ${width}; height: ${height}`;
-        }
+        let canvas = document.getElementById("game");
+        canvas.width = width * window.devicePixelRatio;
+        canvas.height = height * window.devicePixelRatio;
+        canvas.style = `width: ${width}; height: ${height}`;
 
         if (has_touch() == true && touch_added == false) {
           canvas.addEventListener(
             "touchstart",
             (ev) => {
-              ev.preventDefault();              
+              ev.preventDefault();
               touch_events.push(ev);
             },
             { passive: false }
@@ -94,70 +111,6 @@ canvas {
         }
       };
     </script>
-    <script>
-      // Insert hack to make sound autoplay on Chrome as soon as the user interacts with the tab:
-      // https://developers.google.com/web/updates/2018/11/web-audio-autoplay#moving-forward
-
-      // the following function keeps track of all AudioContexts and resumes them on the first user
-      // interaction with the page. If the function is called and all contexts are already running,
-      // it will remove itself from all event listeners.
-      (function () {
-        // An array of all contexts to resume on the page
-        const audioContextList = [];
-
-        // An array of various user interaction events we should listen for
-        const userInputEventNames = [
-          "click",
-          "contextmenu",
-          "auxclick",
-          "dblclick",
-          "mousedown",
-          "mouseup",
-          "pointerup",
-          "touchend",
-          "keydown",
-          "keyup",
-        ];
-
-        // A proxy object to intercept AudioContexts and
-        // add them to the array for tracking and resuming later
-        self.AudioContext = new Proxy(self.AudioContext, {
-          construct(target, args) {
-            const result = new target(...args);
-            audioContextList.push(result);
-            return result;
-          },
-        });
-
-        // To resume all AudioContexts being tracked
-        function resumeAllContexts(_event) {
-          let count = 0;
-
-          audioContextList.forEach((context) => {
-            if (context.state !== "running") {
-              context.resume();
-            } else {
-              count++;
-            }
-          });
-
-          // If all the AudioContexts have now resumed then we unbind all
-          // the event listeners from the page to prevent unnecessary resume attempts
-          // Checking count > 0 ensures that the user interaction happens AFTER the game started up
-          if (count > 0 && count === audioContextList.length) {
-            userInputEventNames.forEach((eventName) => {
-              document.removeEventListener(eventName, resumeAllContexts);
-            });
-          }
-        }
-
-        // We bind the resume function for each user interaction
-        // event on the page
-        userInputEventNames.forEach((eventName) => {
-          document.addEventListener(eventName, resumeAllContexts);
-        });
-      })();
-    </script>
   
 
-<script type="module">import init from '/EquilibriumRust/equilibrium-4ce4e6d085bbf376.js';init('/EquilibriumRust/equilibrium-4ce4e6d085bbf376_bg.wasm');</script></body></html>
+<script type="module">import init from '/equilibrium-bf7e38eed9fd0a29.js';init('/equilibrium-bf7e38eed9fd0a29_bg.wasm');</script></body></html>
