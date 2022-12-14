@@ -6,7 +6,7 @@ use crate::{*, body::{GameShape, Body}};
 
 use rand::Rng;
 
-pub const SHAPE_SIZE: f32 = 60f32;
+pub const SHAPE_SIZE: f32 = 50f32;
 
 pub fn create_game(mut commands: Commands) {
     create_boxes(&mut commands);

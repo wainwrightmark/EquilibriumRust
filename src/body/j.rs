@@ -6,20 +6,19 @@ use crate::shape_appearance::*;
 
 use super::Body;
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, Default)]
-pub struct L{   
+pub struct J{   
 }
 
-impl Body for L{
+impl Body for J{
     fn name(&self) -> &'static str {
-        "L Shape"
+        "J Shape"
     }
-
     fn to_collider_shape(self, shape_size: f32) -> bevy_rapier2d::prelude::Collider {
         let u = shape_size * 0.25;
 
         Collider::compound(vec![
             (Vec2::new(0.0 , u * -1.), 0.0, Collider::cuboid(u * 2.0, u)),
-            (Vec2::new(u * -1., u ), 0.0, Collider::cuboid(u, u * 3.0)),
+            (Vec2::new(u, u ), 0.0, Collider::cuboid(u, u * 3.0)),
         ])
     }
 
@@ -30,10 +29,10 @@ impl Body for L{
                 points: [
                     Vec2::new(0.0, 0.0),
                     Vec2::new(2.0 * u, 0.0),
-                    Vec2::new(2.0 * u, 1.0 * u),
-                    Vec2::new(1.0 * u, 1.0 * u),
+                    Vec2::new(2.0 * u, 3.0 * u),
                     Vec2::new(1.0 * u, 3.0 * u),
-                    Vec2::new(0.0 * u, 3.0 * u),
+                    Vec2::new(1.0 * u, 1.0 * u),
+                    Vec2::new(0.0 * u, 1.0 * u),
                 ]
                 .into_iter()
                 .map(|p| p + offset)

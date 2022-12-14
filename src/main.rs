@@ -87,13 +87,12 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     builder.add_plugin(wasm::WASMPlugin);
 
+    if cfg!(debug_assertions) {
+        builder.add_plugin(RapierDebugRenderPlugin::default());
+    }
+
     //.add_plugin(FrameTimeDiagnosticsPlugin::default())
     //.add_plugin(LogDiagnosticsPlugin::default());
-    // .add_system_set(
-    //     SystemSet::new()
-    //         .with_run_criteria(bevy::core::FixedTimestep::step(10f64))
-    //         .with_system(print_all_positions)
-    // )
     builder.run();
 }
 

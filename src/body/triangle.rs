@@ -5,11 +5,11 @@ use itertools::Itertools;
 
 use super::Body;
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, Default)]
-pub struct Triangle{   
+pub struct RightIsoscelesTriangle{   
 }
 
 fn triangle_geometry(shape_size: f32) -> Polygon {
-    let p = shape_size / 3.0;
+    let p = shape_size * std::f32::consts::SQRT_2 / 3.;
     shapes::Polygon {
         closed: true,
         points: vec![
@@ -20,13 +20,9 @@ fn triangle_geometry(shape_size: f32) -> Polygon {
     }
 }
 
-impl Body for Triangle{
+impl Body for RightIsoscelesTriangle{
     fn name(&self) -> &'static str {
-        "Triangle"
-    }
-
-    fn hue(&self) -> f32 {
-        120f32
+        "Right IsoscelesTriangle"
     }
 
     fn to_collider_shape(self, shape_size: f32) -> bevy_rapier2d::prelude::Collider {
