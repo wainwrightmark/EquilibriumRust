@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use strum::IntoEnumIterator;
 
-use crate::{*, body::{GameShape, Body}};
+use crate::{*, game_shape::{GameShapeBody}};
 
 use rand::Rng;
 
@@ -15,7 +17,7 @@ pub fn create_game(mut commands: Commands) {
 pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::body::GameShape::iter() {
+    for shape in crate::game_shape::ALL_SHAPES.iter() {
         let range_x = -100f32..100f32;
         let range_y = -100f32..100f32;
 
@@ -25,7 +27,7 @@ pub fn create_boxes(commands: &mut Commands) {
 
         create_shape(
             commands,
-            &shape,
+            shape.clone(),
             SHAPE_SIZE,
             point,
             angle,
@@ -39,13 +41,13 @@ pub fn create_boxes(commands: &mut Commands) {
 
 pub fn create_shape(
     commands: &mut Commands,
-    shape: &GameShape,
+    game_shape: game_shape::GameShape,
     shape_size: f32,
     position: Vec2,
     angle: f32,
     appearance: ShapeAppearance,
 ) {
-    let collider_shape = shape.to_collider_shape(shape_size);
+    let collider_shape = game_shape.body.to_collider_shape(shape_size);
     let transform: Transform = Transform {
         translation: position.extend(0.0),
         rotation: Quat::from_rotation_x(angle),
@@ -54,13 +56,13 @@ pub fn create_shape(
 
     let rbb = RigidBody::Dynamic;
 
-    let name = shape.name().to_string();
+    // let name = shape.name().to_string();
 
     commands
-        .spawn(shape.get_shape_bundle(shape_size, appearance))
+        .spawn(game_shape.body.get_shape_bundle(shape_size, appearance))
         .insert(rbb)
         .insert(collider_shape)
         .insert(transform)
-        .insert(Name::new(name))
-        .insert(crate::Draggable { game_shape: *shape });
+        // .insert(Name::new(name))
+        .insert(crate::Draggable { game_shape });
 }

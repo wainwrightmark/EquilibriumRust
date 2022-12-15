@@ -3,10 +3,9 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 use rand::seq::IteratorRandom;
-use strum::IntoEnumIterator;
 
 use crate::*;
-use crate::body::Body;
+use crate::game_shape::GameShapeBody;
 
 pub struct WinPlugin;
 
@@ -43,7 +42,7 @@ pub fn handle_new_game(
         let mut rng = rand::thread_rng();
 
         for _ in 0..=shape_count {
-            let shape = crate::body::GameShape::iter().choose(&mut rng).unwrap();
+            let shape = crate::game_shape::ALL_SHAPES.iter().choose(&mut rng).unwrap();
 
             let range_x = -100f32..100f32;
             let range_y = -100f32..100f32;
@@ -54,7 +53,7 @@ pub fn handle_new_game(
 
             create_shape(
                 &mut commands,
-                &shape,
+                shape.clone(),
                 SHAPE_SIZE,
                 point,
                 angle,
@@ -137,7 +136,7 @@ pub fn check_for_tower(
             translation: Vec3::new(50.0, 200.0, 0.0),
             ..Default::default()
         })
-        .insert(body::circle::Circle{}.get_shape_bundle(
+        .insert(game_shape::circle::Circle{}.get_shape_bundle(
             100f32,
             ShapeAppearance {
                 fill: Color::Hsla {
@@ -159,7 +158,6 @@ fn check_for_contacts(
     win_timer: Query<(Entity, &WinTimer)>,
     mut collision_events: EventReader<CollisionEvent>,
     dragged: Query<With<Dragged>>,
-    //named: Query<&Name>
 ) {
     if win_timer.is_empty() {
         return; // no need to check
@@ -168,9 +166,6 @@ fn check_for_contacts(
     let mut fail: Option<&str> = None;
 
     for _ie in collision_events.iter() {
-        //let name1 = named.get(ie.collider1.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
-        //let name2 = named.get(ie.collider2.entity()).map(|x|x.to_string()).unwrap_or("unknown".to_string());
-        //println!("Intersection Found {name1} {name2}");
         fail = Some("Intersection Found");
     }
 
@@ -183,9 +178,6 @@ fn check_for_contacts(
     }
 
     if let Some(_error_message) = fail {
-        // println!(            "{error_message} - Despawn Win Timer {:?}",
-        //     win_timer.single().0
-        // );
         commands.entity(win_timer.single().0).despawn();
     }
 }

@@ -34,7 +34,7 @@ use events::*;
 mod components;
 use components::*;
 
-pub mod body;
+pub mod game_shape;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;

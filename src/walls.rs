@@ -26,7 +26,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
         color,
-        "Bottom-Wall".to_string(),
+        // "Bottom-Wall".to_string(),
     );
     spawn_wall(
         &mut commands,
@@ -34,7 +34,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
         color,
-        "Top-Wall".to_string(),
+        // "Top-Wall".to_string(),
     );
 
     spawn_wall(
@@ -43,7 +43,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
         color,
-        "Left-Wall".to_string(),
+        // "Left-Wall".to_string(),
     );
     spawn_wall(
         &mut commands,
@@ -51,7 +51,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
         color,
-        "Right-Wall".to_string(),
+        // "Right-Wall".to_string(),
     );
 }
 
@@ -61,7 +61,7 @@ fn spawn_wall(
     width: f32,
     height: f32,
     color: Color,
-    name: String,
+    // name: String,
 ) {
     let shape = Rectangle {
         extents: Vec2::new(width, height),
@@ -81,12 +81,13 @@ fn spawn_wall(
         .insert(RigidBody::Fixed)
         .insert(Transform::from_translation(point.extend(0.0)))
         .insert(collider_shape.clone())
-        .insert(Name::new(name.to_string()))
+        // .insert(Name::new(name.to_string()))
         .insert(Wall {})
         .with_children(|f| {
             f.spawn(collider_shape)
                 .insert(Sensor {})
                 .insert(ActiveEvents::COLLISION_EVENTS)
-                .insert(Name::new(name));
+                // .insert(Name::new(name))
+                ;
         });
 }

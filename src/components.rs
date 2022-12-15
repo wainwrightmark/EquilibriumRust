@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{events::DragSource, body::GameShape};
+use crate::{events::DragSource, game_shape::GameShape, };
 
 #[derive(Component)]
 pub struct RestartButton {}
