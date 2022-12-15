@@ -11,7 +11,7 @@
     <meta property="og:description" content="Find your balance.">
     <meta property="og:image" content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402">
 
-    
+
     
     
     
@@ -41,21 +41,19 @@ canvas {
       }
 
       canvas {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        display: block;
+        margin: auto;
         background-color: white;
       }
     </style>
   
-<link rel="preload" href="/equilibrium-bf7e38eed9fd0a29_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/equilibrium-bf7e38eed9fd0a29.js"></head>
+<link rel="preload" href="/equilibrium-e2b43fbbb3c8c6d9_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/equilibrium-e2b43fbbb3c8c6d9.js"></head>
 
   <body>
-    <div>
+    <div style="display: flex; flex-direction: column;">
       <canvas id="game"></canvas>
-      <button id="fullscreen-btn">Fullscreen</button>
+      <button id="fullscreen-btn" style="display: block; margin: auto;">Fullscreen</button>
     </div>
     <script>
       let btn = document.getElementById("fullscreen-btn");
@@ -113,4 +111,4 @@ canvas {
     </script>
   
 
-<script type="module">import init from '/equilibrium-bf7e38eed9fd0a29.js';init('/equilibrium-bf7e38eed9fd0a29_bg.wasm');</script></body></html>
+<script type="module">import init from '/equilibrium-e2b43fbbb3c8c6d9.js';init('/equilibrium-e2b43fbbb3c8c6d9_bg.wasm');</script></body></html>
