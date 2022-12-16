@@ -4,6 +4,14 @@ expression: outline
 ---
 [
     Qr {
+        x: -1,
+        y: 1,
+    },
+    Qr {
+        x: 0,
+        y: 1,
+    },
+    Qr {
         x: 0,
         y: 0,
     },
@@ -34,13 +42,5 @@ expression: outline
     Qr {
         x: -1,
         y: 2,
-    },
-    Qr {
-        x: -1,
-        y: 1,
-    },
-    Qr {
-        x: 0,
-        y: 1,
     },
 ]

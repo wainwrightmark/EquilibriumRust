@@ -23,7 +23,7 @@ impl<const S: usize> GameShapeBody for Shape<S> {
         let u = shape_size / (1.0 * f32::sqrt(S as f32));        
         let (x_offset, y_offset2) = self.get_centre();
 
-        let shapes = self.0.iter().map(|qr|
+        let shapes = self.into_iter().map(|qr|
             {
                 let vect = Vec2::new(
                     ((qr.x() as f32) - x_offset + 0.5 ) * u,

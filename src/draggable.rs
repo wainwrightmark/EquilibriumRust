@@ -1,4 +1,4 @@
-use crate::{*, game_shape::GameShapeBody};
+use crate::{*, };
 use bevy_prototype_lyon::prelude::FillMode;
 
 pub struct DragPlugin;

@@ -1,9 +1,18 @@
+use super::relative_coordinate::Qr;
 use strum::Display;
 
-use super::relative_coordinate::Qr;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct Shape<const POINTS: usize>(pub [Qr; POINTS]);
+pub struct Shape<const POINTS: usize>([Qr; POINTS]);
+
+impl<const P: usize> IntoIterator for Shape<P> {
+    type Item = Qr;
+
+    type IntoIter = std::array::IntoIter<Qr, P>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
 
 impl Shape<1> {
     pub const MONOMINO: Self = Self([Qr::ZERO]);
@@ -20,7 +29,7 @@ impl Shape<3> {
 
 impl Shape<4> {
     pub const I_TETROMINO: Self = Self([Qr::EAST, Qr::ZERO, Qr::WEST, Qr::WEST_TWO]);
-    pub const O_TETROMINO: Self = Self([Qr::ZERO,Qr::EAST,  Qr::NORTHEAST, Qr::NORTH]);
+    pub const O_TETROMINO: Self = Self([Qr::ZERO, Qr::EAST, Qr::NORTHEAST, Qr::NORTH]);
     pub const T_TETROMINO: Self = Self([Qr::EAST, Qr::ZERO, Qr::WEST, Qr::SOUTH]);
     pub const J_TETROMINO: Self = Self([Qr::WEST, Qr::ZERO, Qr::NORTH, Qr::NORTH_TWO]);
     pub const L_TETROMINO: Self = Self([Qr::EAST, Qr::ZERO, Qr::NORTH, Qr::NORTH_TWO]);
@@ -58,7 +67,7 @@ impl Shape<5> {
         Self([Qr::ZERO, Qr::NORTH, Qr::NORTH_TWO, Qr::SOUTH, Qr::SOUTHEAST]);
     pub const N_PENTOMINO: Self =
         Self([Qr::ZERO, Qr::NORTH, Qr::NORTH_TWO, Qr::WEST, Qr::SOUTHWEST]);
-    pub const P_PENTOMINO: Self = Self([Qr::NORTH,Qr::ZERO,  Qr::NORTHEAST, Qr::EAST, Qr::SOUTH]);
+    pub const P_PENTOMINO: Self = Self([Qr::NORTH, Qr::ZERO, Qr::NORTHEAST, Qr::EAST, Qr::SOUTH]);
     pub const T_PENTOMINO: Self =
         Self([Qr::ZERO, Qr::NORTH, Qr::NORTHEAST, Qr::NORTHWEST, Qr::SOUTH]);
     pub const U_PENTOMINO: Self =
@@ -91,25 +100,26 @@ impl Shape<5> {
         ["F", "I", "L", "N", "P", "T", "U", "V", "W", "X", "Y", "Z"];
 }
 
-pub trait PolyominoShape{
-    type OutlineIter : Iterator<Item = Qr>;
+pub trait PolyominoShape {
+    type OutlineIter: Iterator<Item = Qr>;
     fn draw_outline(&self) -> Self::OutlineIter;
 
     fn get_centre(&self) -> (f32, f32);
 
-    fn first_point(&self)-> Qr;
+    fn first_point(&self) -> Qr;
 }
 
-impl<const P: usize> PolyominoShape for  Shape<P> {
-    type OutlineIter  = OutlineIter<P>;
+impl<const P: usize> PolyominoShape for Shape<P> {
+    type OutlineIter = OutlineIter<P>;
 
     fn draw_outline(&self) -> Self::OutlineIter {
+        let mut arr = self.0.clone();
+        arr.sort();
         OutlineIter {
-            shape: self.clone(),
-            next: Some((self.0[0], Corner::NorthWest)),
+            arr,
+            next: Some((arr[0], Corner::NorthWest)),
         }
     }
-
 
     fn get_centre(&self) -> (f32, f32) {
         let mut x = 0;
@@ -120,18 +130,19 @@ impl<const P: usize> PolyominoShape for  Shape<P> {
             y += point.y();
         }
 
-        (0.5 + ((x as f32) / (P as f32)), 0.5 + ((y as f32) / (P as f32)))
+        (
+            0.5 + ((x as f32) / (P as f32)),
+            0.5 + ((y as f32) / (P as f32)),
+        )
     }
 
-    fn first_point(&self)-> Qr {
+    fn first_point(&self) -> Qr {
         self.0[0]
     }
-
-    
 }
 
 pub struct OutlineIter<const POINTS: usize> {
-    shape: Shape<POINTS>,
+    arr: [Qr; POINTS],
     next: Option<(Qr, Corner)>,
 }
 
@@ -196,14 +207,14 @@ impl<const POINTS: usize> Iterator for OutlineIter<POINTS> {
         'line: loop {
             'equivalency: loop {
                 let equivalent = next_coordinate + next_corner.clockwise_direction();
-                if self.shape.0.contains(&equivalent) {
+                if self.arr.contains(&equivalent) {
                     //perform an equivalency
                     next_coordinate = equivalent;
                     next_corner = next_corner.anticlockwise();
                     if next_coordinate == coordinate_to_return {
                         panic!("Infinite loop found in shape.")
                     }
-                    if next_corner == Corner::NorthWest && next_coordinate == self.shape.0[0] {
+                    if next_corner == Corner::NorthWest && next_coordinate == self.arr[0] {
                         break 'line;
                     }
                 } else {
@@ -224,12 +235,12 @@ impl<const POINTS: usize> Iterator for OutlineIter<POINTS> {
                     }
                 }
             }
-            if next_corner == Corner::NorthWest && next_coordinate == self.shape.0[0] {
+            if next_corner == Corner::NorthWest && next_coordinate == self.arr[0] {
                 break 'line;
             }
         }
 
-        if next_corner == Corner::NorthWest && next_coordinate == self.shape.0[0] {
+        if next_corner == Corner::NorthWest && next_coordinate == self.arr[0] {
             self.next = None;
         } else {
             self.next = Some((next_coordinate, next_corner));
@@ -247,54 +258,51 @@ mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
-    
-
     #[test]
-    fn test_basic_outlines(){
+    fn test_basic_outlines() {
         test_outline(&Shape::MONOMINO, "Square");
         test_outline(&Shape::DOMINO, "Domino");
     }
 
     #[test]
-    fn test_tetromino_outlines(){
-        for (shape, name) in Shape::TETROMINOS.iter().zip(Shape::TETROMINO_NAMES){
+    fn test_tetromino_outlines() {
+        for (shape, name) in Shape::TETROMINOS.iter().zip(Shape::TETROMINO_NAMES) {
             test_outline(shape, (name.to_string() + " tetromino").as_str())
-        }        
-    }
-    
-    #[test]
-    fn test_pentomino_outlines(){
-        for (shape, name) in Shape::FREE_PENTOMINOS.iter().zip(Shape::FREE_PENTOMINO_NAMES){
-            test_outline(shape, (name.to_string() + " pentomino").as_str())
-        }        
+        }
     }
 
-    fn test_outline<P : PolyominoShape>(shape : &'static P, name : &str)
-    {
+    #[test]
+    fn test_pentomino_outlines() {
+        for (shape, name) in Shape::FREE_PENTOMINOS
+            .iter()
+            .zip(Shape::FREE_PENTOMINO_NAMES)
+        {
+            test_outline(shape, (name.to_string() + " pentomino").as_str())
+        }
+    }
+
+    fn test_outline<P: PolyominoShape>(shape: &'static P, name: &str) {
         let outline: Vec<_> = shape.draw_outline().take(100).collect();
         assert!(outline.len() < 100);
-        let max_x = outline.iter().map(|q|q.x()).max().unwrap() as f32;
-        let max_y = outline.iter().map(|q|q.y()).max().unwrap() as f32;
-        
-        let min_x = outline.iter().map(|q|q.x()).min().unwrap() as f32;
-        let min_y = outline.iter().map(|q|q.y()).min().unwrap() as f32;
+        let max_x = outline.iter().map(|q| q.x()).max().unwrap() as f32;
+        let max_y = outline.iter().map(|q| q.y()).max().unwrap() as f32;
+
+        let min_x = outline.iter().map(|q| q.x()).min().unwrap() as f32;
+        let min_y = outline.iter().map(|q| q.y()).min().unwrap() as f32;
 
         let (centre_x, centre_y) = shape.get_centre();
 
-        assert!(centre_x < max_x );
-        assert!(centre_y < max_y );
-        
-        assert!(centre_x > min_x );
-        assert!(centre_y > min_y );
-        
-        insta::assert_debug_snapshot!(name, outline);
+        assert!(centre_x < max_x);
+        assert!(centre_y < max_y);
 
-        
+        assert!(centre_x > min_x);
+        assert!(centre_y > min_y);
+
+        insta::assert_debug_snapshot!(name, outline);
 
         // for o in outline{
         //     println!("{:?}", o);
         // }
         // println!("{},{}", center.0, center.1);
     }
-
 }

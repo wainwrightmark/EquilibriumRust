@@ -5,10 +5,6 @@ expression: outline
 [
     Qr {
         x: 0,
-        y: 0,
-    },
-    Qr {
-        x: 0,
         y: -2,
     },
     Qr {
