@@ -1,20 +1,24 @@
-use std::{fmt::Debug, sync::Arc};
+use std::{fmt::Debug};
 
 use bevy::{prelude::Color, render::once_cell::sync::Lazy};
 use bevy_prototype_lyon::entity::ShapeBundle;
-use bevy_rapier2d::prelude::Collider;
+use bevy_rapier2d::{prelude::Collider};
+use itertools::Itertools;
 
-use crate::shape_appearance::ShapeAppearance;
+use crate::{shape_appearance::ShapeAppearance};
+use super::grid::prelude::*;
 
 pub mod circle;
 
 pub mod polygon;
 pub mod triangle;
+pub mod polyomino;
 
 pub use circle::*;
 
 pub use polygon::*;
 pub use triangle::*;
+
 
 const SATURATION: f32 = 0.35;
 const LIGHTNESS: f32 = 0.45;
@@ -28,7 +32,7 @@ pub trait GameShapeBody: Send + Sync {
 #[derive(Clone)]
 pub struct GameShape {
     pub name: &'static str,
-    pub body: Arc<dyn GameShapeBody>,
+    pub body: &'static dyn GameShapeBody,
     pub index: usize,
 }
 
@@ -51,46 +55,30 @@ impl std::fmt::Display for GameShape {
     }
 }
 
-pub const SHAPE_COUNT: usize = 7;
-pub static ALL_SHAPES: Lazy<[GameShape; SHAPE_COUNT]> = Lazy::new(|| {
-    let mut index = 0;
-    let arr1: [(&'static str, Arc<dyn GameShapeBody>); SHAPE_COUNT] = [
-        ("Circle", Arc::new(Circle {})),
-        ("Square", Arc::new(SQUARE)),
-        ("Cross", Arc::new(CROSS)),
-        ("Triangle", Arc::new(TRIANGLE)),
-        ("J", Arc::new(J_POLYOMINO)),
-        ("L", Arc::new(L_POLYOMINO)),
-        ("I", Arc::new(I_POLYOMINO)),
+pub static ALL_SHAPES: Lazy<Vec<GameShape>> = Lazy::new(|| {
+    let v1:[( &'static dyn GameShapeBody, &'static str,); 2] = 
+    [
+        (&Circle {}, "Circle" ),
+        (&TRIANGLE, "Triangle", ),
     ];
 
-    arr1.map(|(name, body)| {
+    let tetrominos = Shape::TETROMINOS.iter().map(|x| x as &'static dyn GameShapeBody ) .zip(Shape::TETROMINO_NAMES);
+    let pentominos = Shape::FREE_PENTOMINOS.iter().map(|x| x  as &'static dyn GameShapeBody) .zip(Shape::FREE_PENTOMINO_NAMES);
+    
+
+    v1
+    .into_iter()
+    .chain(tetrominos)
+    .chain(pentominos)
+    .enumerate()
+    .map(|(index,(body, name)) | {
         let r = GameShape { name, body, index };
-        index += 1;
         r
-    })
+    }).collect_vec()
 });
 
-const SQUARE: PolygonBody<1, 4> = PolygonBody(&[(0, 0), (1, 0), (1, 1), (0, 1)]);
-const CROSS: PolygonBody<5, 12> = PolygonBody(&[
-    (1, 0),
-    (2, 0),
-    (2, 1),
-    (3, 1),
-    (3, 2),
-    (2, 2),
-    (2, 3),
-    (1, 3),
-    (1, 2),
-    (0, 2),
-    (0, 1),
-    (1, 1),
-]);
+
+
+
 
 const TRIANGLE: PolygonBody<4, 3> = PolygonBody(&[(-1, -1), (-1, 2), (2, -1)]);
-
-const J_POLYOMINO: PolygonBody<4, 6> =
-    PolygonBody(&[(0, 0), (2, 0), (2, 3), (1, 3), (1, 1), (0, 1)]);
-const L_POLYOMINO: PolygonBody<4, 6> =
-    PolygonBody(&[(0, 0), (2, 0), (2, 1), (1, 1), (1, 3), (0, 3)]);
-const I_POLYOMINO: PolygonBody<5, 4> = PolygonBody(&[(0, 0), (1, 0), (1, 5), (0, 5)]);

@@ -1,12 +1,9 @@
-use std::sync::Arc;
-
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use strum::IntoEnumIterator;
 
-use crate::{*, game_shape::{GameShapeBody}};
+use crate::{*};
 
-use rand::Rng;
+use rand::{Rng, seq::SliceRandom, rngs::ThreadRng};
 
 pub const SHAPE_SIZE: f32 = 50f32;
 
@@ -17,7 +14,7 @@ pub fn create_game(mut commands: Commands) {
 pub fn create_boxes(commands: &mut Commands) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::game_shape::ALL_SHAPES.iter() {
+    for shape in crate::game_shape::ALL_SHAPES.choose_multiple(&mut ThreadRng::default(), 2) {
         let range_x = -100f32..100f32;
         let range_y = -100f32..100f32;
 
@@ -56,13 +53,10 @@ pub fn create_shape(
 
     let rbb = RigidBody::Dynamic;
 
-    // let name = shape.name().to_string();
-
     commands
         .spawn(game_shape.body.get_shape_bundle(shape_size, appearance))
         .insert(rbb)
         .insert(collider_shape)
         .insert(transform)
-        // .insert(Name::new(name))
         .insert(crate::Draggable { game_shape });
 }

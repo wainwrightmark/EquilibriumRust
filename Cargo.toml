@@ -16,6 +16,8 @@ web-sys = {version = "0.3", features = ['Window', 'TouchEvent', 'TouchList', 'To
 enum_delegate = "0.2.0"
 strum = { version = "0.24.1", features = ["derive"] }
 
+
+
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
 
@@ -29,6 +31,10 @@ embed-resource = "1.4"
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
+[dev-dependencies]
+insta = "1.23"
+test-case = "2.2"
+
 [profile.release]
 opt-level = 'z'
 lto = 'thin'
@@ -39,7 +45,6 @@ opt-level = 3
 
 [dependencies.bevy]
 version = "0.9"
-
 
 
 
