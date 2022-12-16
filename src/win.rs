@@ -1,8 +1,6 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::Rng;
-use rand::seq::IteratorRandom;
 
 use crate::*;
 use crate::game_shape::GameShapeBody;
@@ -32,38 +30,14 @@ pub fn handle_new_game(
         }
         first = false;
 
-        let mut shape_count = -1;
+        let mut shape_count = 0;
         for (e, _) in draggables.iter() {
             commands.entity(e).despawn();
             shape_count += 1;
         }
         shape_count += _ng.box_count_change; //create one more shape for new game
 
-        let mut rng = rand::thread_rng();
-
-        for _ in 0..=shape_count {
-            //instead of random, give each shape its own place to spawn
-            let shape = crate::game_shape::ALL_SHAPES.iter().choose(&mut rng).unwrap();
-
-            let range_x = -100f32..100f32;
-            let range_y = -100f32..100f32;
-
-            let point = Vec2::new(rng.gen_range(range_x), rng.gen_range(range_y));
-
-            let angle = rng.gen_range(0f32..std::f32::consts::TAU);
-
-            create_shape(
-                &mut commands,
-                shape.clone(),
-                SHAPE_SIZE,
-                point,
-                angle,
-                ShapeAppearance {
-                    fill: (shape.default_fill_color()),
-                    ..Default::default()
-                },
-            );
-        }
+        shape_maker::create_n_boxes(&mut commands, (shape_count.clamp(shape_maker::INITIAL_SHAPES as i32, shape_maker::MAX_SHAPES as i32) .max(2).min(36)) as usize);
     }
 }
 

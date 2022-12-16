@@ -38,7 +38,7 @@ pub struct GameShape {
 
 impl GameShape {
     pub fn default_fill_color(&self) -> Color {
-        let hue = self.index * 360 / ALL_SHAPES.len();
+        let hue = (self.index * 540 / ALL_SHAPES.len()) % 360;                
         Color::hsla(hue as f32, SATURATION, LIGHTNESS, ALPHA)
     }
 }

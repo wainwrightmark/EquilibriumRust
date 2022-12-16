@@ -1,25 +1,38 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use itertools::Itertools;
 
 use crate::{*};
 
-use rand::{Rng, seq::SliceRandom, rngs::ThreadRng};
+use rand::{Rng, seq::SliceRandom};
 
 pub const SHAPE_SIZE: f32 = 50f32;
+pub const INITIAL_SHAPES: usize = 20;
+pub const MAX_SHAPES: usize = 36;
+
 
 pub fn create_game(mut commands: Commands) {
-    create_boxes(&mut commands);
+    create_n_boxes(&mut commands, INITIAL_SHAPES);
 }
 
-pub fn create_boxes(commands: &mut Commands) {
+pub fn create_n_boxes(commands: &mut Commands, n: usize) {
     let mut rng = rand::thread_rng();
 
-    for shape in crate::game_shape::ALL_SHAPES.choose_multiple(&mut ThreadRng::default(), 2) {
-        let range_x = -100f32..100f32;
-        let range_y = -100f32..100f32;
+    const COLS :usize = 6;
+    let mut positions = (0..MAX_SHAPES).collect_vec();    
+    positions.shuffle(&mut rng);
 
-        let point = Vec2::new(rng.gen_range(range_x), rng.gen_range(range_y));
+    for i in 0..n{
+        let shape = crate::game_shape::ALL_SHAPES.choose(&mut rng).unwrap();
+        let i = positions[i];
+        let left = SHAPE_SIZE * (COLS as f32) / 2. ;
+        
+        let x = ((i % COLS) as f32) * SHAPE_SIZE - left;
+        let y = (((i / COLS) as f32) * SHAPE_SIZE) - left;
+        //let range_x = -100f32..100f32;
+        //let range_y = -100f32..100f32;
 
+        let point = Vec2::new(x, y);
         let angle = rng.gen_range(0f32..std::f32::consts::TAU);
 
         create_shape(

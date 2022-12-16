@@ -23,7 +23,7 @@ fn button_system(
             Interaction::Clicked => {
                 *color = PRESSED_BUTTON.into();
                 new_game_events.send(crate::NewGameEvent {
-                    box_count_change: 0,
+                    box_count_change: -1,
                 })
             }
             Interaction::Hovered => {
