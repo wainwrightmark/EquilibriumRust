@@ -42,6 +42,7 @@ pub fn handle_new_game(
         let mut rng = rand::thread_rng();
 
         for _ in 0..=shape_count {
+            //instead of random, give each shape its own place to spawn
             let shape = crate::game_shape::ALL_SHAPES.iter().choose(&mut rng).unwrap();
 
             let range_x = -100f32..100f32;

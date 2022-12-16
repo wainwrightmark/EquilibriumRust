@@ -1,13 +1,14 @@
 use super::GameShapeBody;
-use crate::{grid::prelude::{Shape, PolyominoShape}, shape_appearance::*};
+use crate::{
+    grid::prelude::{PolyominoShape, Shape},
+    shape_appearance::*,
+};
 use bevy::prelude::{Transform, Vec2};
 use bevy_prototype_lyon::{prelude::GeometryBuilder, shapes::Polygon};
-use bevy_rapier2d::prelude::{Collider,  };
+use bevy_rapier2d::prelude::Collider;
 use itertools::Itertools;
 
-
-
-fn get_vertices<const S : usize>(shape: &Shape<S>, shape_size: f32) -> impl Iterator<Item = Vec2> {
+fn get_vertices<const S: usize>(shape: &Shape<S>, shape_size: f32) -> impl Iterator<Item = Vec2> {
     let u = shape_size / (1.0 * f32::sqrt(S as f32));
     let (x_offset, y_offset) = shape.get_centre();
 
@@ -20,20 +21,26 @@ fn get_vertices<const S : usize>(shape: &Shape<S>, shape_size: f32) -> impl Iter
 }
 impl<const S: usize> GameShapeBody for Shape<S> {
     fn to_collider_shape(&self, shape_size: f32) -> Collider {
-        let u = shape_size / (1.0 * f32::sqrt(S as f32));        
-        let (x_offset, y_offset2) = self.get_centre();
+        let u = shape_size / (1.0 * f32::sqrt(S as f32));
+        let (x_offset, y_offset) =  self.get_centre();
 
-        let shapes = self.into_iter().map(|qr|
-            {
+        let shapes = self
+            .deconstruct_into_rectangles()
+            .into_iter()
+            .map(|(min, max)| {
+                let x_mid = ((min.x() as f32) + (max.x() as f32)) *0.5 ;
+                let y_mid = ((min.y() as f32) + (max.y() as f32)) *0.5 ;
                 let vect = Vec2::new(
-                    ((qr.x() as f32) - x_offset + 0.5 ) * u,
-                    ((qr.y() as f32) - y_offset2 + 0.5 ) * u,
+                    (x_mid - x_offset + 0.5 ) * u,
+                    (y_mid -y_offset + 0.5 ) * u,
                 );
 
-                (vect, 0.0, Collider::cuboid(u * 0.5, u * 0.5) )
-            }
-        ).collect_vec();
-        
+                let x_len = (1 + max.x() - min.x()) as f32;
+                let y_len = (1 + max.y() - min.y()) as f32;
+
+                (vect, 0.0, Collider::cuboid(u * x_len * 0.5, u * y_len * 0.5))
+            }).collect_vec();
+
         Collider::compound(shapes)
     }
 
