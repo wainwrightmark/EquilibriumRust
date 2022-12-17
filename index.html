@@ -11,7 +11,6 @@
     <meta property="og:description" content="Find your balance.">
     <meta property="og:image" content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402">
 
-
     
     
     
@@ -35,7 +34,6 @@ canvas {
 </style>
     <style>
       body {
-        background: black;
         margin: 0px;
         overflow: hidden;
       }
@@ -47,21 +45,23 @@ canvas {
       }
     </style>
   
-<link rel="preload" href="/equilibrium-c770b43bcf378e08_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/equilibrium-c770b43bcf378e08.js"></head>
+<link rel="preload" href="/equilibrium-d438ca6ac71b355f_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/equilibrium-d438ca6ac71b355f.js"></head>
 
   <body>
-    <div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column">
       <canvas id="game"></canvas>
-      <button id="fullscreen-btn" style="display: block; margin: auto;">Fullscreen</button>
     </div>
-    <script>
-      let btn = document.getElementById("fullscreen-btn");
-      btn.addEventListener("click", (event) => {
-        let canvas = document.getElementById("game");
-        canvas.requestFullscreen();
-      });
 
+    <dialog id="fullscreenDialog">
+      <form method="dialog">
+        <h4>Go Fullscreen?</h4>
+        <button id="fullscreenBtn">Yes</button>
+        <button>No</button>
+      </form>
+    </dialog>
+
+    <script>
       let touch_added = false;
       let touch_events = [];
       let has_touch = () => {
@@ -73,13 +73,20 @@ canvas {
         return e;
       };
 
-      let resize_canvas = (width, height) => {
+      let fullscreen_btn = document.getElementById("fullscreenBtn");
+      fullscreen_btn.addEventListener("click", (event) => {
         let canvas = document.getElementById("game");
-        canvas.width = width * window.devicePixelRatio;
-        canvas.height = height * window.devicePixelRatio;
-        canvas.style = `width: ${width}; height: ${height}`;
+        canvas.requestFullscreen();
+      });
 
+      let request_fullscreen = () => {
+        let dialog = document.getElementById("fullscreenDialog");
+        dialog.showModal();
+      };
+
+      let enable_touch = () => {
         if (has_touch() == true && touch_added == false) {
+          let canvas = document.getElementById("game");
           canvas.addEventListener(
             "touchstart",
             (ev) => {
@@ -108,7 +115,14 @@ canvas {
           touch_added = true;
         }
       };
+
+      let resize_canvas = (width, height) => {
+        let canvas = document.getElementById("game");
+        canvas.width = width * window.devicePixelRatio;
+        canvas.height = height * window.devicePixelRatio;
+        canvas.style = `width: ${width}; height: ${height}`;
+      };
     </script>
   
 
-<script type="module">import init from '/equilibrium-c770b43bcf378e08.js';init('/equilibrium-c770b43bcf378e08_bg.wasm');</script></body></html>
+<script type="module">import init from '/equilibrium-d438ca6ac71b355f.js';init('/equilibrium-d438ca6ac71b355f_bg.wasm');</script></body></html>
