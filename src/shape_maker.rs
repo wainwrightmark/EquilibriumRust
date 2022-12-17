@@ -7,7 +7,7 @@ use crate::{*};
 use rand::{Rng, seq::SliceRandom};
 
 pub const SHAPE_SIZE: f32 = 50f32;
-pub const INITIAL_SHAPES: usize = 20;
+pub const INITIAL_SHAPES: usize = 2;
 pub const MAX_SHAPES: usize = 36;
 
 
