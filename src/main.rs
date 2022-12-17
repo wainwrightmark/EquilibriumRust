@@ -53,9 +53,10 @@ fn main() {
             height: WINDOW_HEIGHT,
             resize_constraints: WindowResizeConstraints {
                 min_width: WINDOW_WIDTH,
-                max_width: WINDOW_WIDTH,
-                max_height: WINDOW_HEIGHT,
+                max_width: f32::MAX,
+                
                 min_height: WINDOW_HEIGHT,
+                max_height: f32::MAX,
             },
             ..Default::default()
         },

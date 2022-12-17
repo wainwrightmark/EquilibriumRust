@@ -12,18 +12,15 @@ use crate::input::convert_screen_to_world_position;
 #[wasm_bindgen]
 extern "C" {
     fn resize_canvas(width: f32, height: f32);
-}
 
-#[wasm_bindgen]
-extern "C" {
     fn has_touch() -> bool;
-}
 
-#[wasm_bindgen]
-extern "C" {
     fn pop_touch_event() -> Option<TouchEvent>;
-}
 
+    fn enable_touch();
+
+    fn request_fullscreen();
+}
 #[derive(Resource)]
 struct LastSize {
     pub width: f32,
@@ -132,6 +129,8 @@ pub fn pool_touch_system(
     }
 }
 
+
+
 pub struct WASMPlugin;
 
 impl Plugin for WASMPlugin {
@@ -142,8 +141,11 @@ impl Plugin for WASMPlugin {
         });
         app.add_system(resizer);
 
-        if has_touch() {
-            app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.before(crate::input::touch_listener).after(InputSystem));
+        if has_touch() {            
+            app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.before(InputSystem));
         }
+
+        app.add_startup_system_to_stage(StartupStage::PostStartup, enable_touch); 
+        app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen); 
     }
 }

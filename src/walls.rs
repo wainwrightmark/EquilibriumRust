@@ -12,7 +12,7 @@ impl Plugin for WallsPlugin {
 
 fn spawn_walls(mut commands: Commands) {
     let color = Color::GRAY;
-    const OFFSET: f32 = (crate::WALL_WIDTH / 2.0) - 10f32;
+    const OFFSET: f32 = (crate::WALL_WIDTH / 2.0);
     const EXTRA_WIDTH: f32 = crate::WALL_WIDTH * 2.0;
 
     let bottom_wall_pos: Vec2 = Vec2::new(0.0, -crate::WINDOW_HEIGHT / 2.0 - OFFSET);

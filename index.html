@@ -4,7 +4,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta charset="utf-8" />
     <title>Equilibrium</title>
 
@@ -13,8 +13,10 @@
     <meta property="og:url" content="www.equilibrium-game.com" />
     <meta property="og:site_name" content="Equilibrium" />
     <meta property="og:description" content="Find your balance." />
-    <meta property="og:image" content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402" />
-
+    <meta
+      property="og:image"
+      content="https://repository-images.githubusercontent.com/474112540/329ba0e2-fb72-4b6b-bded-8ef640769402"
+    />
 
     <link data-trunk rel="copy-dir" href="assets" />
     <link data-trunk rel="copy-dir" href="credits" />
@@ -23,7 +25,6 @@
     <link data-trunk rel="inline" href="build/web/styles.css" />
     <style>
       body {
-        background: black;
         margin: 0px;
         overflow: hidden;
       }
@@ -37,17 +38,19 @@
   </head>
 
   <body>
-    <div style="display: flex; flex-direction: column;" >
+    <div style="display: flex; flex-direction: column">
       <canvas id="game"></canvas>
-      <button id="fullscreen-btn" style="display: block; margin: auto;">Fullscreen</button>
     </div>
-    <script>
-      let btn = document.getElementById("fullscreen-btn");
-      btn.addEventListener("click", (event) => {
-        let canvas = document.getElementById("game");
-        canvas.requestFullscreen();
-      });
 
+    <dialog id="fullscreenDialog">
+      <form method="dialog">
+        <h4>Go Fullscreen?</h4>
+        <button id="fullscreenBtn">Yes</button>
+        <button>No</button>
+      </form>
+    </dialog>
+
+    <script>
       let touch_added = false;
       let touch_events = [];
       let has_touch = () => {
@@ -59,13 +62,20 @@
         return e;
       };
 
-      let resize_canvas = (width, height) => {
+      let fullscreen_btn = document.getElementById("fullscreenBtn");
+      fullscreen_btn.addEventListener("click", (event) => {
         let canvas = document.getElementById("game");
-        canvas.width = width * window.devicePixelRatio;
-        canvas.height = height * window.devicePixelRatio;
-        canvas.style = `width: ${width}; height: ${height}`;
+        canvas.requestFullscreen();
+      });
 
+      let request_fullscreen = () => {
+        let dialog = document.getElementById("fullscreenDialog");
+        dialog.showModal();
+      };
+
+      let enable_touch = () => {
         if (has_touch() == true && touch_added == false) {
+          let canvas = document.getElementById("game");
           canvas.addEventListener(
             "touchstart",
             (ev) => {
@@ -93,6 +103,13 @@
 
           touch_added = true;
         }
+      };
+
+      let resize_canvas = (width, height) => {
+        let canvas = document.getElementById("game");
+        canvas.width = width * window.devicePixelRatio;
+        canvas.height = height * window.devicePixelRatio;
+        canvas.style = `width: ${width}; height: ${height}`;
       };
     </script>
   </body>
