@@ -71,5 +71,5 @@ pub fn create_shape(
         .insert(rbb)
         .insert(collider_shape)
         .insert(transform)
-        .insert(crate::Draggable { game_shape });
+        .insert(crate::Draggable { });
 }
