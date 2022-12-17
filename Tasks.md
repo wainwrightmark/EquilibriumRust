@@ -13,6 +13,8 @@
 - [x] Padlock item
 - [x] Only drag one shape at once
 - [x] Good fullscreen mode
+- [x] Time speeds up to check for contracts
+- [ ] Check for contacts instantly, only show timer when a contact is detected
 
 
 - [ ] Use heightfield instead of walls

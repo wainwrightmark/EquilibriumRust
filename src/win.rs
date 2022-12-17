@@ -1,10 +1,11 @@
+use std::borrow::BorrowMut;
+
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::*;
 use crate::game_shape::GameShapeBody;
-
+use crate::*;
 
 #[derive(Component)]
 pub struct WinTimer {
@@ -22,23 +23,48 @@ impl Plugin for WinPlugin {
     }
 }
 
-const COUNTDOWN: f64 = 3.0;
+const COUNTDOWN: f64 = 1.0;
+const TIME_SCALE: f32 = 3.;
 
-
+fn scale_time(mut rapier_config: ResMut<RapierConfiguration>, scale: f32) {
+    match rapier_config.timestep_mode.borrow_mut() {
+        TimestepMode::Fixed { dt, substeps: _ } => {
+            *dt = scale / 60.;
+        }
+        TimestepMode::Variable {
+            max_dt,
+            time_scale,
+            substeps: _,
+        } => {
+            *time_scale = scale;
+            *max_dt = scale / 60.;
+        }
+        TimestepMode::Interpolated {
+            dt,
+            time_scale,
+            substeps: _,
+        } => {
+            *time_scale = scale;
+            *dt = scale / 60.;
+        }
+    }
+}
 
 pub fn check_for_win(
     mut commands: Commands,
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
+    rapier_config: ResMut<RapierConfiguration>,
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
 
         if remaining <= 0f64 {
-            //println!("Win - Despawn Win Timer {:?}", timer_entity);
+            scale_time(rapier_config, 1.);
+
             commands.entity(timer_entity).despawn();
-            //println!("Win");
+
             new_game_events.send(ChangeLevelEvent::Next);
         } else {
             let new_scale = (remaining / COUNTDOWN) as f32;
@@ -57,21 +83,17 @@ pub fn check_for_tower(
 
     mut collision_events: ResMut<Events<CollisionEvent>>,
     rapier_context: Res<RapierContext>,
+    mut rapier_config: ResMut<RapierConfiguration>,
     walls: Query<(Entity, With<Wall>)>,
 ) {
     if !end_drag_events.iter().any(|_| true) {
         return;
     }
-
-    //println!("Drag Ended");
-
     if !win_timer.is_empty() {
-        //  println!("Win timer Exists");
         return; // no need to check, we're already winning
     }
 
     if !dragged.is_empty() {
-        //println!("Something is dragged");
         return; //Something is being dragged so the player can't win yet
     }
 
@@ -86,6 +108,8 @@ pub fn check_for_tower(
 
     collision_events.clear();
 
+    scale_time(rapier_config, TIME_SCALE);
+
     commands
         .spawn(WinTimer {
             win_time: time.elapsed_seconds_f64() + COUNTDOWN,
@@ -94,22 +118,20 @@ pub fn check_for_tower(
             translation: Vec3::new(50.0, 200.0, 0.0),
             ..Default::default()
         })
-        .insert(game_shape::circle::Circle{}.get_shape_bundle(
+        .insert(game_shape::circle::Circle {}.get_shape_bundle(
             100f32,
-            DrawMode::Stroke(StrokeMode::color(Color::BLACK))
-            // ShapeAppearance {
-            //     fill: Color::Hsla {
-            //         hue: (100f32),
-            //         saturation: (70f32),
-            //         lightness: (70f32),
-            //         alpha: (0.5),
-            //     },
-            //     stroke: Color::BLACK,
-            //     line_width: 0f32,
-            // },
+            DrawMode::Stroke(StrokeMode::color(Color::BLACK)), // ShapeAppearance {
+                                                               //     fill: Color::Hsla {
+                                                               //         hue: (100f32),
+                                                               //         saturation: (70f32),
+                                                               //         lightness: (70f32),
+                                                               //         alpha: (0.5),
+                                                               //     },
+                                                               //     stroke: Color::BLACK,
+                                                               //     line_width: 0f32,
+                                                               // },
         ));
 
-    //println!("Tower Built");
 }
 
 fn check_for_contacts(
@@ -117,6 +139,7 @@ fn check_for_contacts(
     win_timer: Query<(Entity, &WinTimer)>,
     mut collision_events: EventReader<CollisionEvent>,
     dragged: Query<With<Dragged>>,
+    rapier_config: ResMut<RapierConfiguration>
 ) {
     if win_timer.is_empty() {
         return; // no need to check
@@ -137,6 +160,7 @@ fn check_for_contacts(
     }
 
     if let Some(_error_message) = fail {
+        scale_time(rapier_config, 1.);
         commands.entity(win_timer.single().0).despawn();
     }
 }
