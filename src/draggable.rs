@@ -158,46 +158,49 @@ pub fn drag_start(
             continue;
         }
 
-        rapier_context.intersections_with_point(event.position, default(), |entity| {
-            if let Ok((draggable, locked, rb)) = draggables.get(entity) {
-                debug!("{:?} found intersection with {:?}", event, draggable);
-                //println!("Entity {:?} set to dragged", entity);
-
-                let origin = rb.translation.truncate();
-                let offset = origin - event.position;
-                let was_locked = locked.is_some();
-
-                commands
-                    .entity(entity)
-                    .insert(Dragged {
-                        origin,
-                        offset,
-                        drag_source: event.drag_source,
-                        was_locked,
-                    })
-                    .remove::<RigidBody>()
-                    .insert(RigidBody::KinematicPositionBased);
-
-                if was_locked {
+        if dragged.is_empty(){
+            rapier_context.intersections_with_point(event.position, default(), |entity| {
+                if let Ok((draggable, locked, rb)) = draggables.get(entity) {
+                    debug!("{:?} found intersection with {:?}", event, draggable);
+                    //println!("Entity {:?} set to dragged", entity);
+    
+                    let origin = rb.translation.truncate();
+                    let offset = origin - event.position;
+                    let was_locked = locked.is_some();
+    
                     commands
                         .entity(entity)
-                        .remove::<Locked>()
-                        .insert(DrawMode::Fill(FillMode::color(
-                            draggable.game_shape.default_fill_color(),
-                        )));
-                }
-
-                if event.drag_source.is_touch() {
-                    for mut camera in cameras.iter_mut() {
-                        camera.is_active = true;
+                        .insert(Dragged {
+                            origin,
+                            offset,
+                            drag_source: event.drag_source,
+                            was_locked,
+                        })
+                        .remove::<RigidBody>()
+                        .insert(RigidBody::KinematicPositionBased);
+    
+                    if was_locked {
+                        commands
+                            .entity(entity)
+                            .remove::<Locked>()
+                            .insert(DrawMode::Fill(FillMode::color(
+                                draggable.game_shape.default_fill_color(),
+                            )));
                     }
+    
+                    if event.drag_source.is_touch() {
+                        for mut camera in cameras.iter_mut() {
+                            camera.is_active = true;
+                        }
+                    }
+    
+                    found = true;
+                    return false; //Stop looking for intersections
                 }
-
-                found = true;
-                return false; //Stop looking for intersections
-            }
-            true //keep looking for intersections
-        });
+                true //keep looking for intersections
+            });
+        }
+        
 
         if !found {
             if let DragSource::Touch { id } = event.drag_source {

@@ -10,9 +10,8 @@
 - [ ] Cursor icon https://github.com/bevyengine/bevy/blob/latest/examples/window/window_settings.rs
 
 - [ ] Shape borders
-- [ ] Only drag one shape at once
-- [ ] Stick to bottom of page
-- [ ] Good fullscreen mode
+- [x] Only drag one shape at once
+- [x] Good fullscreen mode
 
 
 - [ ] Use heightfield instead of walls
