@@ -113,16 +113,17 @@ pub fn check_for_tower(
         })
         .insert(game_shape::circle::Circle{}.get_shape_bundle(
             100f32,
-            ShapeAppearance {
-                fill: Color::Hsla {
-                    hue: (100f32),
-                    saturation: (70f32),
-                    lightness: (70f32),
-                    alpha: (0.5),
-                },
-                stroke: Color::BLACK,
-                line_width: 0f32,
-            },
+            DrawMode::Stroke(StrokeMode::color(Color::BLACK))
+            // ShapeAppearance {
+            //     fill: Color::Hsla {
+            //         hue: (100f32),
+            //         saturation: (70f32),
+            //         lightness: (70f32),
+            //         alpha: (0.5),
+            //     },
+            //     stroke: Color::BLACK,
+            //     line_width: 0f32,
+            // },
         ));
 
     //println!("Tower Built");

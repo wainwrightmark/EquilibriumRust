@@ -9,7 +9,7 @@
 - [ ] Gamepad Controls
 - [ ] Cursor icon https://github.com/bevyengine/bevy/blob/latest/examples/window/window_settings.rs
 
-- [ ] Shape borders
+- [x] Shape borders
 - [x] Padlock item
 - [x] Only drag one shape at once
 - [x] Good fullscreen mode

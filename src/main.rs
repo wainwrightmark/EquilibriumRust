@@ -20,9 +20,6 @@ use shape_maker::*;
 mod buttons;
 use buttons::*;
 
-mod shape_appearance;
-use shape_appearance::*;
-
 mod win;
 use win::*;
 

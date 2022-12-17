@@ -1,5 +1,5 @@
 use bevy::prelude::{Vec2, Transform};
-use bevy_prototype_lyon::{shapes::{ self}, prelude::GeometryBuilder};
+use bevy_prototype_lyon::{shapes::{ self}, prelude::{GeometryBuilder, DrawMode}};
 use bevy_rapier2d::prelude::Collider;
 
 use super::GameShapeBody;
@@ -22,10 +22,10 @@ impl GameShapeBody for Circle{
         Collider::ball(geo.radius)
     }
 
-    fn get_shape_bundle(&self, shape_size: f32, appearance: crate::shape_appearance::ShapeAppearance) -> bevy_prototype_lyon::entity::ShapeBundle {
+    fn get_shape_bundle(&self, shape_size: f32, draw_mode: DrawMode) -> bevy_prototype_lyon::entity::ShapeBundle {
         GeometryBuilder::build_as(
             &circle_geometry(shape_size),
-            appearance.into(),
+            draw_mode.into(),
             Transform::default(),
         )
     }

@@ -1,10 +1,9 @@
 use super::GameShapeBody;
 use crate::{
     grid::prelude::{PolyominoShape, Shape},
-    shape_appearance::*,
 };
 use bevy::prelude::{Transform, Vec2};
-use bevy_prototype_lyon::{prelude::GeometryBuilder, shapes::Polygon};
+use bevy_prototype_lyon::{prelude::{GeometryBuilder, DrawMode}, shapes::Polygon};
 use bevy_rapier2d::prelude::Collider;
 use itertools::Itertools;
 
@@ -47,7 +46,7 @@ impl<const S: usize> GameShapeBody for Shape<S> {
     fn get_shape_bundle(
         &self,
         shape_size: f32,
-        appearance: ShapeAppearance,
+        draw_mode: DrawMode,
     ) -> bevy_prototype_lyon::entity::ShapeBundle {
         let points = get_vertices(self, shape_size).collect_vec();
         let shape = Polygon {
@@ -55,6 +54,6 @@ impl<const S: usize> GameShapeBody for Shape<S> {
             closed: true,
         };
 
-        GeometryBuilder::build_as(&shape, appearance.into(), Transform::default())
+        GeometryBuilder::build_as(&shape, draw_mode, Transform::default())
     }
 }
