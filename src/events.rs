@@ -9,7 +9,7 @@ impl Plugin for EventsPlugin {
             .add_event::<DragMoveEvent>()
             .add_event::<DragEndEvent>()
             .add_event::<DragEndedEvent>()
-            .add_event::<NewGameEvent>();
+            .add_event::<ChangeLevelEvent>();
     }
 }
 
@@ -53,6 +53,10 @@ impl DragSource {
 }
 
 #[derive(Debug)]
-pub struct NewGameEvent {
-    pub box_count_change: i32,
+pub enum ChangeLevelEvent {
+    Next,
+    Previous,
+    Restart
 }
+
+

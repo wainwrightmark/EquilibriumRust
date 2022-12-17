@@ -8,21 +8,20 @@ use crate::*;
 use rand::{seq::SliceRandom, Rng};
 
 pub const SHAPE_SIZE: f32 = 50f32;
-pub const INITIAL_SHAPES: usize = 2;
 pub const MAX_SHAPES: usize = 36;
 
-pub fn create_game(mut commands: Commands) {
-    create_n_boxes(&mut commands, INITIAL_SHAPES);
+pub fn create_game(mut change_level_events: EventWriter<ChangeLevelEvent>) {
+    change_level_events.send(ChangeLevelEvent::Next)
 }
 
-pub fn create_n_boxes(commands: &mut Commands, n: usize) {
+pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
     let mut rng = rand::thread_rng();
 
     const COLS: usize = 6;
     let mut positions = (0..MAX_SHAPES).collect_vec();
     positions.shuffle(&mut rng);
 
-    for i in 0..n {
+    for i in 0..level.shapes {
         let shape = crate::game_shape::ALL_SHAPES.choose(&mut rng).unwrap();
         let i = positions[i];
         let left = SHAPE_SIZE * (COLS as f32) / 2.;

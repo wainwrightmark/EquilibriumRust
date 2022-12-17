@@ -17,41 +17,20 @@ impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(check_for_contacts)
             .add_system(check_for_win.after(check_for_contacts))
-            .add_system(handle_new_game.after(check_for_win))
+            .add_system(handle_change_level.after(check_for_win))
             .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
     }
 }
 
 const COUNTDOWN: f64 = 3.0;
 
-pub fn handle_new_game(
-    mut commands: Commands,
-    mut new_game_events: EventReader<NewGameEvent>,
-    draggables: Query<(Entity, With<Draggable>)>,
-) {
-    let mut first = true;
-    for _ng in new_game_events.iter() {
-        if !first {
-            continue;
-        }
-        first = false;
 
-        let mut shape_count = 0;
-        for (e, _) in draggables.iter() {
-            commands.entity(e).despawn();
-            shape_count += 1;
-        }
-        shape_count += _ng.box_count_change; //create one more shape for new game
-
-        shape_maker::create_n_boxes(&mut commands, (shape_count.clamp(shape_maker::INITIAL_SHAPES as i32, shape_maker::MAX_SHAPES as i32) .max(2).min(36)) as usize);
-    }
-}
 
 pub fn check_for_win(
     mut commands: Commands,
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
-    mut new_game_events: EventWriter<NewGameEvent>,
+    mut new_game_events: EventWriter<ChangeLevelEvent>,
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
@@ -60,9 +39,7 @@ pub fn check_for_win(
             //println!("Win - Despawn Win Timer {:?}", timer_entity);
             commands.entity(timer_entity).despawn();
             //println!("Win");
-            new_game_events.send(NewGameEvent {
-                box_count_change: 1,
-            });
+            new_game_events.send(ChangeLevelEvent::Next);
         } else {
             let new_scale = (remaining / COUNTDOWN) as f32;
 

@@ -19,15 +19,13 @@ fn button_system(
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>, With<RestartButton>),
     >,
-    mut new_game_events: EventWriter<crate::NewGameEvent>,
+    mut new_game_events: EventWriter<crate::ChangeLevelEvent>,
 ) {
     for (interaction, mut color) in interaction_query.iter_mut() {
         match *interaction {
             Interaction::Clicked => {
                 *color = PRESSED_BUTTON.into();
-                new_game_events.send(crate::NewGameEvent {
-                    box_count_change: -1,
-                })
+                new_game_events.send(crate::ChangeLevelEvent::Previous)
             }
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();

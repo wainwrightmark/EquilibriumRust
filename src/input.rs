@@ -9,7 +9,9 @@ use crate::*;
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(touch_listener)
+        app
+        .insert_resource(InputDetector::default())
+        .add_system(touch_listener)
             .add_system(keyboard_listener)
             .add_system(mousewheel_listener)
             .add_system(mousebutton_listener.after(touch_listener));
@@ -167,4 +169,11 @@ pub fn mousewheel_listener(
         let event = RotateEvent { angle };
         ev_rotate.send(event);
     }
+}
+
+
+#[derive(Resource, Default)]
+pub struct  InputDetector{
+    pub is_touch: bool
+
 }

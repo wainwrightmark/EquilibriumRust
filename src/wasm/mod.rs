@@ -3,11 +3,8 @@ use bevy::window::WindowResized;
 use bevy::{input::InputSystem, prelude::*};
 use wasm_bindgen::prelude::*;
 use web_sys::{TouchEvent, TouchList};
-
-use crate::components::MainCamera;
-use crate::input::convert_screen_to_world_position;
-
-// use crate::mouse::{Mouse};
+use crate::*;
+use crate::input::{convert_screen_to_world_position, InputDetector};
 
 #[wasm_bindgen]
 extern "C" {
@@ -129,7 +126,12 @@ pub fn pool_touch_system(
     }
 }
 
-
+fn check_touch(mut input_detector: ResMut<InputDetector>) {
+    if has_touch() {
+        enable_touch();
+        input_detector.is_touch = true;
+    }
+}
 
 pub struct WASMPlugin;
 
@@ -141,11 +143,12 @@ impl Plugin for WASMPlugin {
         });
         app.add_system(resizer);
 
-        if has_touch() {            
+        if has_touch() {
             app.add_system_to_stage(CoreStage::PreUpdate, pool_touch_system.before(InputSystem));
+            app.add_startup_system_to_stage(StartupStage::PostStartup, check_touch);
         }
 
-        app.add_startup_system_to_stage(StartupStage::PostStartup, enable_touch); 
-        app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen); 
+        
+        app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
     }
 }

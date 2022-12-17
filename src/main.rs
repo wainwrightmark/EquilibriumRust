@@ -7,12 +7,14 @@ use bevy_rapier2d::prelude::*;
 pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
 pub const WALL_WIDTH: f32 = 360f32;
-mod draggable;
-pub mod grid;
 mod camera;
+mod draggable;
+mod grid;
+use bevy_tweening::TweeningPlugin;
 use camera::*;
 use draggable::*;
-
+mod level;
+use level::*;
 mod walls;
 use walls::*;
 
@@ -50,7 +52,7 @@ fn main() {
             resize_constraints: WindowResizeConstraints {
                 min_width: WINDOW_WIDTH,
                 max_width: f32::MAX,
-                
+
                 min_height: WINDOW_HEIGHT,
                 max_height: f32::MAX,
             },
@@ -80,6 +82,9 @@ fn main() {
         .add_startup_system(setup)
         .add_plugin(DragPlugin)
         .add_plugin(WinPlugin)
+        .add_plugin(LevelPlugin)
+        .add_plugin(TweeningPlugin)
+
         // .add_plugin(shadows::ShadowsPlugin{})
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
 
@@ -97,7 +102,4 @@ fn main() {
 
 pub fn setup(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);
-
-    
 }
-
