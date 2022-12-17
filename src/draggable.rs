@@ -1,6 +1,29 @@
-use crate::*;
+use crate::{*};
 use bevy_prototype_lyon::prelude::FillMode;
 
+#[derive(Component, Debug)]
+pub struct Draggable;
+
+#[derive(Component, Debug)]
+pub struct Locked;
+
+#[derive(Component, Debug)]
+pub struct Padlock;
+
+#[derive(Component)]
+pub struct Dragged {
+    pub origin: Vec2,
+    pub offset: Vec2,
+    pub drag_source: DragSource,
+    pub was_locked: bool,
+}
+
+#[derive(Component)]
+pub struct TouchRotate {
+    pub previous: Vec2,
+    pub centre: Vec2,
+    pub touch_id: u64,
+}
 
 pub struct DragPlugin;
 impl Plugin for DragPlugin {

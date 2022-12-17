@@ -5,6 +5,12 @@ use bevy_rapier2d::prelude::*;
 use crate::*;
 use crate::game_shape::GameShapeBody;
 
+
+#[derive(Component)]
+pub struct WinTimer {
+    pub win_time: f64,
+}
+
 pub struct WinPlugin;
 
 impl Plugin for WinPlugin {

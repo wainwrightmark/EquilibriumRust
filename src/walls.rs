@@ -2,6 +2,9 @@ use bevy_prototype_lyon::shapes::Rectangle;
 
 use crate::*;
 
+#[derive(Component)]
+pub struct Wall;
+
 pub struct WallsPlugin;
 
 impl Plugin for WallsPlugin {
