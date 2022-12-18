@@ -19,8 +19,8 @@ pub fn handle_change_level(
     mut change_level_events: EventReader<ChangeLevelEvent>,
     draggables: Query<(Entity, With<Draggable>)>,
     mut current_level: ResMut<CurrentLevel>,
-    input_detector : Res<InputDetector>,
-    level_text: Query<(Entity,  &mut Text), With<LevelText>>,
+    input_detector: Res<InputDetector>,
+    level_text: Query<(Entity, &mut Text), With<LevelText>>,
 ) {
     if let Some(event) = change_level_events.iter().next() {
         for (e, _) in draggables.iter() {
@@ -44,7 +44,7 @@ pub fn handle_change_level(
 fn start_level(
     mut commands: Commands,
     level: GameLevel,
-    mut level_text: Query<(Entity,  &mut Text), With<LevelText>>,
+    mut level_text: Query<(Entity, &mut Text), With<LevelText>>,
 ) {
     for (entity, mut text) in level_text.iter_mut() {
         let new_text = format!("{: ^36}", level.message);
@@ -62,33 +62,36 @@ fn start_level(
     }
 
     shape_maker::create_level_shapes(&mut commands, level);
-
 }
-
 
 fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle {
             style: Style {
-                align_self: AlignSelf::Center,
+                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                 position_type: PositionType::Absolute,
-                flex_grow: 0.,
-                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexEnd,
                 ..Default::default()
             },
-            background_color: Color::NONE.into(),
             ..Default::default()
         })
-        .with_children(|f| {
-            f.spawn(
-                TextBundle::from_sections([TextSection::from_style(TextStyle {
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "",
+                TextStyle {
                     font: asset_server.load("fonts/FiraMono-Medium.ttf"),
                     font_size: 20.0,
                     color: SMALL_TEXT_COLOR,
-                })]) // Set the alignment of the Text
-                .with_text_alignment(TextAlignment::CENTER),
+                },
             )
-            .insert(LevelText);
+            .with_text_alignment(TextAlignment::CENTER)
+            .with_style(Style {
+                align_self: AlignSelf::Center,
+                ..Default::default()
+            })
+            
+        ).insert(LevelText);
         });
 }
 
@@ -118,22 +121,15 @@ impl GameLevel {
                 message: "the locked shape can be unlocked",
                 shapes: i,
             },
-            4 =>
-            {
-                let message = if input_detector.is_touch{
+            4 => {
+                let message = if input_detector.is_touch {
                     "Rotate with your finger"
-                }   
-                else{
+                } else {
                     "Rotate with the mousewheel, or Q/E"
                 };
 
-                GameLevel {
-                    message,
-                    shapes: i,
-                }
+                GameLevel { message, shapes: i }
             }
-            
-            
 
             _ => Self::generic_level(i),
         }
