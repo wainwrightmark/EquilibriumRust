@@ -16,7 +16,7 @@ extern "C" {
 
     fn enable_touch();
 
-    fn request_fullscreen();
+    pub fn request_fullscreen();
 }
 #[derive(Resource)]
 struct LastSize {

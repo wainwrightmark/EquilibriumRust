@@ -10,7 +10,8 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CurrentLevel>()
-            .add_startup_system(setup_level_text);
+            .add_startup_system(setup_level_text)
+            .add_event::<ChangeLevelEvent>();
     }
 }
 
@@ -27,17 +28,9 @@ pub fn handle_change_level(
             commands.entity(e).despawn();
         }
 
-        match event {
-            ChangeLevelEvent::Next => current_level.0 += 1,
-            ChangeLevelEvent::Previous => {
-                current_level.0 = current_level.0.saturating_sub(1).max(1)
-            }
-            ChangeLevelEvent::Restart => (),
-        }
+        current_level.0 = event.apply(&current_level.0);
 
-        let level = GameLevel::get_level(current_level.0, input_detector);
-
-        level::start_level(commands, level, level_text);
+        level::start_level(commands, current_level.0, level_text, input_detector);
     }
 }
 
@@ -45,9 +38,13 @@ fn start_level(
     mut commands: Commands,
     level: GameLevel,
     mut level_text: Query<(Entity, &mut Text), With<LevelText>>,
+    input_detector: Res<InputDetector>,
 ) {
-    for (entity, mut text) in level_text.iter_mut() {
-        let new_text = format!("{: ^36}", level.message);
+    if let Some((entity, mut text)) = level_text.iter_mut().next() {
+        let new_text = format!(
+            "{: ^36}",
+            level.get_text(input_detector).unwrap_or_default()
+        );
 
         text.sections[0].value = new_text;
         commands.entity(entity).insert(Animator::new(Tween::new(
@@ -64,7 +61,7 @@ fn start_level(
     shape_maker::create_level_shapes(&mut commands, level);
 }
 
-fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -77,21 +74,23 @@ fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "",
-                TextStyle {
-                    font: asset_server.load("fonts/FiraMono-Medium.ttf"),
-                    font_size: 20.0,
-                    color: SMALL_TEXT_COLOR,
-                },
-            )
-            .with_text_alignment(TextAlignment::CENTER)
-            .with_style(Style {
-                align_self: AlignSelf::Center,
-                ..Default::default()
-            })
-            
-        ).insert(LevelText);
+            parent
+                .spawn(
+                    TextBundle::from_section(
+                        "",
+                        TextStyle {
+                            font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+                            font_size: 20.0,
+                            color: SMALL_TEXT_COLOR,
+                        },
+                    )
+                    .with_text_alignment(TextAlignment::CENTER)
+                    .with_style(Style {
+                        align_self: AlignSelf::Center,
+                        ..Default::default()
+                    }),
+                )
+                .insert(LevelText);
         });
 }
 
@@ -99,46 +98,87 @@ fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub struct LevelText;
 
 #[derive(Default, Resource)]
-pub struct CurrentLevel(pub usize);
+pub struct CurrentLevel(pub GameLevel);
 
+#[derive(Debug, Clone, Copy)]
 pub struct GameLevel {
-    pub message: &'static str,
+    //pub message: &'static str,
     pub shapes: usize,
+    pub level_type: LevelType,
+}
+impl Default for GameLevel {
+    fn default() -> Self {
+        Self {
+            shapes: 1,
+            level_type: LevelType::Tutorial,
+        }
+    }
 }
 
 impl GameLevel {
-    pub fn get_level(i: usize, input_detector: Res<InputDetector>) -> GameLevel {
-        match i {
-            1 => GameLevel {
-                message: "move the shape",
-                shapes: i,
+    pub fn get_text(&self, input_detector: Res<InputDetector>) -> Option<&'static str> {
+        match self.level_type {
+            LevelType::Tutorial => match self.shapes {
+                1 => Some("move the shape"),
+                2 => Some("build a tower with all the shapes"),
+                3 => Some("the locked shape can be unlocked"),
+                4 => {
+                    if input_detector.is_touch {
+                        Some("Rotate with your finger")
+                    } else {
+                        Some("Rotate with the mousewheel, or Q/E")
+                    }
+                }
+                _ => None,
             },
-            2 => GameLevel {
-                message: "build a tower with all the shapes",
-                shapes: i,
-            },
-            3 => GameLevel {
-                message: "the locked shape can be unlocked",
-                shapes: i,
-            },
-            4 => {
-                let message = if input_detector.is_touch {
-                    "Rotate with your finger"
-                } else {
-                    "Rotate with the mousewheel, or Q/E"
-                };
-
-                GameLevel { message, shapes: i }
-            }
-
-            _ => Self::generic_level(i),
+            LevelType::Infinite => None,
+            LevelType::Challenge => None,
         }
     }
+}
 
-    fn generic_level(i: usize) -> GameLevel {
-        GameLevel {
-            message: "",
-            shapes: i,
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum LevelType {
+    Tutorial,
+    Infinite,
+    Challenge,
+}
+
+#[derive(Debug)]
+pub enum ChangeLevelEvent {
+    Next,
+    Previous,
+    ResetLevel,
+    StartTutorial,
+    StartInfinite,
+    StartChallenge,
+}
+
+impl ChangeLevelEvent {
+    #[must_use]
+    pub fn apply(&self, level: &GameLevel) -> GameLevel {
+        match self {
+            ChangeLevelEvent::Next => GameLevel {
+                shapes: level.shapes + 1,
+                level_type: level.level_type,
+            },
+            ChangeLevelEvent::Previous => GameLevel {
+                shapes: level.shapes.saturating_sub(1).max(1),
+                level_type: level.level_type,
+            },
+            ChangeLevelEvent::ResetLevel => level.clone(),
+            ChangeLevelEvent::StartTutorial => GameLevel {
+                shapes: 1,
+                level_type: LevelType::Tutorial,
+            },
+            ChangeLevelEvent::StartInfinite => GameLevel {
+                shapes: 5,
+                level_type: LevelType::Infinite,
+            },
+            ChangeLevelEvent::StartChallenge => GameLevel {
+                shapes: 10,
+                level_type: LevelType::Challenge,
+            },
         }
     }
 }

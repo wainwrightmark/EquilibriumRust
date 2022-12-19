@@ -24,8 +24,8 @@ use walls::*;
 mod shape_maker;
 use shape_maker::*;
 
-mod buttons;
-use buttons::*;
+mod menu;
+use menu::*;
 
 mod win;
 use win::*;

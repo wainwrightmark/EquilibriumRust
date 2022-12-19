@@ -8,8 +8,7 @@ impl Plugin for EventsPlugin {
             .add_event::<DragStartEvent>()
             .add_event::<DragMoveEvent>()
             .add_event::<DragEndEvent>()
-            .add_event::<DragEndedEvent>()
-            .add_event::<ChangeLevelEvent>();
+            .add_event::<DragEndedEvent>();
     }
 }
 
@@ -51,12 +50,4 @@ impl DragSource {
         matches!(self, DragSource::Touch { id: _ })
     }
 }
-
-#[derive(Debug)]
-pub enum ChangeLevelEvent {
-    Next,
-    Previous,
-    Restart
-}
-
 
