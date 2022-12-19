@@ -3,6 +3,7 @@ use std::borrow::BorrowMut;
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::PhysicsHooks;
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
@@ -82,7 +83,7 @@ pub fn check_for_tower(
     dragged: Query<With<Dragged>>,
 
     mut collision_events: ResMut<Events<CollisionEvent>>,
-    rapier_context: Res<RapierContext>,
+    mut rapier_context: ResMut<RapierContext>,
     mut rapier_config: ResMut<RapierConfiguration>,
     walls: Query<(Entity, With<Wall>)>,
 ) {
@@ -109,6 +110,15 @@ pub fn check_for_tower(
     collision_events.clear();
 
     scale_time(rapier_config, TIME_SCALE);
+
+    
+
+    // rapier_context.step_simulation(GRAVITY, 
+    //     TimestepMode::Variable { max_dt: 3000. / 60., time_scale: 1., substeps: 1 }, 
+        
+    //     None, &() , &time,
+    //     &mut SimulationToRenderTime{diff: 500.0},None);
+
 
     commands
         .spawn(WinTimer {

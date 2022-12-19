@@ -25,7 +25,6 @@ mod walls;
 use walls::*;
 
 mod shape_maker;
-use shape_maker::*;
 
 mod menu;
 use menu::*;
@@ -114,9 +113,10 @@ fn main() {
 }
 
 pub fn setup(mut rapier_config: ResMut<RapierConfiguration>) {
-    rapier_config.gravity = Vec2::new(0.0, -1000.0);
+    rapier_config.gravity = GRAVITY;
 }
 
+pub const GRAVITY : Vec2 = Vec2::new(0.0, -1000.0);
 
 pub fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();
