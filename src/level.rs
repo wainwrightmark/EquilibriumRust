@@ -132,7 +132,7 @@ impl GameLevel {
                 _ => None,
             },
             LevelType::Infinite => None,
-            LevelType::Challenge => None,
+            LevelType::Challenge => Some("Daily Challenge"),
         }
     }
 }

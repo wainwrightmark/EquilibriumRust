@@ -3,9 +3,9 @@ use std::time::Duration;
 use bevy::log::*;
 use bevy::prelude::*;
 use bevy::window::WindowResizeConstraints;
+use bevy::winit::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy::winit::*;
 
 pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
@@ -32,9 +32,6 @@ use win::*;
 
 mod input;
 use input::*;
-
-mod events;
-use events::*;
 
 pub mod game_shape;
 
@@ -77,7 +74,6 @@ fn main() {
         .add_plugin(ButtonPlugin)
         .add_plugin(ShapePlugin)
         .add_plugin(InputPlugin)
-        .add_plugin(EventsPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(
             WINDOW_HEIGHT / 10.0,
@@ -87,12 +83,13 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
-        .insert_resource(WinitSettings{
+        .insert_resource(WinitSettings {
             return_from_run: false,
             focused_mode: UpdateMode::Continuous,
-            unfocused_mode: UpdateMode::ReactiveLowPower { max_wait: Duration::from_secs(60) },
+            unfocused_mode: UpdateMode::ReactiveLowPower {
+                max_wait: Duration::from_secs(60),
+            },
         })
-        
         // .add_plugin(shadows::ShadowsPlugin{})
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
 

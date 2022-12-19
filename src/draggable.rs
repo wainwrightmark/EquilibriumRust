@@ -1,29 +1,8 @@
 use crate::{*};
 use bevy_prototype_lyon::prelude::FillMode;
 
-#[derive(Component, Debug)]
-pub struct Draggable;
 
-#[derive(Component, Debug)]
-pub struct Locked;
 
-#[derive(Component, Debug)]
-pub struct Padlock;
-
-#[derive(Component)]
-pub struct Dragged {
-    pub origin: Vec2,
-    pub offset: Vec2,
-    pub drag_source: DragSource,
-    pub was_locked: bool,
-}
-
-#[derive(Component)]
-pub struct TouchRotate {
-    pub previous: Vec2,
-    pub centre: Vec2,
-    pub touch_id: u64,
-}
 
 pub struct DragPlugin;
 impl Plugin for DragPlugin {
@@ -50,6 +29,11 @@ impl Plugin for DragPlugin {
         )
         .add_system(add_padlock)
         .add_system_to_stage(CoreStage::PostUpdate, remove_padlock)
+        .add_event::<RotateEvent>()
+            .add_event::<DragStartEvent>()
+            .add_event::<DragMoveEvent>()
+            .add_event::<DragEndEvent>()
+            .add_event::<DragEndedEvent>();
         ;
     }
 }
@@ -282,3 +266,66 @@ pub fn drag_start(
 
 
 const PADLOCK_OUTLINE: &str = "M254.28 17.313c-81.048 0-146.624 65.484-146.624 146.406V236h49.594v-69.094c0-53.658 43.47-97.187 97.03-97.187 53.563 0 97.032 44.744 97.032 97.186V236h49.594v-72.28c0-78.856-65.717-146.407-146.625-146.407zM85.157 254.688c-14.61 22.827-22.844 49.148-22.844 76.78 0 88.358 84.97 161.5 191.97 161.5 106.998 0 191.968-73.142 191.968-161.5 0-27.635-8.26-53.95-22.875-76.78H85.155zM254 278.625c22.34 0 40.875 17.94 40.875 40.28 0 16.756-10.6 31.23-25.125 37.376l32.72 98.126h-96.376l32.125-98.125c-14.526-6.145-24.532-20.62-24.532-37.374 0-22.338 17.972-40.28 40.312-40.28z";
+
+
+#[derive(Component, Debug)]
+pub struct Draggable;
+
+#[derive(Component, Debug)]
+pub struct Locked;
+
+#[derive(Component, Debug)]
+pub struct Padlock;
+
+#[derive(Component)]
+pub struct Dragged {
+    pub origin: Vec2,
+    pub offset: Vec2,
+    pub drag_source: DragSource,
+    pub was_locked: bool,
+}
+
+#[derive(Component)]
+pub struct TouchRotate {
+    pub previous: Vec2,
+    pub centre: Vec2,
+    pub touch_id: u64,
+}
+#[derive(Debug)]
+pub struct RotateEvent {
+    //entity: Entity,
+    pub angle: f32, //pub clockwise: bool, // rotation: f32,
+                    // rotation_interval: f32
+}
+
+#[derive(Debug)]
+pub struct DragStartEvent {
+    pub drag_source: DragSource,
+    pub position: Vec2,
+}
+
+#[derive(Debug)]
+pub struct DragMoveEvent {
+    pub drag_source: DragSource,
+    pub new_position: Vec2,
+}
+
+#[derive(Debug)]
+pub struct DragEndEvent {
+    pub drag_source: DragSource,
+}
+
+#[derive(Debug)]
+pub struct DragEndedEvent {}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum DragSource {
+    Mouse,
+    Touch { id: u64 },
+}
+
+impl DragSource {
+    pub fn is_touch(&self) -> bool {
+        matches!(self, DragSource::Touch { id: _ })
+    }
+}

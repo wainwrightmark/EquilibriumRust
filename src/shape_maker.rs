@@ -11,7 +11,7 @@ pub const SHAPE_SIZE: f32 = 50f32;
 pub const MAX_SHAPES: usize = 36;
 
 pub fn create_game(mut change_level_events: EventWriter<ChangeLevelEvent>) {
-    change_level_events.send(ChangeLevelEvent::Next)
+    change_level_events.send(ChangeLevelEvent::StartTutorial)
 }
 
 pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
@@ -28,8 +28,6 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
 
         let x = ((i % COLS) as f32) * SHAPE_SIZE - left;
         let y = (((i / COLS) as f32) * SHAPE_SIZE) - left;
-        //let range_x = -100f32..100f32;
-        //let range_y = -100f32..100f32;
 
         let point = Vec2::new(x, y);
         let angle = rng.gen_range(0f32..std::f32::consts::TAU);
@@ -46,10 +44,7 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
                     options: StrokeOptions::DEFAULT,
                     color: Color::GRAY,
                 },
-            }, // ShapeAppearance {
-               //     fill: (shape.default_fill_color()),
-               //     ..Default::default()
-               // },
+            },
         );
     }
 }
