@@ -147,7 +147,7 @@ pub enum LevelType {
 #[derive(Debug)]
 pub enum ChangeLevelEvent {
     Next,
-    Previous,
+    // Previous,
     ResetLevel,
     StartTutorial,
     StartInfinite,
@@ -158,14 +158,28 @@ impl ChangeLevelEvent {
     #[must_use]
     pub fn apply(&self, level: &GameLevel) -> GameLevel {
         match self {
-            ChangeLevelEvent::Next => GameLevel {
-                shapes: level.shapes + 1,
-                level_type: level.level_type,
-            },
-            ChangeLevelEvent::Previous => GameLevel {
-                shapes: level.shapes.saturating_sub(1).max(1),
-                level_type: level.level_type,
-            },
+            ChangeLevelEvent::Next => {
+                let level_type = match level.level_type {
+                    LevelType::Tutorial => {
+                        if level.shapes > 4 {
+                            LevelType::Infinite
+                        } else {
+                            LevelType::Tutorial
+                        }
+                    }
+                    LevelType::Infinite => LevelType::Infinite,
+                    LevelType::Challenge => LevelType::Infinite,
+                };
+
+                GameLevel {
+                    shapes: level.shapes + 1,
+                    level_type,
+                }
+            }
+            // ChangeLevelEvent::Previous => GameLevel {
+            //     shapes: level.shapes.saturating_sub(1).max(1),
+            //     level_type: level.level_type,
+            // },
             ChangeLevelEvent::ResetLevel => level.clone(),
             ChangeLevelEvent::StartTutorial => GameLevel {
                 shapes: 1,
