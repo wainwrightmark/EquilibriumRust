@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use bevy::log::*;
 use bevy::prelude::*;
 use bevy::window::WindowResizeConstraints;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy::winit::*;
 
 pub const WINDOW_WIDTH: f32 = 360f32;
 pub const WINDOW_HEIGHT: f32 = 640f32;
@@ -84,7 +87,12 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
-
+        .insert_resource(WinitSettings{
+            return_from_run: false,
+            focused_mode: UpdateMode::Continuous,
+            unfocused_mode: UpdateMode::ReactiveLowPower { max_wait: Duration::from_secs(60) },
+        })
+        
         // .add_plugin(shadows::ShadowsPlugin{})
         .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
 
