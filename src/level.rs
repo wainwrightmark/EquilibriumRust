@@ -161,7 +161,7 @@ impl ChangeLevelEvent {
             ChangeLevelEvent::Next => {
                 let level_type = match level.level_type {
                     LevelType::Tutorial => {
-                        if level.shapes > 4 {
+                        if level.shapes >= 4 {
                             LevelType::Infinite
                         } else {
                             LevelType::Tutorial

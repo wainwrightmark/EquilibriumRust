@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use super::grid::prelude::*;
 use bevy::{prelude::Color, render::once_cell::sync::Lazy};
-use bevy_prototype_lyon::{entity::ShapeBundle, prelude::DrawMode};
+use bevy_prototype_lyon::{entity::ShapeBundle, prelude::*};
 use bevy_rapier2d::prelude::Collider;
 use itertools::Itertools;
 
@@ -35,6 +35,16 @@ impl GameShape {
     pub fn default_fill_color(&self) -> Color {
         let hue = (self.index * 540 / ALL_SHAPES.len()) % 360;
         Color::hsla(hue as f32, SATURATION, LIGHTNESS, ALPHA)
+    }
+
+    pub fn draw_mode(&self)-> DrawMode{
+        DrawMode::Outlined {
+            fill_mode: FillMode::color(self.default_fill_color()),
+            outline_mode: StrokeMode {
+                options: StrokeOptions::DEFAULT,
+                color: Color::GRAY,
+            },
+        }
     }
 }
 
