@@ -4,6 +4,7 @@ use bevy::log::*;
 use bevy::prelude::*;
 use bevy::window::WindowResizeConstraints;
 use bevy::winit::*;
+use bevy_pkv::PkvStore;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -13,6 +14,8 @@ pub const WALL_WIDTH: f32 = 360f32;
 mod camera;
 mod draggable;
 mod grid;
+mod saved_data;
+use saved_data::*;
 use bevy_tweening::TweeningPlugin;
 use camera::*;
 use draggable::*;
@@ -83,6 +86,10 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
+
+        .insert_resource(PkvStore::new("Wainwrong", "Equilibrium"))
+
+
         .insert_resource(WinitSettings {
             return_from_run: false,
             focused_mode: UpdateMode::Continuous,
@@ -91,7 +98,8 @@ fn main() {
             },
         })
         // .add_plugin(shadows::ShadowsPlugin{})
-        .add_startup_system_to_stage(StartupStage::PostStartup, create_game);
+        //.add_startup_system_to_stage(StartupStage::PostStartup, create_game)
+        ;
 
     #[cfg(target_arch = "wasm32")]
     builder.add_plugin(wasm::WASMPlugin);
@@ -107,4 +115,10 @@ fn main() {
 
 pub fn setup(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::new(0.0, -1000.0);
+}
+
+
+pub fn get_today_date() -> chrono::NaiveDate {
+    let today = chrono::offset::Utc::now();
+    today.date_naive()
 }

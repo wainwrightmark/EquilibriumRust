@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike};
 use itertools::Itertools;
 
 use crate::{game_shape::GameShape, *};
@@ -10,9 +10,6 @@ use rand::{seq::SliceRandom, Rng, rngs::StdRng};
 pub const SHAPE_SIZE: f32 = 50f32;
 pub const MAX_SHAPES: usize = 36;
 
-pub fn create_game(mut change_level_events: EventWriter<ChangeLevelEvent>) {
-    change_level_events.send(ChangeLevelEvent::StartTutorial)
-}
 
 pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
     let mut position_rng = rand::thread_rng();
@@ -64,6 +61,7 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
             }
             shapes
         }
+        LevelType::ChallengeComplete(_) => vec![],
     };
 
     for (index, shape) in shapes.into_iter().enumerate() {
@@ -82,17 +80,7 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
     }
 }
 
-fn get_today_date() -> chrono::NaiveDate {
-    let today = chrono::offset::Utc::now();
-    today.date_naive()
-    //let js_today = js_sys::Date::new_0();
 
-    // chrono::NaiveDate::from_ymd_opt(
-    //     js_today.get_full_year().to_i32().unwrap(),
-    //     js_today.get_month() + 1,
-    //     js_today.get_date(),
-    // ).unwrap()
-}
 
 fn get_shape_spawn_position(i: usize) -> Vec2 {
     const COLS: usize = 6;

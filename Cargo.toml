@@ -16,6 +16,8 @@ web-sys = {version = "0.3", features = ['Window', 'TouchEvent', 'TouchList', 'To
 strum = { version = "0.24.1", features = ["derive"] }
 bevy_tweening = { version = "0.6.0", default-features = false, features = ["bevy_text"] }
 chrono = {version="0.4", features = ["serde", "wasmbind"]}
+bevy_pkv = "0.6.0"
+serde = { version = "1.0.151", features = ["derive"] }
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
