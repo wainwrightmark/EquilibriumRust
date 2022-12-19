@@ -145,7 +145,7 @@ fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server
                 text: Text::from_section(
                     menu_button.text(),
                     TextStyle {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font: asset_server.load("fonts/fontello.ttf"),
                         font_size: 30.0,
                         color: Color::rgb(0.9, 0.9, 0.9),
                     },
@@ -169,12 +169,12 @@ pub enum MenuButton {
 impl MenuButton {
     pub fn text(&self) -> &'static str {
         match self {
-            MenuButton::ToggleMenu => "Menu",
-            MenuButton::ResetLevel => "Reset Level",
-            MenuButton::GoFullscreen => "Fullscreen",
-            MenuButton::Tutorial => "Tutorial",
-            MenuButton::Infinite => "Infinite",
-            MenuButton::DailyChallenge => "Challenge",
+            MenuButton::ToggleMenu => "\u{f0c9}",// "Menu",
+            MenuButton::ResetLevel => "\u{e800}",//"Reset Level",
+            MenuButton::GoFullscreen => "\u{f0b2}",//"Fullscreen",
+            MenuButton::Tutorial => "\u{e801}",//"Tutorial",
+            MenuButton::Infinite => "\u{e802}",//"Infinite",
+            MenuButton::DailyChallenge =>"\u{e803}",// "Challenge",
         }
     }
 

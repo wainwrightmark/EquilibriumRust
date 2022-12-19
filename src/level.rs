@@ -43,14 +43,14 @@ fn skip_tutorial(
     let settings = SavedData::get_or_create(&mut pkv);
     if settings.tutorial_finished {
         if settings.has_beat_todays_challenge() {
-            info!("Skip to infinite");
+            //info!("Skip to infinite");
             change_level_events.send(ChangeLevelEvent::StartInfinite);
         } else {
-            info!("Skip to challenge");
+            //info!("Skip to challenge");
             change_level_events.send(ChangeLevelEvent::StartChallenge);
         }
     } else {
-        info!("Do tutorial");        
+        //info!("Do tutorial");        
         //change_level_events.send(ChangeLevelEvent::StartTutorial);
     }
 }
@@ -181,7 +181,7 @@ impl ChangeLevelEvent {
     #[must_use]
     pub fn apply(&self, level: &GameLevel, pkv: &mut ResMut<PkvStore>) -> GameLevel {
 
-        info!("Change level {:?}", self);
+        //info!("Change level {:?}", self);
         match self {
             ChangeLevelEvent::Next => {
                 match level.level_type {
