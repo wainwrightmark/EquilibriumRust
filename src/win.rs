@@ -1,9 +1,6 @@
-use std::borrow::BorrowMut;
-
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::PhysicsHooks;
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
@@ -11,6 +8,7 @@ use crate::*;
 #[derive(Component)]
 pub struct WinTimer {
     pub win_time: f64,
+    pub total_countdown: f64,
 }
 
 pub struct WinPlugin;
@@ -24,51 +22,26 @@ impl Plugin for WinPlugin {
     }
 }
 
-const COUNTDOWN: f64 = 1.0;
-const TIME_SCALE: f32 = 3.;
-
-fn scale_time(mut rapier_config: ResMut<RapierConfiguration>, scale: f32) {
-    match rapier_config.timestep_mode.borrow_mut() {
-        TimestepMode::Fixed { dt, substeps: _ } => {
-            *dt = scale / 60.;
-        }
-        TimestepMode::Variable {
-            max_dt,
-            time_scale,
-            substeps: _,
-        } => {
-            *time_scale = scale;
-            *max_dt = scale / 60.;
-        }
-        TimestepMode::Interpolated {
-            dt,
-            time_scale,
-            substeps: _,
-        } => {
-            *time_scale = scale;
-            *dt = scale / 60.;
-        }
-    }
-}
+const SHORT_COUNTDOWN: f64 = 0.5;
+const COUNTDOWN: f64 = 5.0;
 
 pub fn check_for_win(
     mut commands: Commands,
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
-    rapier_config: ResMut<RapierConfiguration>,
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
 
         if remaining <= 0f64 {
-            scale_time(rapier_config, 1.);
+            //scale_time(rapier_config, 1.);
 
             commands.entity(timer_entity).despawn();
 
             new_game_events.send(ChangeLevelEvent::Next);
         } else {
-            let new_scale = (remaining / COUNTDOWN) as f32;
+            let new_scale = (remaining / timer.total_countdown) as f32;
 
             timer_transform.scale = Vec3::new(new_scale, new_scale, 1.0);
         }
@@ -83,8 +56,8 @@ pub fn check_for_tower(
     dragged: Query<With<Dragged>>,
 
     mut collision_events: ResMut<Events<CollisionEvent>>,
-    mut rapier_context: ResMut<RapierContext>,
-    mut rapier_config: ResMut<RapierConfiguration>,
+    rapier_context: ResMut<RapierContext>,
+    // mut rapier_config: ResMut<RapierConfiguration>,
     walls: Query<(Entity, With<Wall>)>,
 ) {
     if !end_drag_events.iter().any(|_| true) {
@@ -99,49 +72,60 @@ pub fn check_for_tower(
     }
 
     //Check for contacts
-    for (wall, _) in walls.iter() {
-        for contact in rapier_context.contacts_with(wall) {
-            if contact.has_any_active_contacts() {
-                return;
-            }
-        }
+    if walls.iter().any(|(wall, _)| {
+        rapier_context
+            .contacts_with(wall)
+            .any(|contact| contact.has_any_active_contacts())
+    }) {
+        return;
     }
 
     collision_events.clear();
 
-    scale_time(rapier_config, TIME_SCALE);
+    //info!("{} Testing collision",  chrono::offset::Utc::now());
+    let will_collide_with_wall = {
+        let mut new_context = rapier_context.clone();
 
-    
+        new_context.step_simulation(
+            GRAVITY,
+            TimestepMode::Fixed {
+                dt: (COUNTDOWN * 2.) as f32,
+                substeps: (COUNTDOWN * 2. * 60.).floor() as usize,
+            },
+            None,
+            &(),
+            &time,
+            &mut SimulationToRenderTime { diff: 1. },
+            None,
+        );
 
-    // rapier_context.step_simulation(GRAVITY, 
-    //     TimestepMode::Variable { max_dt: 3000. / 60., time_scale: 1., substeps: 1 }, 
-        
-    //     None, &() , &time,
-    //     &mut SimulationToRenderTime{diff: 500.0},None);
+        walls.iter().any(|(wall, _)| {
+            new_context
+                .contacts_with(wall)
+                .any(|contact| contact.has_any_active_contacts())
+        })
+    };
+    //info!("{}: Test result {will_collide_with_wall}",  chrono::offset::Utc::now());
 
+    let countdown = if will_collide_with_wall {
+        COUNTDOWN
+    } else {
+        SHORT_COUNTDOWN
+    };
 
     commands
         .spawn(WinTimer {
-            win_time: time.elapsed_seconds_f64() + COUNTDOWN,
+            win_time: time.elapsed_seconds_f64() + countdown,
+            total_countdown: countdown,
         })
         .insert(Transform {
             translation: Vec3::new(50.0, 200.0, 0.0),
             ..Default::default()
         })
-        .insert(game_shape::circle::Circle {}.get_shape_bundle(
-            100f32,
-            DrawMode::Stroke(StrokeMode::color(Color::BLACK)), // ShapeAppearance {
-                                                               //     fill: Color::Hsla {
-                                                               //         hue: (100f32),
-                                                               //         saturation: (70f32),
-                                                               //         lightness: (70f32),
-                                                               //         alpha: (0.5),
-                                                               //     },
-                                                               //     stroke: Color::BLACK,
-                                                               //     line_width: 0f32,
-                                                               // },
-        ));
-
+        .insert(
+            game_shape::circle::Circle {}
+                .get_shape_bundle(100f32, DrawMode::Stroke(StrokeMode::color(Color::BLACK))),
+        );
 }
 
 fn check_for_contacts(
@@ -149,7 +133,7 @@ fn check_for_contacts(
     win_timer: Query<(Entity, &WinTimer)>,
     mut collision_events: EventReader<CollisionEvent>,
     dragged: Query<With<Dragged>>,
-    rapier_config: ResMut<RapierConfiguration>
+    // rapier_config: ResMut<RapierConfiguration>,
 ) {
     if win_timer.is_empty() {
         return; // no need to check
@@ -170,7 +154,7 @@ fn check_for_contacts(
     }
 
     if let Some(_error_message) = fail {
-        scale_time(rapier_config, 1.);
+        // scale_time(rapier_config, 1.);
         commands.entity(win_timer.single().0).despawn();
     }
 }

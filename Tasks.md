@@ -14,13 +14,16 @@
 - [x] Only drag one shape at once
 - [x] Good fullscreen mode
 - [x] Time speeds up to check for contracts
-- [ ] Check for contacts instantly, only show timer when a contact is detected
-
+- [x] Check for contacts instantly, only show timer when a contact is detected
+- [ ] Prevent shapes from getting stuck in each other
+- [ ] Keyboard / mousewheel rotation should snap
+- [ ] Better tutorial
+- [ ] Use icons instead of text in tutorial
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection
 - [ ] Campaign mode
-- [ ] Infinite mode 
+- [x] Infinite mode 
 - [ ] Stats tracking
 - [ ] Speedrun mode
 - [ ] Multiple Levels
