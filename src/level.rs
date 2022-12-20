@@ -50,8 +50,8 @@ fn skip_tutorial(
             change_level_events.send(ChangeLevelEvent::StartChallenge);
         }
     } else {
-        //info!("Do tutorial");        
-        //change_level_events.send(ChangeLevelEvent::StartTutorial);
+        info!("Do tutorial");        
+        change_level_events.send(ChangeLevelEvent::StartTutorial);
     }
 }
 
