@@ -103,7 +103,15 @@ pub fn remove_padlock(
 
 pub fn drag_end(
     mut er_drag_end: EventReader<DragEndEvent>,
-    mut dragged: Query<(Entity, &Draggable, &Dragged, &mut Transform)>,
+    mut dragged: Query<(
+        Entity,
+        &Draggable,
+        &Dragged,
+        &mut Transform,
+        &mut LockedAxes,
+        &mut GravityScale,
+        &mut Velocity
+    )>,
     touch_rotate: Query<(Entity, &TouchRotate)>,
     locked: Query<&Locked>,
     mut commands: Commands,
@@ -118,13 +126,17 @@ pub fn drag_end(
         dragged
             .iter_mut()
             .filter(|f| f.2.drag_source == event.drag_source)
-            .for_each(|(entity, _, dragged, _)| {
+            .for_each(|(entity, _, dragged, _, mut locked_axes, mut gravity_scale, mut velocity)| {
+                *locked_axes = LockedAxes::default();
+                gravity_scale.0 = 1.0;
+                // *velocity = Default::default();
                 if any_locked || dragged.was_locked {
                     commands
                         .entity(entity)
                         .remove::<Dragged>()
                         .remove::<RigidBody>()
-                        .insert(RigidBody::Dynamic);
+                        .insert(RigidBody::Dynamic)
+                        .insert(Dominance::group(0));
                 } else {
                     commands
                         .entity(entity)
@@ -205,9 +217,9 @@ pub fn drag_move(
 pub fn drag_start(
     mut er_drag_start: EventReader<DragStartEvent>,
     rapier_context: Res<RapierContext>,
-    draggables: Query<(&Draggable, Option<&Locked>, &Transform), Without<Dragged>>,
+    mut draggables: Query<(&Draggable, Option<&Locked>, &Transform, &mut LockedAxes, &mut GravityScale, &mut Velocity), (Without<Dragged>, Without<ZoomCamera>),>,
     dragged: Query<(&Dragged, &Transform)>,
-    mut cameras: Query<&mut bevy::render::camera::Camera, With<ZoomCamera>>,
+    mut cameras: Query<(&mut bevy::render::camera::Camera, &mut Transform, &OrthographicProjection), (With<ZoomCamera>, Without<Dragged>)>,
 
     mut commands: Commands,
 ) {
@@ -223,12 +235,16 @@ pub fn drag_start(
 
         if dragged.is_empty() {
             rapier_context.intersections_with_point(event.position, default(), |entity| {
-                if let Ok((draggable, locked, rb)) = draggables.get(entity) {
+                if let Ok((draggable, locked, transform, mut locked_axes, mut gravity_scale, mut velocity)) = draggables.get_mut(entity) {
                     debug!("{:?} found intersection with {:?}", event, draggable);
 
-                    let origin = rb.translation.truncate();
+                    let origin = transform.translation.truncate();
                     let offset = origin - event.position;
                     let was_locked = locked.is_some();
+                    *locked_axes = LockedAxes::ROTATION_LOCKED;
+
+                    gravity_scale.0 = 0.0;
+                    *velocity = Default::default();
 
                     commands
                         .entity(entity)
@@ -238,18 +254,17 @@ pub fn drag_start(
                             drag_source: event.drag_source,
                             was_locked,
                         })
-                        .remove::<RigidBody>()
-                        .insert(RigidBody::KinematicPositionBased)
-                        ;
+                        // .remove::<RigidBody>()
+                        .insert(RigidBody::Dynamic)
+                        .insert(Dominance::group(10));
 
                     if was_locked {
-                        commands
-                            .entity(entity)
-                            .remove::<Locked>();
+                        commands.entity(entity).remove::<Locked>();
                     }
 
                     if event.drag_source.is_touch() {
-                        for mut camera in cameras.iter_mut() {
+                        for( mut camera, mut camera_transform, projection) in cameras.iter_mut() {
+                            camera_transform.translation = origin.extend(0.0) * (1. - projection.scale);
                             camera.is_active = true;
                         }
                     }
@@ -264,7 +279,8 @@ pub fn drag_start(
         if !found {
             if let DragSource::Touch { id } = event.drag_source {
                 if let Some((_, transform)) = dragged
-                    .iter().find(|x| matches!(x.0.drag_source, DragSource::Touch { id: _ }))
+                    .iter()
+                    .find(|x| matches!(x.0.drag_source, DragSource::Touch { id: _ }))
                 {
                     commands.spawn(TouchRotate {
                         previous: event.position,

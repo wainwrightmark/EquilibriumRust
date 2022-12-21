@@ -101,13 +101,14 @@ pub fn create_shape(
         scale: Vec3::ONE,
     };
 
-    let rbb = RigidBody::Dynamic;
-
     commands
         .spawn(game_shape.body.get_shape_bundle(shape_size, draw_mode))
-        .insert(rbb)
+        .insert(RigidBody::Dynamic)
         .insert(collider_shape)
         .insert(transform)
         .insert(Ccd::enabled())
+        .insert(LockedAxes::default())
+        .insert(GravityScale::default())
+        .insert(Velocity::default())
         .insert(crate::Draggable {});
 }
