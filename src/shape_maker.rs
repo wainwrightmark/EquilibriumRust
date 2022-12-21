@@ -81,7 +81,7 @@ fn get_shape_spawn_position(i: usize) -> Vec2 {
     const COLS: usize = 6;
     let left = SHAPE_SIZE * (COLS as f32) / 2.;
     let x = ((i % COLS) as f32) * SHAPE_SIZE - left;
-    let y = (((i / COLS) as f32) * SHAPE_SIZE) - left;
+    let y = ((i / COLS) as f32) * SHAPE_SIZE;
 
     Vec2::new(x, y)
 }

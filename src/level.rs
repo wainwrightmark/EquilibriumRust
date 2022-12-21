@@ -6,6 +6,8 @@ use bevy_tweening::*;
 
 pub const SMALL_TEXT_COLOR: Color = Color::DARK_GRAY;
 
+pub const CHALLENGE_SHAPES: usize = 10;
+
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
@@ -198,7 +200,7 @@ impl ChangeLevelEvent {
                             }
                         } else {
                             GameLevel {
-                                shapes: 10,
+                                shapes: CHALLENGE_SHAPES,
                                 level_type: LevelType::Challenge,
                             }
                         }
@@ -240,7 +242,7 @@ impl ChangeLevelEvent {
                 level_type: LevelType::Infinite,
             },
             ChangeLevelEvent::StartChallenge => GameLevel {
-                shapes: 10,
+                shapes: CHALLENGE_SHAPES,
                 level_type: LevelType::Challenge,
             },
         }
