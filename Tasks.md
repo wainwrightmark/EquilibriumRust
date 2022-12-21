@@ -16,6 +16,8 @@
 - [x] Time speeds up to check for contracts
 - [x] Check for contacts instantly, only show timer when a contact is detected
 - [ ] Prevent shapes from getting stuck in each other
+- [x] Handle touch cancelled events
+- [ ] Rotate around the current point
 - [ ] Keyboard / mousewheel rotation should snap
 - [ ] Better tutorial
 - [ ] Use icons instead of text in tutorial

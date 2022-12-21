@@ -84,7 +84,7 @@ pub fn pool_touch_system(
                 continue;
             };
 
-            let touches: TouchList = if phase == TouchPhase::Ended {
+            let touches: TouchList = if phase == TouchPhase::Ended || phase == TouchPhase::Cancelled {
                 touch_event.changed_touches()
             } else {
                 touch_event.touches()
