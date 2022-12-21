@@ -1,7 +1,8 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::PhysicsPipeline;
+use bevy_rapier2d::rapier::crossbeam::atomic::AtomicCell;
+use bevy_rapier2d::rapier::prelude::{EventHandler, PhysicsPipeline};
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
@@ -88,7 +89,6 @@ pub fn check_for_tower(
         (COUNTDOWN * 2.) as f32,
         (COUNTDOWN * 2. * 60.).floor() as usize,
         GRAVITY,
-        walls.iter(),
     );
 
     let countdown = if will_collide_with_wall {
@@ -112,12 +112,11 @@ pub fn check_for_tower(
         );
 }
 
-fn check_future_collisions<I: Iterator<Item = Entity>>(
+fn check_future_collisions(
     context: &RapierContext,
     dt: f32,
     substeps: usize,
     gravity: Vect,
-    entities_to_check: I,
 ) -> bool {
     let mut pipeline = PhysicsPipeline::default();
 
@@ -132,8 +131,8 @@ fn check_future_collisions<I: Iterator<Item = Entity>>(
 
     let mut substep_integration_parameters = context.integration_parameters;
     substep_integration_parameters.dt = dt / (substeps as Real);
-    
-    for _ in 0..substeps {
+    let event_handler = SensorCollisionHandler::default();
+    for _i in 0..substeps {
         pipeline.step(
             &(gravity / context.physics_scale()).into(),
             &context.integration_parameters,
@@ -146,17 +145,51 @@ fn check_future_collisions<I: Iterator<Item = Entity>>(
             &mut multibody_joints,
             &mut ccd_solver,
             &(),
-            &(),
+            &event_handler,
         );
+
+        if event_handler.collisions_found.load() {
+            //info!("Collision detected after {i} substeps");
+            return true;
+        }
     }
 
-    entities_to_check
-        .flat_map(|e| context.entity2collider().get(&e))
-        .any(|e| {
-            narrow_phase
-                .contacts_with(*e)
-                .any(|x| x.has_any_active_contact)
-        })
+    //info!("No collision detected");
+    return false;
+}
+
+#[derive(Default, Debug)]
+struct SensorCollisionHandler {
+    pub collisions_found: AtomicCell<bool>,
+}
+
+impl EventHandler for SensorCollisionHandler {
+    fn handle_collision_event(
+        &self,
+        _bodies: &bevy_rapier2d::rapier::prelude::RigidBodySet,
+        colliders: &bevy_rapier2d::rapier::prelude::ColliderSet,
+        event: bevy_rapier2d::rapier::prelude::CollisionEvent,
+        _contact_pair: Option<&bevy_rapier2d::rapier::prelude::ContactPair>,
+    ) {
+        for c in [event.collider1(), event.collider2()] {
+            if let Some(collider) = colliders.get(c) {
+                if collider.is_sensor() {
+                    self.collisions_found.store(true);
+                }
+            }
+        }
+    }
+
+    fn handle_contact_force_event(
+        &self,
+        _dt: bevy_rapier2d::rapier::prelude::Real,
+        _bodies: &bevy_rapier2d::rapier::prelude::RigidBodySet,
+        _colliders: &bevy_rapier2d::rapier::prelude::ColliderSet,
+        _contact_pair: &bevy_rapier2d::rapier::prelude::ContactPair,
+        _total_force_magnitude: bevy_rapier2d::rapier::prelude::Real,
+    ) {
+        //Do nothing
+    }
 }
 
 fn check_for_contacts(

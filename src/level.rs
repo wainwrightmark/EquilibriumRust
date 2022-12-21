@@ -23,7 +23,7 @@ pub fn handle_change_level(
     mut current_level: ResMut<CurrentLevel>,
     input_detector: Res<InputDetector>,
     level_text: Query<(Entity, &mut Text), With<LevelText>>,
-    mut pkv: ResMut<PkvStore>
+    mut pkv: ResMut<PkvStore>,
 ) {
     if let Some(event) = change_level_events.iter().next() {
         for (e, _) in draggables.iter() {
@@ -50,7 +50,7 @@ fn skip_tutorial(
             change_level_events.send(ChangeLevelEvent::StartChallenge);
         }
     } else {
-        info!("Do tutorial");        
+        info!("Do tutorial");
         change_level_events.send(ChangeLevelEvent::StartTutorial);
     }
 }
@@ -154,7 +154,9 @@ impl GameLevel {
             },
             LevelType::Infinite => None,
             LevelType::Challenge => Some("Daily Challenge".to_string()),
-            LevelType::ChallengeComplete(streak) => Some(format!("Congratulations. Your streak is {streak}!")),
+            LevelType::ChallengeComplete(streak) => {
+                Some(format!("Congratulations. Your streak is {streak}!"))
+            }
         }
     }
 }
@@ -164,7 +166,7 @@ pub enum LevelType {
     Tutorial,
     Infinite,
     Challenge,
-    ChallengeComplete(usize)
+    ChallengeComplete(usize),
 }
 
 #[derive(Debug)]
@@ -180,61 +182,50 @@ pub enum ChangeLevelEvent {
 impl ChangeLevelEvent {
     #[must_use]
     pub fn apply(&self, level: &GameLevel, pkv: &mut ResMut<PkvStore>) -> GameLevel {
-
         //info!("Change level {:?}", self);
         match self {
-            ChangeLevelEvent::Next => {
-                match level.level_type {
-                    LevelType::Tutorial => 
-                    {
-                        if level.shapes >= 4 {
-                            let saved_data = SavedData::update(pkv, |mut x| {
-                                x.tutorial_finished = true;
-                                x
-                            });
-                            if saved_data.has_beat_todays_challenge(){
-                                GameLevel {
-                                    shapes: level.shapes + 1,
-                                    level_type: LevelType::Infinite,
-                                }
-                            }
-                            else{
-                                GameLevel {
-                                    shapes: 10,
-                                    level_type: LevelType::Challenge,
-                                }
-                            }
-                            
-                        } else {
+            ChangeLevelEvent::Next => match level.level_type {
+                LevelType::Tutorial => {
+                    if level.shapes >= 4 {
+                        let saved_data = SavedData::update(pkv, |mut x| {
+                            x.tutorial_finished = true;
+                            x
+                        });
+                        if saved_data.has_beat_todays_challenge() {
                             GameLevel {
                                 shapes: level.shapes + 1,
-                                level_type: LevelType::Tutorial,
+                                level_type: LevelType::Infinite,
+                            }
+                        } else {
+                            GameLevel {
+                                shapes: 10,
+                                level_type: LevelType::Challenge,
                             }
                         }
-                    }
-                    LevelType::Infinite => GameLevel {
-                        shapes: level.shapes + 1,
-                        level_type: LevelType::Infinite,
-                    },
-                    LevelType::Challenge => {
-                        let saved_data =
-                        SavedData::update(pkv, |x| {
-                            x.with_todays_challenge_beat()
-                        });
-
+                    } else {
                         GameLevel {
                             shapes: level.shapes + 1,
-                            level_type: LevelType::ChallengeComplete(saved_data.challenge_streak),
+                            level_type: LevelType::Tutorial,
                         }
                     }
-                    LevelType::ChallengeComplete(x) =>GameLevel {
-                        shapes: level.shapes + 1,
-                        level_type: LevelType::ChallengeComplete(x),
-                    },
                 }
+                LevelType::Infinite => GameLevel {
+                    shapes: level.shapes + 1,
+                    level_type: LevelType::Infinite,
+                },
+                LevelType::Challenge => {
+                    let saved_data = SavedData::update(pkv, |x| x.with_todays_challenge_beat());
 
-                
-            }
+                    GameLevel {
+                        shapes: level.shapes + 1,
+                        level_type: LevelType::ChallengeComplete(saved_data.challenge_streak),
+                    }
+                }
+                LevelType::ChallengeComplete(x) => GameLevel {
+                    shapes: level.shapes + 1,
+                    level_type: LevelType::ChallengeComplete(x),
+                },
+            },
             // ChangeLevelEvent::Previous => GameLevel {
             //     shapes: level.shapes.saturating_sub(1).max(1),
             //     level_type: level.level_type,

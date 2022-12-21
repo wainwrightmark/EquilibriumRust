@@ -1,15 +1,14 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use chrono::{Datelike};
+use chrono::Datelike;
 use itertools::Itertools;
 
 use crate::{game_shape::GameShape, *};
 
-use rand::{seq::SliceRandom, Rng, rngs::StdRng};
+use rand::{rngs::StdRng, seq::SliceRandom, Rng};
 
 pub const SHAPE_SIZE: f32 = 50f32;
 pub const MAX_SHAPES: usize = 36;
-
 
 pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
     let mut position_rng = rand::thread_rng();
@@ -49,10 +48,8 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
             let mut shapes: Vec<&'static GameShape> = vec![];
 
             let today = get_today_date();
-            let seed = ((today.year().abs() as u32) * 2000)
-                + (today.month() * 100)
-                + today.day();
-            let mut shape_rng : StdRng = rand::SeedableRng::seed_from_u64(seed as u64);
+            let seed = ((today.year().abs() as u32) * 2000) + (today.month() * 100) + today.day();
+            let mut shape_rng: StdRng = rand::SeedableRng::seed_from_u64(seed as u64);
             for _ in 0..level.shapes {
                 let shape = crate::game_shape::ALL_SHAPES
                     .choose(&mut shape_rng)
@@ -79,8 +76,6 @@ pub fn create_level_shapes(commands: &mut Commands, level: GameLevel) {
         );
     }
 }
-
-
 
 fn get_shape_spawn_position(i: usize) -> Vec2 {
     const COLS: usize = 6;

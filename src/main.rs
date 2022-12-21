@@ -15,10 +15,10 @@ mod camera;
 mod draggable;
 mod grid;
 mod saved_data;
-use saved_data::*;
 use bevy_tweening::TweeningPlugin;
 use camera::*;
 use draggable::*;
+use saved_data::*;
 mod level;
 use level::*;
 mod walls;
@@ -116,7 +116,7 @@ pub fn setup(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = GRAVITY;
 }
 
-pub const GRAVITY : Vec2 = Vec2::new(0.0, -1000.0);
+pub const GRAVITY: Vec2 = Vec2::new(0.0, -1000.0);
 
 pub fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();

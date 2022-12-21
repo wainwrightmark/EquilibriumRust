@@ -8,8 +8,7 @@ impl Plugin for CameraPlugin {
     }
 }
 
-
-fn setup(mut commands: Commands,) {
+fn setup(mut commands: Commands) {
     commands
         .spawn(Camera2dBundle::new_with_far(1000.0))
         .insert(MainCamera);

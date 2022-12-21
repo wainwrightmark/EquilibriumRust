@@ -37,7 +37,7 @@ impl GameShape {
         Color::hsla(hue as f32, SATURATION, LIGHTNESS, ALPHA)
     }
 
-    pub fn draw_mode(&self)-> DrawMode{
+    pub fn draw_mode(&self) -> DrawMode {
         DrawMode::Outlined {
             fill_mode: FillMode::color(self.default_fill_color()),
             outline_mode: StrokeMode {

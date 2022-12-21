@@ -5,11 +5,10 @@ pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup.after(setup_level_text))            
+        app.add_startup_system(setup.after(setup_level_text))
             .add_system_to_stage(CoreStage::First, button_system);
     }
 }
-
 
 #[derive(Component)]
 pub struct MainMenu;
@@ -25,20 +24,21 @@ fn button_system(
         (Changed<Interaction>, With<Button>),
     >,
     mut change_level_events: EventWriter<crate::ChangeLevelEvent>,
-    mut menu_query: Query<&mut Visibility, With<MainMenu>>
+    mut menu_query: Query<&mut Visibility, With<MainMenu>>,
 ) {
     for (interaction, mut color, button) in interaction_query.iter_mut() {
         //info!("{:?}", interaction);
         match *interaction {
             Interaction::Clicked => {
                 *color = PRESSED_BUTTON.into();
-                 let mut menu = menu_query.single_mut();
+                let mut menu = menu_query.single_mut();
 
                 //info!("{:?}", *button);
                 match *button {
-                    MenuButton::ToggleMenu => {menu.is_visible = !menu.is_visible}
+                    MenuButton::ToggleMenu => menu.is_visible = !menu.is_visible,
                     MenuButton::GoFullscreen => {
-                        #[cfg(target_arch = "wasm32")]{
+                        #[cfg(target_arch = "wasm32")]
+                        {
                             crate::wasm::request_fullscreen();
                         }
                     }
@@ -56,7 +56,7 @@ fn button_system(
                     }
                 }
 
-                if !matches!(*button, MenuButton::ToggleMenu){
+                if !matches!(*button, MenuButton::ToggleMenu) {
                     menu.is_visible = false;
                 }
             }
@@ -95,7 +95,6 @@ fn spawn_menu(commands: &mut Commands, asset_server: &AssetServer) {
                 ResetLevel,
                 #[cfg(target_arch = "wasm32")]
                 GoFullscreen,
-                
                 Tutorial,
                 Infinite,
                 DailyChallenge,
@@ -169,12 +168,12 @@ pub enum MenuButton {
 impl MenuButton {
     pub fn text(&self) -> &'static str {
         match self {
-            MenuButton::ToggleMenu => "\u{f0c9}",// "Menu",
-            MenuButton::ResetLevel => "\u{e800}",//"Reset Level",
-            MenuButton::GoFullscreen => "\u{f0b2}",//"Fullscreen",
-            MenuButton::Tutorial => "\u{e801}",//"Tutorial",
-            MenuButton::Infinite => "\u{e802}",//"Infinite",
-            MenuButton::DailyChallenge =>"\u{e803}",// "Challenge",
+            MenuButton::ToggleMenu => "\u{f0c9}",     // "Menu",
+            MenuButton::ResetLevel => "\u{e800}",     //"Reset Level",
+            MenuButton::GoFullscreen => "\u{f0b2}",   //"Fullscreen",
+            MenuButton::Tutorial => "\u{e801}",       //"Tutorial",
+            MenuButton::Infinite => "\u{e802}",       //"Infinite",
+            MenuButton::DailyChallenge => "\u{e803}", // "Challenge",
         }
     }
 

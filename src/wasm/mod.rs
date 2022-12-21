@@ -1,10 +1,10 @@
+use crate::input::{convert_screen_to_world_position, InputDetector};
+use crate::*;
 use bevy::input::touch::{ForceTouch, TouchPhase};
 use bevy::window::WindowResized;
 use bevy::{input::InputSystem, prelude::*};
 use wasm_bindgen::prelude::*;
 use web_sys::{TouchEvent, TouchList};
-use crate::*;
-use crate::input::{convert_screen_to_world_position, InputDetector};
 
 #[wasm_bindgen]
 extern "C" {
@@ -84,7 +84,8 @@ pub fn pool_touch_system(
                 continue;
             };
 
-            let touches: TouchList = if phase == TouchPhase::Ended || phase == TouchPhase::Cancelled {
+            let touches: TouchList = if phase == TouchPhase::Ended || phase == TouchPhase::Cancelled
+            {
                 touch_event.changed_touches()
             } else {
                 touch_event.touches()
@@ -148,7 +149,6 @@ impl Plugin for WASMPlugin {
             app.add_startup_system_to_stage(StartupStage::PostStartup, check_touch);
         }
 
-        
         app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
     }
 }

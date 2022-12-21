@@ -1,34 +1,31 @@
-use std::{ops::{ Add, Mul, Neg}, fmt::Debug};
+use std::{
+    fmt::Debug,
+    ops::{Add, Mul, Neg},
+};
 
 // use super::grid_error::GridError;
 
-#[derive( Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug )]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]
 pub struct Qr {
     x: i16,
     y: i16,
 }
 
-impl std::fmt::Display for Qr{
+impl std::fmt::Display for Qr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-
-        if *self == Qr::ZERO{
+        if *self == Qr::ZERO {
             write!(f, "Zero")
-        }
-        else{
-
-            if let Some(index) = Qr::UNITS.iter().position(|x|x == self){
+        } else {
+            if let Some(index) = Qr::UNITS.iter().position(|x| x == self) {
                 let name = Qr::UNIT_NAMES[index];
                 write!(f, "{name}")
-            } else{
-                f.debug_struct("Qr").field("x", &self.x).field("y", &self.y).finish()
+            } else {
+                f.debug_struct("Qr")
+                    .field("x", &self.x)
+                    .field("y", &self.y)
+                    .finish()
             }
-
-
-
-            
         }
-
-        
     }
 }
 
@@ -58,7 +55,7 @@ impl Qr {
         Self::WEST,
         Self::NORTHWEST,
     ];
-    
+
     pub const UNIT_NAMES: [&'static str; 8] = [
         "North",
         "North East",
