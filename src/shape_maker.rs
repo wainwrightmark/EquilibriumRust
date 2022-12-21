@@ -108,5 +108,6 @@ pub fn create_shape(
         .insert(rbb)
         .insert(collider_shape)
         .insert(transform)
+        .insert(Ccd::enabled())
         .insert(crate::Draggable {});
 }

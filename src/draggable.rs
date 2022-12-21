@@ -81,7 +81,7 @@ pub fn add_padlock(mut commands: Commands, locked: Query<&Transform, Added<Locke
                 DrawMode::Fill(FillMode {
                     options: FillOptions::DEFAULT,
                     color: Color::BLACK,
-                }), // ::Stroke(StrokeMode::new(Color::BLACK, 4.0)),
+                }),
                 transform,
             ))
             .insert(Padlock {});
@@ -131,9 +131,7 @@ pub fn drag_end(
                         .remove::<Dragged>()
                         .remove::<RigidBody>()
                         .insert(RigidBody::Fixed)
-                        .insert(Locked {})
-                        // .insert(DrawMode::Fill(FillMode::color(Color::GRAY)))
-                        ;
+                        .insert(Locked {});
                     any_locked = true;
                 }
                 count -= 1;
@@ -168,8 +166,6 @@ pub fn drag_move(
             .iter_mut()
             .find(|d| d.0.drag_source == event.drag_source)
         {
-            //debug!("Drag Move");
-
             let max_x: f32 = crate::WINDOW_WIDTH / 2.0; //You can't leave the game area
             let max_y: f32 = crate::WINDOW_HEIGHT / 2.0;
 
@@ -229,7 +225,6 @@ pub fn drag_start(
             rapier_context.intersections_with_point(event.position, default(), |entity| {
                 if let Ok((draggable, locked, rb)) = draggables.get(entity) {
                     debug!("{:?} found intersection with {:?}", event, draggable);
-                    //println!("Entity {:?} set to dragged", entity);
 
                     let origin = rb.translation.truncate();
                     let offset = origin - event.position;
@@ -244,16 +239,13 @@ pub fn drag_start(
                             was_locked,
                         })
                         .remove::<RigidBody>()
-                        .insert(RigidBody::KinematicPositionBased);
+                        .insert(RigidBody::KinematicPositionBased)
+                        ;
 
                     if was_locked {
                         commands
                             .entity(entity)
-                            .remove::<Locked>()
-                            // .insert(DrawMode::Fill(FillMode::color(
-                            //     draggable.game_shape.default_fill_color(),
-                            // )))
-                            ;
+                            .remove::<Locked>();
                     }
 
                     if event.drag_source.is_touch() {
