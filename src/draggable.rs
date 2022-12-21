@@ -82,7 +82,7 @@ pub fn add_padlock(mut commands: Commands, locked: Query<&Transform, Added<Locke
                     options: FillOptions::DEFAULT,
                     color: Color::BLACK,
                 }), // ::Stroke(StrokeMode::new(Color::BLACK, 4.0)),
-                transform.clone(),
+                transform,
             ))
             .insert(Padlock {});
     }
@@ -191,7 +191,7 @@ pub fn drag_move(
                 }
             }
         } else if let DragSource::Touch { id } = event.drag_source {
-            if let Some(mut rotate) = touch_rotate.iter_mut().filter(|x| x.touch_id == id).next() {
+            if let Some(mut rotate) = touch_rotate.iter_mut().find(|x| x.touch_id == id) {
                 let previous_angle = rotate.centre.angle_between(rotate.previous);
                 let new_angle = rotate.centre.angle_between(event.new_position);
                 rotate.previous = event.new_position;
@@ -272,9 +272,7 @@ pub fn drag_start(
         if !found {
             if let DragSource::Touch { id } = event.drag_source {
                 if let Some((_, transform)) = dragged
-                    .iter()
-                    .filter(|x| matches!(x.0.drag_source, DragSource::Touch { id: _ }))
-                    .next()
+                    .iter().find(|x| matches!(x.0.drag_source, DragSource::Touch { id: _ }))
                 {
                     commands.spawn(TouchRotate {
                         previous: event.position,

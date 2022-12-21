@@ -53,7 +53,7 @@ impl<const S: usize> GameShapeBody for Shape<S> {
     ) -> bevy_prototype_lyon::entity::ShapeBundle {
         let points = get_vertices(self, shape_size).collect_vec();
         let shape = Polygon {
-            points: points,
+            points,
             closed: true,
         };
 

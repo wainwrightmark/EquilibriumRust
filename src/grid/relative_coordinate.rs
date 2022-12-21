@@ -15,16 +15,14 @@ impl std::fmt::Display for Qr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if *self == Qr::ZERO {
             write!(f, "Zero")
+        } else if let Some(index) = Qr::UNITS.iter().position(|x| x == self) {
+            let name = Qr::UNIT_NAMES[index];
+            write!(f, "{name}")
         } else {
-            if let Some(index) = Qr::UNITS.iter().position(|x| x == self) {
-                let name = Qr::UNIT_NAMES[index];
-                write!(f, "{name}")
-            } else {
-                f.debug_struct("Qr")
-                    .field("x", &self.x)
-                    .field("y", &self.y)
-                    .finish()
-            }
+            f.debug_struct("Qr")
+                .field("x", &self.x)
+                .field("y", &self.y)
+                .finish()
         }
     }
 }

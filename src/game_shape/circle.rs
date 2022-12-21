@@ -30,7 +30,7 @@ impl GameShapeBody for Circle {
     ) -> bevy_prototype_lyon::entity::ShapeBundle {
         GeometryBuilder::build_as(
             &circle_geometry(shape_size),
-            draw_mode.into(),
+            draw_mode,
             Transform::default(),
         )
     }

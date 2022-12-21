@@ -155,7 +155,7 @@ fn check_future_collisions(
     }
 
     //info!("No collision detected");
-    return false;
+    false
 }
 
 #[derive(Default, Debug)]

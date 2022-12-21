@@ -166,7 +166,7 @@ impl<const P: usize> PolyominoShape for Shape<P> {
     type OutlineIter = OutlineIter<P>;
 
     fn draw_outline(&self) -> Self::OutlineIter {
-        let mut arr = self.0.clone();
+        let mut arr = self.0;
         arr.sort();
         OutlineIter {
             arr,

@@ -230,7 +230,7 @@ impl ChangeLevelEvent {
             //     shapes: level.shapes.saturating_sub(1).max(1),
             //     level_type: level.level_type,
             // },
-            ChangeLevelEvent::ResetLevel => level.clone(),
+            ChangeLevelEvent::ResetLevel => *level,
             ChangeLevelEvent::StartTutorial => GameLevel {
                 shapes: 1,
                 level_type: LevelType::Tutorial,

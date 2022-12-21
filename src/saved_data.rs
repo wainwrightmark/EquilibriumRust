@@ -36,11 +36,11 @@ impl SavedData {
                 };
             }
         }
-        return Self {
+        Self {
             tutorial_finished: true,
             challenge_streak: 1,
             last_challenge: Some(today),
-        };
+        }
     }
 
     pub fn update<F: FnOnce(SavedData) -> SavedData>(
@@ -62,11 +62,7 @@ impl SavedData {
     pub fn has_beat_todays_challenge(&self) -> bool {
         if let Some(last_win) = self.last_challenge {
             let today = get_today_date();
-            if last_win == today {
-                return true;
-            } else {
-                return false;
-            }
+            last_win == today
         } else {
             false
         }
