@@ -18,7 +18,7 @@
 - [ ] Prevent shapes from getting stuck in each other
 - [x] Handle touch cancelled events
 - [ ] Rotate around the current point
-- [ ] Keyboard / mousewheel rotation should snap
+- [x] Keyboard / mousewheel rotation should snap
 - [ ] Better tutorial
 - [ ] Use icons instead of text in tutorial
 

@@ -33,8 +33,7 @@ impl Plugin for DragPlugin {
             .add_event::<DragStartEvent>()
             .add_event::<DragMoveEvent>()
             .add_event::<DragEndEvent>()
-            .add_event::<DragEndedEvent>();
-        ;
+            .add_event::<DragEndedEvent>();        
     }
 }
 
@@ -46,8 +45,23 @@ fn handle_rotate_events(
     for ev in ev_rotate.iter() {
         for (mut rb, _) in dragged.iter_mut() {
             rb.rotation *= Quat::from_rotation_z(ev.angle);
+            if let Some(multiple) = ev.snap_resolution{
+                rb.rotation = round_z(rb.rotation, multiple);
+            }
+            
         }
     }
+}
+
+fn round_z(q : Quat, multiple: f32) -> Quat{    
+    let multiple = multiple / 2.;
+    let [x,y,z, w] = q.to_array();
+    let mut asin_z = z.asin(); 
+    let mut acos_w = w.acos();
+    asin_z =  f32::round(asin_z / multiple) * multiple;
+    acos_w =  f32::round(acos_w / multiple) * multiple;
+
+    Quat::from_xyzw(x, y, asin_z.sin(), acos_w.cos())
 }
 
 pub fn add_padlock(mut commands: Commands, locked: Query<&Transform, Added<Locked>>) {
@@ -176,7 +190,7 @@ pub fn drag_move(
                 rotate.previous = event.new_position;
                 let angle = new_angle - previous_angle;
 
-                ev_rotate.send(RotateEvent { angle })
+                ev_rotate.send(RotateEvent { angle, snap_resolution: None })
             }
         }
     }
@@ -292,10 +306,9 @@ pub struct TouchRotate {
     pub touch_id: u64,
 }
 #[derive(Debug)]
-pub struct RotateEvent {
-    //entity: Entity,
-    pub angle: f32, //pub clockwise: bool, // rotation: f32,
-                    // rotation_interval: f32
+pub struct RotateEvent {    
+    pub angle: f32,
+    pub snap_resolution: Option<f32>
 }
 
 #[derive(Debug)]

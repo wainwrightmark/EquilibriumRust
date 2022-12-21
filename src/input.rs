@@ -1,3 +1,5 @@
+use std::num::NonZeroU8;
+
 use bevy::input::keyboard::*;
 use bevy::input::mouse::*;
 use bevy::input::touch::*;
@@ -9,9 +11,8 @@ use crate::*;
 pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .insert_resource(InputDetector::default())
-        .add_system(touch_listener)
+        app.insert_resource(InputDetector::default())
+            .add_system(touch_listener)
             .add_system(keyboard_listener)
             .add_system(mousewheel_listener)
             .add_system(mousebutton_listener.after(touch_listener));
@@ -140,6 +141,8 @@ pub fn touch_listener(
     }
 }
 
+const SNAP_RESOLUTION: f32 = std::f32::consts::TAU / 16.0;
+
 pub fn keyboard_listener(
     mut key_evr: EventReader<KeyboardInput>,
     mut rotate_evw: EventWriter<RotateEvent>,
@@ -148,12 +151,15 @@ pub fn keyboard_listener(
         if let Some(code) = ev.key_code {
             if let bevy::input::ButtonState::Pressed = ev.state {
                 let angle = match code {
-                    KeyCode::E => Some(-std::f32::consts::TAU / 16.0),
-                    KeyCode::Q => Some(std::f32::consts::TAU / 16.0),
+                    KeyCode::E => Some(-SNAP_RESOLUTION),
+                    KeyCode::Q => Some(SNAP_RESOLUTION),
                     _ => None,
                 };
                 if let Some(angle) = angle {
-                    rotate_evw.send(RotateEvent { angle });
+                    rotate_evw.send(RotateEvent {
+                        angle,
+                        snap_resolution: Some(SNAP_RESOLUTION),
+                    });
                 }
             }
         }
@@ -165,15 +171,16 @@ pub fn mousewheel_listener(
     mut ev_rotate: EventWriter<RotateEvent>,
 ) {
     for ev in scroll_evr.iter() {
-        let angle = (ev.x + ev.y).signum() * std::f32::consts::TAU / 16.0 * -1.;
-        let event = RotateEvent { angle };
+        let angle = (ev.x + ev.y).signum() * SNAP_RESOLUTION;
+        let event = RotateEvent {
+            angle,
+            snap_resolution: Some(SNAP_RESOLUTION),
+        };
         ev_rotate.send(event);
     }
 }
 
-
 #[derive(Resource, Default)]
-pub struct  InputDetector{
-    pub is_touch: bool
-
+pub struct InputDetector {
+    pub is_touch: bool,
 }
