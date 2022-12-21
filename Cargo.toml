@@ -9,7 +9,7 @@ edition = "2021"
 rand = "0.8.5"
 itertools = "0.10"
 bevy_prototype_lyon = "0.7"
-bevy_rapier2d = { git="https://github.com/wainwrightmark/bevy_rapier.git" }
+bevy_rapier2d = {version = "0.19" }
 console_error_panic_hook = "0.1"
 wasm-bindgen = "0.2"
 web-sys = {version = "0.3", features = ['Window', 'TouchEvent', 'TouchList', 'Touch']}
@@ -37,7 +37,7 @@ resolver = "2" # Important! wgpu/Bevy needs this!
 [dev-dependencies]
 insta = "1.23"
 test-case = "2.2"
-bevy_rapier2d = { git="https://github.com/wainwrightmark/bevy_rapier.git", features = [  "debug-render", "serde-serialize" ] }
+bevy_rapier2d = { version = "0.19", features = [  "debug-render", "serde-serialize" ] }
 
 [profile.release]
 opt-level = 'z'

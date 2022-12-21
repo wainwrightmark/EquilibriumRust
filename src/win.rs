@@ -1,6 +1,7 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::PhysicsPipeline;
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
@@ -58,7 +59,7 @@ pub fn check_for_tower(
     mut collision_events: ResMut<Events<CollisionEvent>>,
     rapier_context: ResMut<RapierContext>,
     // mut rapier_config: ResMut<RapierConfiguration>,
-    walls: Query<(Entity, With<Wall>)>,
+    walls: Query<Entity, With<Wall>>,
 ) {
     if !end_drag_events.iter().any(|_| true) {
         return;
@@ -72,9 +73,9 @@ pub fn check_for_tower(
     }
 
     //Check for contacts
-    if walls.iter().any(|(wall, _)| {
+    if walls.iter().any(|entity| {
         rapier_context
-            .contacts_with(wall)
+            .contacts_with(entity)
             .any(|contact| contact.has_any_active_contacts())
     }) {
         return;
@@ -82,30 +83,13 @@ pub fn check_for_tower(
 
     collision_events.clear();
 
-    //info!("{} Testing collision",  chrono::offset::Utc::now());
-    let will_collide_with_wall = {
-        let mut new_context = rapier_context.clone();
-
-        new_context.step_simulation(
-            GRAVITY,
-            TimestepMode::Fixed {
-                dt: (COUNTDOWN * 2.) as f32,
-                substeps: (COUNTDOWN * 2. * 60.).floor() as usize,
-            },
-            None,
-            &(),
-            &time,
-            &mut SimulationToRenderTime { diff: 1. },
-            None,
-        );
-
-        walls.iter().any(|(wall, _)| {
-            new_context
-                .contacts_with(wall)
-                .any(|contact| contact.has_any_active_contacts())
-        })
-    };
-    //info!("{}: Test result {will_collide_with_wall}",  chrono::offset::Utc::now());
+    let will_collide_with_wall = check_future_collisions(
+        &rapier_context,
+        (COUNTDOWN * 2.) as f32,
+        (COUNTDOWN * 2. * 60.).floor() as usize,
+        GRAVITY,
+        walls.iter(),
+    );
 
     let countdown = if will_collide_with_wall {
         COUNTDOWN
@@ -126,6 +110,53 @@ pub fn check_for_tower(
             game_shape::circle::Circle {}
                 .get_shape_bundle(100f32, DrawMode::Stroke(StrokeMode::color(Color::BLACK))),
         );
+}
+
+fn check_future_collisions<I: Iterator<Item = Entity>>(
+    context: &RapierContext,
+    dt: f32,
+    substeps: usize,
+    gravity: Vect,
+    entities_to_check: I,
+) -> bool {
+    let mut pipeline = PhysicsPipeline::default();
+
+    let mut islands = context.islands.clone();
+    let mut broad_phase = context.broad_phase.clone();
+    let mut narrow_phase = context.narrow_phase.clone();
+    let mut bodies = context.bodies.clone();
+    let mut colliders = context.colliders.clone();
+    let mut impulse_joints = context.impulse_joints.clone();
+    let mut multibody_joints = context.multibody_joints.clone();
+    let mut ccd_solver = context.ccd_solver.clone();
+
+    let mut substep_integration_parameters = context.integration_parameters;
+    substep_integration_parameters.dt = dt / (substeps as Real);
+    
+    for _ in 0..substeps {
+        pipeline.step(
+            &(gravity / context.physics_scale()).into(),
+            &context.integration_parameters,
+            &mut islands,
+            &mut broad_phase,
+            &mut narrow_phase,
+            &mut bodies,
+            &mut colliders,
+            &mut impulse_joints,
+            &mut multibody_joints,
+            &mut ccd_solver,
+            &(),
+            &(),
+        );
+    }
+
+    entities_to_check
+        .flat_map(|e| context.entity2collider().get(&e))
+        .any(|e| {
+            narrow_phase
+                .contacts_with(*e)
+                .any(|x| x.has_any_active_contact)
+        })
 }
 
 fn check_for_contacts(
