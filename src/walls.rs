@@ -1,5 +1,4 @@
 use bevy_prototype_lyon::shapes::Rectangle;
-use bevy_rapier2d::rapier::prelude::ColliderBuilder;
 
 use crate::*;
 

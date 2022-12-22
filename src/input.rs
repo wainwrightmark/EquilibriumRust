@@ -111,27 +111,27 @@ pub fn touch_listener(
         match ev.phase {
             TouchPhase::Started => {
                 ew_drag_start.send(DragStartEvent {
-                    drag_source: DragSource::Touch { id: ev.id },
+                    drag_source: DragSource::Touch { touch_id: ev.id },
                     position: ev.position,
                 });
                 debug!("Touch {} started at: {:?}", ev.id, ev.position);
             }
             TouchPhase::Moved => {
                 ew_drag_move.send(DragMoveEvent {
-                    drag_source: DragSource::Touch { id: ev.id },
+                    drag_source: DragSource::Touch { touch_id: ev.id },
                     new_position: ev.position,
                 });
                 debug!("Touch {} moved to: {:?}", ev.id, ev.position);
             }
             TouchPhase::Ended => {
                 ew_drag_end.send(DragEndEvent {
-                    drag_source: DragSource::Touch { id: ev.id },
+                    drag_source: DragSource::Touch { touch_id: ev.id },
                 });
                 debug!("Touch {} ended at: {:?}", ev.id, ev.position);
             }
             TouchPhase::Cancelled => {
                 ew_drag_end.send(DragEndEvent {
-                    drag_source: DragSource::Touch { id: ev.id },
+                    drag_source: DragSource::Touch { touch_id: ev.id },
                 });
                 debug!("Touch {} cancelled at: {:?}", ev.id, ev.position);
             }

@@ -55,7 +55,7 @@ pub fn check_for_tower(
     mut end_drag_events: EventReader<crate::DragEndedEvent>,
     win_timer: Query<&WinTimer>,
     time: Res<Time>,
-    dragged: Query<With<Dragged>>,
+    draggable: Query<&Draggable>,
 
     mut collision_events: ResMut<Events<CollisionEvent>>,
     rapier_context: ResMut<RapierContext>,
@@ -69,7 +69,7 @@ pub fn check_for_tower(
         return; // no need to check, we're already winning
     }
 
-    if !dragged.is_empty() {
+    if draggable.iter().any(|x|x.is_dragged()) {
         return; //Something is being dragged so the player can't win yet
     }
 
@@ -196,7 +196,7 @@ fn check_for_contacts(
     mut commands: Commands,
     win_timer: Query<(Entity, &WinTimer)>,
     mut collision_events: EventReader<CollisionEvent>,
-    dragged: Query<With<Dragged>>,
+    draggables: Query<&Draggable>,
     // rapier_config: ResMut<RapierConfiguration>,
 ) {
     if win_timer.is_empty() {
@@ -213,7 +213,7 @@ fn check_for_contacts(
         fail = Some("Contact Found");
     }
 
-    if fail.is_none() && !dragged.is_empty() {
+    if fail.is_none() && draggables.iter().any(|x|x.is_dragged()) {
         fail = Some("Something Dragged");
     }
 

@@ -12,9 +12,9 @@ fn setup(mut commands: Commands) {
     commands
         .spawn(Camera2dBundle::new_with_far(1000.0))
         .insert(MainCamera);
-    commands
-        .spawn(new_camera(1000.0, 0.33, false))
-        .insert(ZoomCamera {});
+    // commands
+    //     .spawn(new_camera(1000.0, 0.33, false))
+    //     .insert(ZoomCamera {});
 }
 
 /// Used to help identify our main camera
@@ -22,9 +22,9 @@ fn setup(mut commands: Commands) {
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct ZoomCamera {}
+pub struct ZoomCamera {pub touch_id: u64}
 
-fn new_camera(far: f32, scale: f32, is_active: bool) -> Camera2dBundle {
+pub fn new_camera(far: f32, scale: f32,mut transform: Transform) -> Camera2dBundle {
     // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
     // the camera's translation by far and use a right handed coordinate system
     let projection = OrthographicProjection {
@@ -32,7 +32,14 @@ fn new_camera(far: f32, scale: f32, is_active: bool) -> Camera2dBundle {
         scale,
         ..Default::default()
     };
-    let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
+
+    transform.rotation = Default::default();
+    transform.translation *= 1. - scale;
+    transform.translation.z = far - 0.1;
+
+
+    //origin.extend(0.0) *
+    //let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
     let view_projection =
         bevy::render::camera::CameraProjection::get_projection_matrix(&projection)
             * transform.compute_matrix().inverse();
@@ -53,7 +60,7 @@ fn new_camera(far: f32, scale: f32, is_active: bool) -> Camera2dBundle {
         global_transform: Default::default(),
         camera: Camera {
             priority: 1,
-            is_active,
+            is_active: true,
             ..Default::default()
         },
         camera_2d: Camera2d {

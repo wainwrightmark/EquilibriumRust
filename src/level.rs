@@ -29,6 +29,7 @@ pub fn handle_change_level(
 ) {
     if let Some(event) = change_level_events.iter().next() {
         for (e, _) in draggables.iter() {
+            commands.entity(e).despawn_descendants();
             commands.entity(e).despawn();
         }
 

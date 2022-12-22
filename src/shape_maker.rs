@@ -110,5 +110,6 @@ pub fn create_shape(
         .insert(LockedAxes::default())
         .insert(GravityScale::default())
         .insert(Velocity::default())
-        .insert(crate::Draggable {});
+        .insert(Dominance::default())
+        .insert(crate::Draggable::Free {});
 }
