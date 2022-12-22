@@ -20,7 +20,17 @@
 - [ ] Rotate around the current point
 - [x] Keyboard / mousewheel rotation should snap
 - [ ] Better tutorial
+- [ ] Tutorial text should not fade
 - [ ] Use icons instead of text in tutorial
+
+- [ ] Dragging locked entity should lock it again after 0.5 seconds
+- [ ] Shapes should have rounded corners
+- [ ] Different print options
+- [ ] Take a screenshot after finishing level
+- [ ] Infinite mode should remember where you got to
+- [ ] Walls should change color when you collide
+- [ ] Better flicking action
+
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection
