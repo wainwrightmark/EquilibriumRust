@@ -216,15 +216,18 @@ fn handle_drag_changes(
     {
         match draggable {
             Draggable::Free => {
-                commands.entity(entity).insert(RigidBody::Dynamic);
                 *locked_axes = LockedAxes::default();
                 *gravity_scale = GravityScale::default();
                 *dominance = Dominance::default();
+
             }
 
             Draggable::Locked => {
-                commands.entity(entity).insert(RigidBody::Fixed);
                 create_padlock(&mut commands, entity, transform.clone());
+                *locked_axes = LockedAxes::all();
+                *gravity_scale = GravityScale(0.0);
+                *velocity = Velocity::zero();
+                *dominance = Dominance::group(10);
             }
             Draggable::Dragged(dragged) => {
                 if dragged.was_locked {
@@ -244,7 +247,6 @@ fn handle_drag_changes(
                         .insert(ZoomCamera { touch_id });
                 }
 
-                commands.entity(entity).insert(RigidBody::Dynamic);
                 *locked_axes = LockedAxes::ROTATION_LOCKED;
                 *gravity_scale = GravityScale(0.0);
                 *velocity = Velocity::zero();
