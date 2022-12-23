@@ -21,7 +21,7 @@ impl Plugin for WinPlugin {
         app.add_system(check_for_contacts)
             .add_system(check_for_win.after(check_for_contacts))
             .add_system_to_stage(CoreStage::First, handle_change_level)
-            .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
+            .add_system_to_stage(CoreStage::PostUpdate, check_for_tower.after(handle_drag_changes));
     }
 }
 
@@ -133,6 +133,7 @@ fn check_future_collisions(
     let mut multibody_joints = context.multibody_joints.clone();
     let mut ccd_solver = context.ccd_solver.clone();
 
+
     let mut substep_integration_parameters = context.integration_parameters;
     substep_integration_parameters.dt = dt / (substeps as Real);
     let event_handler = SensorCollisionHandler::default();
@@ -153,12 +154,12 @@ fn check_future_collisions(
         );
 
         if event_handler.collisions_found.load() {
-            info!("Collision detected after {_i} substeps");
+      //      info!("Collision detected after {_i} substeps");
             return true;
         }
     }
 
-    info!("No collision detected after {substeps}");
+    //info!("No collision detected after {substeps}");
     false
 }
 

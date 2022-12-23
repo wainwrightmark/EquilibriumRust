@@ -8,24 +8,28 @@ impl Plugin for DragPlugin {
             .add_system(
                 drag_start
                     .after(input::mousebutton_listener)
-                    .after(input::touch_listener),
+                    .after(input::touch_listener)
+                    .before(handle_drag_changes),
             )
             .add_system(
                 drag_move
                     .after(input::mousebutton_listener)
-                    .after(input::touch_listener),
+                    .after(input::touch_listener)
+                    .before(handle_drag_changes),
             )
             .add_system(
                 handle_rotate_events
                     .after(input::keyboard_listener)
-                    .after(input::mousewheel_listener),
+                    .after(input::mousewheel_listener)
+                    .before(handle_drag_changes),
             )
             .add_system(
                 drag_end
                     .after(input::mousebutton_listener)
-                    .after(input::touch_listener),
+                    .after(input::touch_listener)
+                    .before(handle_drag_changes),
             )
-            .add_system_to_stage(CoreStage::PostUpdate, handle_drag_changes)
+            .add_system_to_stage(CoreStage::Update, handle_drag_changes)
             .add_event::<RotateEvent>()
             .add_event::<DragStartEvent>()
             .add_event::<DragMoveEvent>()
@@ -185,7 +189,7 @@ pub fn drag_start(
     }
 }
 
-fn handle_drag_changes(
+pub fn handle_drag_changes(
     mut commands: Commands,
     mut query: Query<
         (
