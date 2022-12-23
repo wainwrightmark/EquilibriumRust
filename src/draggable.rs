@@ -173,12 +173,12 @@ pub fn drag_start(
                 }
                 true //keep looking for intersections
             });
-        } else if let DragSource::Touch { touch_id: id } = event.drag_source {
-            if let Some((_, transform)) = draggables.iter().find(|x| x.0.has_touch_id(id)) {
+        } else if let DragSource::Touch { touch_id } = event.drag_source {
+            if let Some((_, transform)) = draggables.iter().find(|x| x.0.touch_id().is_some()) {
                 *touch_rotate = TouchRotateResource(Some(TouchRotate {
                     previous: event.position,
                     centre: transform.translation.truncate(),
-                    touch_id: id,
+                    touch_id,
                 }));
             }
         }
