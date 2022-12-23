@@ -1,5 +1,6 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
+use bevy_capture_media::MediaCapture;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::rapier::crossbeam::atomic::AtomicCell;
 use bevy_rapier2d::rapier::prelude::{EventHandler, PhysicsPipeline};
@@ -32,6 +33,8 @@ pub fn check_for_win(
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
+    mut capture: MediaCapture,
+
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
@@ -40,6 +43,8 @@ pub fn check_for_win(
             //scale_time(rapier_config, 1.);
 
             commands.entity(timer_entity).despawn();
+
+            let image = capture.capture_png(1357);
 
             new_game_events.send(ChangeLevelEvent::Next);
         } else {

@@ -29,7 +29,7 @@
 - [ ] Take a screenshot after finishing level
 - [ ] Infinite mode should remember where you got to
 - [ ] Walls should change color when you collide
-- [ ] Better flicking action
+- [ ] Better flicking action - shape should maintain velocity after letting go
 
 
 - [ ] Use heightfield instead of walls

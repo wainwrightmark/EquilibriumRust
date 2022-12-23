@@ -85,6 +85,8 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(bevy_capture_media::BevyCapturePlugin)
+
 
         .insert_resource(PkvStore::new("Wainwrong", "Equilibrium"))
 

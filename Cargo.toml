@@ -20,6 +20,7 @@ bevy_pkv = "0.6.0"
 
 serde = { version = "1", features = ["derive"] }
 ron = { version = "0.8.0", features = ["integer128"] }
+bevy_capture_media = {git = "https://github.com/wainwrightmark/bevy_capture_media"}
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"

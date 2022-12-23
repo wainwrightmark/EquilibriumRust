@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use bevy_capture_media::MediaCapture;
 
 pub struct CameraPlugin;
 
@@ -8,13 +11,13 @@ impl Plugin for CameraPlugin {
     }
 }
 
-fn setup(mut commands: Commands) {
-    commands
+fn setup(mut commands: Commands, mut capture: MediaCapture) {
+    let camera_entity = commands
         .spawn(Camera2dBundle::new_with_far(1000.0))
-        .insert(MainCamera);
-    // commands
-    //     .spawn(new_camera(1000.0, 0.33, false))
-    //     .insert(ZoomCamera {});
+        .insert(MainCamera)
+        .id();
+
+    capture.start_tracking_camera(1357, camera_entity,  Duration::from_secs_f32(1. / 30.));
 }
 
 /// Used to help identify our main camera
@@ -22,9 +25,11 @@ fn setup(mut commands: Commands) {
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct ZoomCamera {pub touch_id: u64}
+pub struct ZoomCamera {
+    pub touch_id: u64,
+}
 
-pub fn new_camera(far: f32, scale: f32,mut transform: Transform) -> Camera2dBundle {
+pub fn new_camera(far: f32, scale: f32, mut transform: Transform) -> Camera2dBundle {
     // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
     // the camera's translation by far and use a right handed coordinate system
     let projection = OrthographicProjection {
@@ -36,7 +41,6 @@ pub fn new_camera(far: f32, scale: f32,mut transform: Transform) -> Camera2dBund
     transform.rotation = Default::default();
     transform.translation *= 1. - scale;
     transform.translation.z = far - 0.1;
-
 
     //origin.extend(0.0) *
     //let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);
