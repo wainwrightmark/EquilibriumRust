@@ -6,7 +6,7 @@ use bevy_rapier2d::rapier::prelude::{EventHandler, PhysicsPipeline};
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
-use crate::screenshots::TakeScreenshotEvent;
+use crate::screenshots::SaveSVGEvent;
 
 #[derive(Component)]
 pub struct WinTimer {
@@ -32,8 +32,9 @@ pub fn check_for_win(
     mut commands: Commands,
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
+    level: Res<CurrentLevel>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
-    mut screenshot_events: EventWriter<TakeScreenshotEvent>
+    mut screenshot_events: EventWriter<SaveSVGEvent>
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
@@ -43,7 +44,20 @@ pub fn check_for_win(
 
             commands.entity(timer_entity).despawn();
 
-            screenshot_events.send(TakeScreenshotEvent);
+            match level.0.level_type{
+                LevelType::Tutorial => {},
+                LevelType::Infinite => {
+                    let title = format!("Equilibrium Infinite {}", level.0.shapes);
+                    screenshot_events.send(SaveSVGEvent { title });
+                },
+                LevelType::Challenge => {
+                    let title = format!("Equilibrium Challenge {}", get_today_date());
+                    screenshot_events.send(SaveSVGEvent { title });
+                },
+                LevelType::ChallengeComplete(_) => {},
+            }
+
+
             new_game_events.send(ChangeLevelEvent::Next);
 
         } else {

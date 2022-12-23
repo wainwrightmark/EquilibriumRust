@@ -30,6 +30,7 @@
 - [ ] Infinite mode should remember where you got to
 - [ ] Walls should change color when you collide
 - [ ] Better flicking action
+- [ ] Undo button - goes back to just before the last piece you picked up
 
 
 - [ ] Use heightfield instead of walls

@@ -71,9 +71,10 @@ fn start_level(
         );
 
         text.sections[0].value = new_text;
+        const LEVEL_TEXT_SECONDS: u64 = 20;
         commands.entity(entity).insert(Animator::new(Tween::new(
             EaseFunction::QuadraticInOut,
-            Duration::from_secs(10),
+            Duration::from_secs(LEVEL_TEXT_SECONDS),
             TextColorLens {
                 section: 0,
                 start: SMALL_TEXT_COLOR,
@@ -158,7 +159,7 @@ impl GameLevel {
             LevelType::Infinite => None,
             LevelType::Challenge => Some("Daily Challenge".to_string()),
             LevelType::ChallengeComplete(streak) => {
-                Some(format!("Congratulations. Your streak is {streak}!"))
+                Some(format!("Congratulations. Your streak is {streak}!\nUse the camera button in the menu to download an image."))
             }
         }
     }

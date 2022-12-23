@@ -1,8 +1,10 @@
+pub mod download;
+
 use crate::input::{convert_screen_to_world_position, InputDetector};
 use crate::*;
 use bevy::input::touch::{ForceTouch, TouchPhase};
 use bevy::window::WindowResized;
-use bevy::{input::InputSystem, prelude::*};
+use bevy::{input::InputSystem,};
 use wasm_bindgen::prelude::*;
 use web_sys::{TouchEvent, TouchList};
 
@@ -152,3 +154,5 @@ impl Plugin for WASMPlugin {
         app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
     }
 }
+
+
