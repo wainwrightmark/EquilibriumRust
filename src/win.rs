@@ -21,7 +21,7 @@ impl Plugin for WinPlugin {
         app.add_system(check_for_contacts)
             .add_system(check_for_win.after(check_for_contacts))
             .add_system_to_stage(CoreStage::First, handle_change_level)
-            .add_system_to_stage(CoreStage::PostUpdate, check_for_tower.after(handle_drag_changes));
+            .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
     }
 }
 

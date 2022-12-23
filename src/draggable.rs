@@ -74,7 +74,10 @@ pub fn drag_end(
 
         let any_locked = draggables.iter().any(|x| x.is_locked());
 
-        for mut draggable in draggables.iter_mut() {
+        for mut draggable in draggables
+            .iter_mut()
+            .filter(|x| x.has_drag_source(event.drag_source))
+        {
             if let Draggable::Dragged(dragged) = draggable.as_ref() {
                 *draggable = if dragged.was_locked || any_locked {
                     Draggable::Free
@@ -85,9 +88,9 @@ pub fn drag_end(
             }
         }
 
-        if let DragSource::Touch { touch_id: id } = event.drag_source {
+        if let DragSource::Touch { touch_id } = event.drag_source {
             if let Some(rotate) = touch_rotate.0 {
-                if rotate.touch_id == id {
+                if rotate.touch_id == touch_id {
                     *touch_rotate = TouchRotateResource(None);
                 }
             }
@@ -98,7 +101,7 @@ pub fn drag_end(
 pub fn drag_move(
     mut er_drag_move: EventReader<DragMoveEvent>,
     mut dragged_entities: Query<(&Draggable, &mut Transform), Without<ZoomCamera>>,
-    touch_rotate: Res<TouchRotateResource>,
+    mut touch_rotate: ResMut<TouchRotateResource>,
     mut ev_rotate: EventWriter<RotateEvent>,
     mut cameras: Query<(&mut Transform, &OrthographicProjection, &ZoomCamera)>,
 ) {
@@ -131,18 +134,22 @@ pub fn drag_move(
                     }
                 }
             }
-        } else if let DragSource::Touch { touch_id: id } = event.drag_source {
+        } else if let DragSource::Touch { touch_id } = event.drag_source {
             if let Some(mut rotate) = touch_rotate.0 {
-                if rotate.touch_id == id {
+                if rotate.touch_id == touch_id {
                     let previous_angle = rotate.centre.angle_between(rotate.previous);
                     let new_angle = rotate.centre.angle_between(event.new_position);
-                    rotate.previous = event.new_position;
+
                     let angle = new_angle - previous_angle;
+
+                    //info!("Touch Rotate: angle: {angle} center {}, previous {} new position {} prev_angle {} new_angle {}", rotate.centre, rotate.previous, event.new_position, previous_angle, new_angle);
 
                     ev_rotate.send(RotateEvent {
                         angle,
                         snap_resolution: None,
-                    })
+                    });
+                    rotate.previous = event.new_position;
+                    *touch_rotate = TouchRotateResource(Some(rotate));
                 }
             }
         }
@@ -259,7 +266,7 @@ pub fn handle_drag_changes(
         }
 
         if !draggable.is_dragged() {
-            for x in camera_query.iter(){
+            for x in camera_query.iter() {
                 commands.entity(x).despawn();
             }
         }
