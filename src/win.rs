@@ -6,6 +6,7 @@ use bevy_rapier2d::rapier::prelude::{EventHandler, PhysicsPipeline};
 
 use crate::game_shape::GameShapeBody;
 use crate::*;
+use crate::screenshots::TakeScreenshotEvent;
 
 #[derive(Component)]
 pub struct WinTimer {
@@ -19,7 +20,7 @@ impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(check_for_contacts)
             .add_system(check_for_win.after(check_for_contacts))
-            .add_system(handle_change_level.after(check_for_win))
+            .add_system_to_stage(CoreStage::First, handle_change_level)
             .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
     }
 }
@@ -32,6 +33,7 @@ pub fn check_for_win(
     mut win_timer: Query<(Entity, &WinTimer, &mut Transform)>,
     time: Res<Time>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
+    mut screenshot_events: EventWriter<TakeScreenshotEvent>
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
@@ -41,7 +43,9 @@ pub fn check_for_win(
 
             commands.entity(timer_entity).despawn();
 
+            screenshot_events.send(TakeScreenshotEvent);
             new_game_events.send(ChangeLevelEvent::Next);
+
         } else {
             let new_scale = (remaining / timer.total_countdown) as f32;
 
@@ -149,12 +153,12 @@ fn check_future_collisions(
         );
 
         if event_handler.collisions_found.load() {
-            //info!("Collision detected after {i} substeps");
+            info!("Collision detected after {_i} substeps");
             return true;
         }
     }
 
-    //info!("No collision detected");
+    info!("No collision detected after {substeps}");
     false
 }
 

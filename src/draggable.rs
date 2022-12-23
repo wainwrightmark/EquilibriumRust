@@ -219,7 +219,7 @@ fn handle_drag_changes(
                 *locked_axes = LockedAxes::default();
                 *gravity_scale = GravityScale::default();
                 *dominance = Dominance::default();
-
+                *velocity = Velocity::zero();
             }
 
             Draggable::Locked => {

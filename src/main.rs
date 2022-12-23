@@ -15,6 +15,7 @@ mod camera;
 mod draggable;
 mod grid;
 mod saved_data;
+pub mod screenshots;
 use bevy_tweening::TweeningPlugin;
 use camera::*;
 use draggable::*;
@@ -22,6 +23,7 @@ use saved_data::*;
 mod level;
 use level::*;
 mod walls;
+use screenshots::ScreenshotPlugin;
 use walls::*;
 
 mod shape_maker;
@@ -85,6 +87,7 @@ fn main() {
         .add_plugin(WinPlugin)
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
+        .add_plugin(ScreenshotPlugin)
 
         .insert_resource(PkvStore::new("Wainwrong", "Equilibrium"))
 

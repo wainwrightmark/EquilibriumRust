@@ -20,6 +20,7 @@ bevy_pkv = "0.6.0"
 
 serde = { version = "1", features = ["derive"] }
 ron = { version = "0.8.0", features = ["integer128"] }
+# resvg = { version = "0.28.0", default-features = false, features = ["png"] }
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
