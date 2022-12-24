@@ -39,6 +39,9 @@ impl Plugin for DragPlugin {
     }
 }
 
+pub const MAX_VELOCITY: f32 = 1000.0;
+pub const LOCK_VELOCITY: f32 = 50.0;
+
 fn handle_rotate_events(
     mut ev_rotate: EventReader<RotateEvent>,
     mut dragged: Query<(&mut Transform, &Draggable)>,
@@ -66,21 +69,21 @@ fn round_z(q: Quat, multiple: f32) -> Quat {
 
 pub fn drag_end(
     mut er_drag_end: EventReader<DragEndEvent>,
-    mut draggables: Query<&mut Draggable>,
+    mut draggables: Query<(&mut Draggable, &Velocity)>,
     mut touch_rotate: ResMut<TouchRotateResource>,
     mut ew_end_drag: EventWriter<DragEndedEvent>,
 ) {
     for event in er_drag_end.iter() {
         debug!("{:?}", event);
 
-        let any_locked = draggables.iter().any(|x| x.is_locked());
+        let any_locked = draggables.iter().any(|x| x.0.is_locked());
 
-        for mut draggable in draggables
+        for (mut draggable, velocity) in draggables
             .iter_mut()
-            .filter(|x| x.has_drag_source(event.drag_source))
+            .filter(|x| x.0.has_drag_source(event.drag_source))
         {
-            if let Draggable::Dragged(dragged) = draggable.as_ref() {
-                *draggable = if dragged.was_locked || any_locked {
+            if let Draggable::Dragged(_dragged) = draggable.as_ref() {
+                *draggable = if any_locked || velocity.linvel.length() > LOCK_VELOCITY {
                     Draggable::Free
                 } else {
                     Draggable::Locked
@@ -105,7 +108,7 @@ pub fn translate_desired(
 ) {
     for (desired, transform, mut velocity) in query.iter_mut() {
         let delta_position = desired.translation - transform.translation.truncate();
-        let vel = (delta_position / time.delta_seconds()).clamp_length_max(1000.0);
+        let vel = (delta_position / time.delta_seconds()).clamp_length_max(MAX_VELOCITY);
         velocity.linvel = vel; // * SHAPE_SIZE * SHAPE_SIZE;
     }
 }
@@ -189,7 +192,6 @@ pub fn drag_start(
                         origin,
                         offset,
                         drag_source: event.drag_source,
-                        was_locked: draggable.is_locked(),
                     });
 
                     return false; //Stop looking for intersections
@@ -252,12 +254,10 @@ pub fn handle_drag_changes(
                 *dominance = Dominance::group(10);
             }
             Draggable::Dragged(dragged) => {
-                if dragged.was_locked {
-                    if let Some(children) = children {
-                        for &child in children.iter() {
-                            if padlock_query.contains(child) {
-                                commands.entity(child).despawn();
-                            }
+                if let Some(children) = children {
+                    for &child in children.iter() {
+                        if padlock_query.contains(child) {
+                            commands.entity(child).despawn();
                         }
                     }
                 }
@@ -368,7 +368,7 @@ pub struct Dragged {
     pub origin: Vec2,
     pub offset: Vec2,
     pub drag_source: DragSource,
-    pub was_locked: bool,
+    // pub was_locked: bool,
 }
 
 #[derive(Resource, Default)]
