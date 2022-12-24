@@ -29,6 +29,7 @@ impl Plugin for DragPlugin {
                     .after(input::touch_listener)
                     .before(handle_drag_changes),
             )
+            .add_system_to_stage(CoreStage::Update, translate_desired.after(drag_move))
             .add_system_to_stage(CoreStage::Update, handle_drag_changes)
             .add_event::<RotateEvent>()
             .add_event::<DragStartEvent>()
@@ -98,16 +99,27 @@ pub fn drag_end(
     }
 }
 
+pub fn translate_desired(
+    time: Res<Time>,
+    mut query: Query<(&DesiredTranslation, &Transform, &mut Velocity)>,
+) {
+    for (desired, transform, mut velocity) in query.iter_mut() {
+        let delta_position = desired.translation - transform.translation.truncate();
+        let vel = (delta_position / time.delta_seconds()).clamp_length_max(1000.0);
+        velocity.linvel = vel; // * SHAPE_SIZE * SHAPE_SIZE;
+    }
+}
+
 pub fn drag_move(
     mut er_drag_move: EventReader<DragMoveEvent>,
-    mut dragged_entities: Query<(&Draggable, &mut Transform), Without<ZoomCamera>>,
+    mut dragged_entities: Query<(&Draggable, &mut DesiredTranslation), Without<ZoomCamera>>,
     mut touch_rotate: ResMut<TouchRotateResource>,
     mut ev_rotate: EventWriter<RotateEvent>,
     mut cameras: Query<(&mut Transform, &OrthographicProjection, &ZoomCamera)>,
 ) {
     for event in er_drag_move.iter() {
         debug!("{:?}", event);
-        if let Some((draggable, mut rb)) = dragged_entities
+        if let Some((draggable, mut desired_translation)) = dragged_entities
             .iter_mut()
             .find(|d| d.0.has_drag_source(event.drag_source))
         {
@@ -125,7 +137,7 @@ pub fn drag_move(
 
             let new_position = (draggable.get_offset() + clamped_position).extend(0.0);
 
-            rb.translation = new_position;
+            desired_translation.translation = new_position.truncate();
 
             if let Some(touch_id) = draggable.touch_id() {
                 for (mut camera_transform, projection, zoom_camera) in cameras.iter_mut() {
@@ -230,7 +242,6 @@ pub fn handle_drag_changes(
                 *locked_axes = LockedAxes::default();
                 *gravity_scale = GravityScale::default();
                 *dominance = Dominance::default();
-                *velocity = Velocity::zero();
             }
 
             Draggable::Locked => {
@@ -265,10 +276,15 @@ pub fn handle_drag_changes(
             }
         }
 
-        if !draggable.is_dragged() {
+        if draggable.is_dragged() {
+            commands.entity(entity).insert(DesiredTranslation {
+                translation: transform.translation.truncate(),
+            });
+        } else {
             for x in camera_query.iter() {
                 commands.entity(x).despawn();
             }
+            commands.entity(entity).remove::<DesiredTranslation>();
         }
     }
 }
@@ -305,14 +321,19 @@ impl Draggable {
         return dragged.drag_source == drag_source;
     }
 
-    pub fn has_touch_id(&self, id: u64) -> bool {
-        self.has_drag_source(DragSource::Touch { touch_id: id })
-    }
+    // pub fn has_touch_id(&self, id: u64) -> bool {
+    //     self.has_drag_source(DragSource::Touch { touch_id: id })
+    // }
 
     pub fn get_offset(&self) -> Vec2 {
         let Draggable::Dragged(dragged) = self else {return  Default::default();};
         dragged.offset
     }
+}
+
+#[derive(Component, Debug, Default)]
+pub struct DesiredTranslation {
+    pub translation: Vec2,
 }
 
 #[derive(Component, Debug)]
