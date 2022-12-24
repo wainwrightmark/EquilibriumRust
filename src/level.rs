@@ -159,7 +159,7 @@ impl GameLevel {
             LevelType::Infinite => None,
             LevelType::Challenge => Some("Daily Challenge".to_string()),
             LevelType::ChallengeComplete(streak) => {
-                Some(format!("Congratulations. Your streak is {streak}!\nUse the camera button in the menu to download an image."))
+                Some(format!("Congratulations.\nYour streak is {streak}!\nUse the camera button in the menu to download an image."))
             }
         }
     }
