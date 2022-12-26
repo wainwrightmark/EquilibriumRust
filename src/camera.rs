@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{input::touch::Touch, prelude::*};
 
 pub struct CameraPlugin;
 
@@ -25,6 +25,20 @@ pub struct MainCamera;
 pub struct ZoomCamera {
     pub touch_id: u64,
 }
+
+// #[derive(Component)]
+// pub struct TouchDragged;
+
+// pub fn move_camera(
+//     query: Query<(&Transform, &TouchDragged), (Changed<Transform>, Without<ZoomCamera>)>,
+//     mut cameras: Query<&mut Transform, With<ZoomCamera>>,
+// ) {
+//     for camera in cameras.iter() {
+//         for (transform, touch_dragged) in query.iter() {
+
+//         }
+//     }
+// }
 
 pub fn new_camera(far: f32, scale: f32, mut transform: Transform) -> Camera2dBundle {
     // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
