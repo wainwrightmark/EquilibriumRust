@@ -40,7 +40,7 @@ fn download_svg(mut events: EventReader<DownloadPngEvent>, saves: Res<SavedSvg>)
                     info!("downloading {filename}");
                     #[cfg(target_arch = "wasm32")]
                     {
-                        crate::wasm::download::download_bytes(filename.into(), vec);
+                        crate::wasm::download::download_bytes(filename.into(), _vec);
                     }
                 }
                 Err(err) => {
