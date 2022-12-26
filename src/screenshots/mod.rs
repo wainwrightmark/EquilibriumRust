@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::prelude::{*, tess::geom::traits::Transformation};
 use resvg::usvg;
 
 use crate::*;
@@ -42,6 +42,7 @@ fn download_svg(mut events: EventReader<DownloadPngEvent>, saves: Res<SavedSvg>)
                     {
                         crate::wasm::download::download_bytes(filename.into(), _vec);
                     }
+                    //println!("{}", svg.svg)
                 }
                 Err(err) => {
                     error!("{}", err)
@@ -98,6 +99,9 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
     let left = WINDOW_WIDTH * 0.5;
     let top = WINDOW_HEIGHT * 0.5;
 
+    let global_transform = Transform::from_translation(Vec3 { x: left, y: top, z: 0.0 });
+    let global_transform = global_transform.with_scale(Vec3{x: 1.0, y: -1.0, z: 1.0});
+    let global_transform : TransformWrapper = (&global_transform).into();
     str.push_str(
         format!(
             r#"<svg viewbox = "0 0 {WINDOW_WIDTH} {WINDOW_HEIGHT}" xmlns="http://www.w3.org/2000/svg">"#
@@ -111,29 +115,27 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
             .as_str(),
     );
     str.push('\n');
-    str.push_str(format!(r#"<g transform="translate({left}, {top}) scale(1,-1)">"#).as_str());
-    str.push('\n');
     for (transform, path, draw_mode) in iterator {
-        let path = path.0.clone();
 
-        let transform_svg = get_transform_svg(transform);
-        str.push_str(format!(r#"<g {transform_svg}>"#).as_str());
+        let tw : TransformWrapper = transform.into();
+        let path = path.0.clone().transformed(&tw);
+        let path = path.transformed(&global_transform);
+
+
         str.push('\n');
         let path_d = format!("{:?}", path);
         let path_style = get_path_style(draw_mode);
 
         str.push_str(format!(r#"<path {path_style} d={path_d} />"#).as_str());
         str.push('\n');
-
-        str.push_str("</g>");
         str.push('\n');
     }
-    str.push_str("</g>");
-    str.push('\n');
     str.push_str("</svg>");
 
     str
 }
+
+
 
 fn get_path_style(draw_mode: &DrawMode) -> String {
     match draw_mode {
@@ -170,16 +172,28 @@ fn color_to_rgba(color: Color) -> String {
     )
 }
 
-fn get_transform_svg(transform: &Transform) -> String {
-    let scale_x = transform.scale.x;
-    let scale_y = transform.scale.y;
+impl Transformation<f32> for TransformWrapper{
+    fn transform_point(&self, p: tess::geom::Point<f32>) -> tess::geom::Point<f32> {
+        let matrix = self.0.compute_matrix();
+        let vec2 : Vec2 = Vec2 { x: p.x, y: p.y };
+        let vec2 = matrix.transform_point3(vec2.extend(0.0)).truncate();
 
-    let (axis, rads) = transform.rotation.to_axis_angle();
+        tess::geom::Point::<f32>::new(vec2.x, vec2.y)
+    }
 
-    let degrees = rads.to_degrees() * axis.z;
-    let translate_x = transform.translation.x;
-    let translate_y = transform.translation.y;
-    format!(
-        r#"transform="translate({translate_x:.1},{translate_y:.1}) rotate({degrees:.1}) scale({scale_x:.1} {scale_y:.1})""#,
-    )
+    fn transform_vector(&self, v: tess::geom::Vector<f32>) -> tess::geom::Vector<f32> {
+        let matrix = self.0.compute_matrix();
+        let vec2 : Vec2 = Vec2 { x: v.x, y: v.y };
+        let vec2 = matrix.transform_point3(vec2.extend(0.0)).truncate();
+
+        tess::geom::Vector::<f32>::new(vec2.x, vec2.y)
+    }
+}
+
+struct TransformWrapper(Transform);
+
+impl From<&Transform> for TransformWrapper{
+    fn from(value: &Transform) -> Self {
+        Self(value.clone())
+    }
 }
