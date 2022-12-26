@@ -9,10 +9,9 @@ pub struct ScreenshotPlugin;
 
 impl Plugin for ScreenshotPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .insert_resource(SavedSvg::default())
-        .add_event::<SaveSVGEvent>()
-        .add_event::<DownloadPngEvent>()
+        app.insert_resource(SavedSvg::default())
+            .add_event::<SaveSVGEvent>()
+            .add_event::<DownloadPngEvent>()
             .add_system_to_stage(CoreStage::Last, save_svg)
             .add_system(download_svg);
     }
@@ -36,7 +35,7 @@ fn download_svg(mut events: EventReader<DownloadPngEvent>, saves: Res<SavedSvg>)
     for _event in events.iter() {
         if let Some(svg) = &saves.0 {
             match string_to_png(&svg.svg) {
-                Ok(vec) => {
+                Ok(_vec) => {
                     let filename = svg.title.clone() + ".png";
                     info!("downloading {filename}");
                     #[cfg(target_arch = "wasm32")]

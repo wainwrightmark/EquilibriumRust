@@ -58,7 +58,6 @@ fn spawn_walls(mut commands: Commands) {
     );
 }
 
-
 fn spawn_wall(
     commands: &mut Commands,
     point: Vec2,

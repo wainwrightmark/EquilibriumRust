@@ -77,10 +77,7 @@ pub static ALL_SHAPES: Lazy<Vec<GameShape>> = Lazy::new(|| {
         .chain(tetrominos)
         .chain(pentominos)
         .enumerate()
-        .map(|(index, (body, name))| {
-            
-            GameShape { name, body, index }
-        })
+        .map(|(index, (body, name))| GameShape { name, body, index })
         .collect_vec()
 });
 

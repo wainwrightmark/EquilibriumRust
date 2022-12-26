@@ -5,8 +5,8 @@ use bevy_rapier2d::rapier::crossbeam::atomic::AtomicCell;
 use bevy_rapier2d::rapier::prelude::{EventHandler, PhysicsPipeline};
 
 use crate::game_shape::GameShapeBody;
-use crate::*;
 use crate::screenshots::SaveSVGEvent;
+use crate::*;
 
 #[derive(Component)]
 pub struct WinTimer {
@@ -34,7 +34,7 @@ pub fn check_for_win(
     time: Res<Time>,
     level: Res<CurrentLevel>,
     mut new_game_events: EventWriter<ChangeLevelEvent>,
-    mut screenshot_events: EventWriter<SaveSVGEvent>
+    mut screenshot_events: EventWriter<SaveSVGEvent>,
 ) {
     if let Ok((timer_entity, timer, mut timer_transform)) = win_timer.get_single_mut() {
         let remaining = timer.win_time - time.elapsed_seconds_f64();
@@ -44,22 +44,20 @@ pub fn check_for_win(
 
             commands.entity(timer_entity).despawn();
 
-            match level.0.level_type{
-                LevelType::Tutorial => {},
+            match level.0.level_type {
+                LevelType::Tutorial => {}
                 LevelType::Infinite => {
                     let title = format!("Equilibrium Infinite {}", level.0.shapes);
                     screenshot_events.send(SaveSVGEvent { title });
-                },
+                }
                 LevelType::Challenge => {
                     let title = format!("Equilibrium Challenge {}", get_today_date());
                     screenshot_events.send(SaveSVGEvent { title });
-                },
-                LevelType::ChallengeComplete(_) => {},
+                }
+                LevelType::ChallengeComplete(_) => {}
             }
 
-
             new_game_events.send(ChangeLevelEvent::Next);
-
         } else {
             let new_scale = (remaining / timer.total_countdown) as f32;
 
@@ -87,7 +85,7 @@ pub fn check_for_tower(
         return; // no need to check, we're already winning
     }
 
-    if draggable.iter().any(|x|x.is_dragged()) {
+    if draggable.iter().any(|x| x.is_dragged()) {
         return; //Something is being dragged so the player can't win yet
     }
 
@@ -147,7 +145,6 @@ fn check_future_collisions(
     let mut multibody_joints = context.multibody_joints.clone();
     let mut ccd_solver = context.ccd_solver.clone();
 
-
     let mut substep_integration_parameters = context.integration_parameters;
     substep_integration_parameters.dt = dt / (substeps as Real);
     let event_handler = SensorCollisionHandler::default();
@@ -168,7 +165,7 @@ fn check_future_collisions(
         );
 
         if event_handler.collisions_found.load() {
-      //      info!("Collision detected after {_i} substeps");
+            //      info!("Collision detected after {_i} substeps");
             return true;
         }
     }
@@ -232,7 +229,7 @@ fn check_for_contacts(
         fail = Some("Contact Found");
     }
 
-    if fail.is_none() && draggables.iter().any(|x|x.is_dragged()) {
+    if fail.is_none() && draggables.iter().any(|x| x.is_dragged()) {
         fail = Some("Something Dragged");
     }
 

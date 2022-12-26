@@ -22,9 +22,11 @@ fn setup(mut commands: Commands) {
 pub struct MainCamera;
 
 #[derive(Component)]
-pub struct ZoomCamera {pub touch_id: u64}
+pub struct ZoomCamera {
+    pub touch_id: u64,
+}
 
-pub fn new_camera(far: f32, scale: f32,mut transform: Transform) -> Camera2dBundle {
+pub fn new_camera(far: f32, scale: f32, mut transform: Transform) -> Camera2dBundle {
     // we want 0 to be "closest" and +far to be "farthest" in 2d, so we offset
     // the camera's translation by far and use a right handed coordinate system
     let projection = OrthographicProjection {
@@ -36,7 +38,6 @@ pub fn new_camera(far: f32, scale: f32,mut transform: Transform) -> Camera2dBund
     transform.rotation = Default::default();
     transform.translation *= 1. - scale;
     transform.translation.z = far - 0.1;
-
 
     //origin.extend(0.0) *
     //let transform = Transform::from_xyz(0.0, 0.0, far - 0.1);

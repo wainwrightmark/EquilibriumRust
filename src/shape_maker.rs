@@ -113,4 +113,3 @@ pub fn create_shape(
         .insert(Dominance::default())
         .insert(crate::Draggable::Free {});
 }
-

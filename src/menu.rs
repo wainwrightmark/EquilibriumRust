@@ -24,7 +24,7 @@ fn button_system(
     >,
     mut change_level_events: EventWriter<crate::ChangeLevelEvent>,
     mut menu_query: Query<&mut Visibility, With<MainMenu>>,
-    mut download_image_events: EventWriter<crate::screenshots::DownloadPngEvent>
+    mut download_image_events: EventWriter<crate::screenshots::DownloadPngEvent>,
 ) {
     for (interaction, mut color, button) in interaction_query.iter_mut() {
         //info!("{:?}", interaction);
@@ -53,11 +53,10 @@ fn button_system(
                     }
                     MenuButton::ResetLevel => {
                         change_level_events.send(crate::ChangeLevelEvent::ResetLevel)
-                    },
-                    MenuButton::DownloadImage =>{
+                    }
+                    MenuButton::DownloadImage => {
                         download_image_events.send(crate::screenshots::DownloadPngEvent)
-                    },
-
+                    }
                 }
 
                 if !matches!(*button, MenuButton::ToggleMenu) {
@@ -102,7 +101,7 @@ fn spawn_menu(commands: &mut Commands, asset_server: &AssetServer) {
                 Tutorial,
                 Infinite,
                 DailyChallenge,
-                DownloadImage
+                DownloadImage,
             ] {
                 spawn_button(parent, button, asset_server);
             }
@@ -168,7 +167,7 @@ pub enum MenuButton {
     Tutorial,
     Infinite,
     DailyChallenge,
-    DownloadImage
+    DownloadImage,
 }
 
 impl MenuButton {
@@ -180,7 +179,7 @@ impl MenuButton {
             MenuButton::Tutorial => "\u{e801}",       //"Tutorial",
             MenuButton::Infinite => "\u{e802}",       //"Infinite",
             MenuButton::DailyChallenge => "\u{e803}", // "Challenge",
-            MenuButton::DownloadImage => "\u{e804}", // "Image",
+            MenuButton::DownloadImage => "\u{e804}",  // "Image",
         }
     }
 }
