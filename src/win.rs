@@ -45,7 +45,10 @@ pub fn check_for_win(
             commands.entity(timer_entity).despawn();
 
             match level.0.level_type {
-                LevelType::Tutorial => {}
+                LevelType::Tutorial => {
+                    let title = format!("Equilibrium Tutorial {}", level.0.shapes);
+                    screenshot_events.send(SaveSVGEvent { title });
+                }
                 LevelType::Infinite => {
                     let title = format!("Equilibrium Infinite {}", level.0.shapes);
                     screenshot_events.send(SaveSVGEvent { title });
