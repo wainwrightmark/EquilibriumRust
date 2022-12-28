@@ -1,9 +1,9 @@
-use std::fs;
+use std::{fs, ops::Neg};
 
 use anyhow::anyhow;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::{*, tess::{geom::traits::Transformation}};
-use resvg::usvg;
+use resvg::usvg::{self, NodeExt};
 
 use crate::*;
 
@@ -48,7 +48,7 @@ fn download_svg(mut events: EventReader<DownloadPngEvent>, saves: Res<SavedSvg>)
                     {
                         save_file(filename.into(), vec).expect("Could not save file");
                     }
-                    println!("{}", svg.svg)
+                    //println!("{}", svg.svg)
                 }
                 Err(err) => {
                     error!("{}", err)
@@ -87,20 +87,22 @@ fn string_to_png(str: &str) -> Result<Vec<u8>, anyhow::Error> {
     let opt = usvg::Options::default();
     info!(str);
     let tree = usvg::Tree::from_str(str, &opt)?;
-    info!("Tree Size {:?}", tree.size);
-    info!("Viewbox {:?}", tree.view_box);
-    info!("ViewBox Size {:?}", tree.view_box.rect.size());
+    //info!("Tree Size {:?}", tree.size);
+    //info!("Viewbox {:?}", tree.view_box);
+    //info!("ViewBox Size {:?}", tree.view_box.rect.size());
+    let bounding_box = tree.root.calculate_bbox().unwrap();
 
 
-    let pixmap_size = tree.view_box.rect.size().to_screen_size();// tree.size.to_screen_size();
-    info!("Pixmap size {:?}", pixmap_size);
+
+    let pixmap_size = bounding_box.to_rect().unwrap().size().to_screen_size();// tree.size.to_screen_size();
+    //info!("Pixmap size {:?}", pixmap_size);
     let mut pixmap = resvg::tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())
         .ok_or(anyhow!("Could not create pixmap"))?;
 
     resvg::render(
         &tree,
         usvg::FitTo::Original,
-        resvg::tiny_skia::Transform::default(),
+        resvg::tiny_skia::Transform::from_translate(bounding_box.x().neg() as f32, bounding_box.y().neg() as f32),
         pixmap.as_mut(),
     )
     .ok_or(anyhow!("Could not render svg"))?;
@@ -122,10 +124,10 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
     let global_transform : TransformWrapper = (&global_transform).into();
 
 
-    let mut min_x: f32 = WINDOW_WIDTH;
-    let mut min_y: f32 = WINDOW_HEIGHT;
-    let mut max_x: f32 = 0.;
-    let mut max_y: f32 = 0.;
+    // let mut min_x: f32 = WINDOW_WIDTH;
+    // let mut min_y: f32 = WINDOW_HEIGHT;
+    // let mut max_x: f32 = 0.;
+    // let mut max_y: f32 = 0.;
 
     str.push('\n');
     for (transform, path, draw_mode) in iterator {
@@ -144,12 +146,12 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
                 tess::path::Event::End { last, first, close:_ } => (last, first),
             };
 
-            for p in [p1,p2]{
-                min_x = min_x.min(p.x);
-                max_x = max_x.max(p.x);
-                min_y = min_y.min(p.y);
-                max_y = max_y.max(p.y);
-            }
+            // for p in [p1,p2]{
+            //     min_x = min_x.min(p.x);
+            //     max_x = max_x.max(p.x);
+            //     min_y = min_y.min(p.y);
+            //     max_y = max_y.max(p.y);
+            // }
         }
 
         str.push('\n');
@@ -161,12 +163,12 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
         str.push('\n');
     }
 
-    let width = max_x - min_x;
-    let height = max_y - min_y;
+    // let width = max_x - min_x;
+    // let height = max_y - min_y;
 
     format!(
         r#"<svg
-        viewbox = "{min_x} {min_y} {width} {height}"
+        viewbox = "0 0 {WINDOW_WIDTH} {WINDOW_HEIGHT}"
         xmlns="http://www.w3.org/2000/svg">
         {str}
         </svg>"#
