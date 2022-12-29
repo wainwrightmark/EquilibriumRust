@@ -85,7 +85,7 @@ fn save_svg(
 fn string_to_png(str: &str) -> Result<Vec<u8>, anyhow::Error> {
     //println!("{}", str);
     let opt = usvg::Options::default();
-    info!(str);
+    //info!(str);
     let tree = usvg::Tree::from_str(str, &opt)?;
     //info!("Tree Size {:?}", tree.size);
     //info!("Viewbox {:?}", tree.view_box);

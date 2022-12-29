@@ -32,7 +32,7 @@
 - [ ] Show buttons in challenge complete screen
 - [ ] Gallery Screen
 - [ ] Real share button
-- [ ] Shared image should be smaller
+- [x] Shared image should be smaller
 - [ ] Walls should move with the screen size
 
 
