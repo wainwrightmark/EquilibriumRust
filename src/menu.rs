@@ -5,7 +5,7 @@ pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup.after(setup_level_text))
+        app.add_startup_system(setup.after(setup_level_ui))
             .add_system_to_stage(CoreStage::First, button_system);
     }
 }
@@ -93,6 +93,7 @@ fn spawn_menu(commands: &mut Commands, asset_server: &AssetServer) {
                 flex_direction: FlexDirection::Column,
                 ..Default::default()
             },
+            z_index: ZIndex::Global(10),
             visibility: Visibility::INVISIBLE,
             ..Default::default()
         })
@@ -126,6 +127,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..Default::default()
             },
+            z_index: ZIndex::Global(10),
             ..Default::default()
         })
         .with_children(|parent| {
@@ -135,7 +137,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_menu(&mut commands, asset_server.as_ref())
 }
 
-fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server: &AssetServer) {
+pub fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server: &AssetServer) {
     parent
         .spawn(ButtonBundle {
             style: Style {
@@ -143,6 +145,8 @@ fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server
                 margin: UiRect::all(Val::Auto),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
+                flex_grow: 0.0,
+                flex_shrink: 0.0,
 
                 ..Default::default()
             },

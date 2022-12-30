@@ -12,7 +12,7 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CurrentLevel>()
-            .add_startup_system(setup_level_text)
+            .add_startup_system(setup_level_ui)
             .add_startup_system_to_stage(StartupStage::PostStartup, skip_tutorial)
             .add_event::<ChangeLevelEvent>();
     }
@@ -24,7 +24,8 @@ pub fn handle_change_level(
     draggables: Query<(Entity, With<Draggable>)>,
     mut current_level: ResMut<CurrentLevel>,
     input_detector: Res<InputDetector>,
-    level_text: Query<(Entity, &mut Text), With<LevelText>>,
+    level_ui: Query<Entity, With<LevelUI>>,
+    asset_server: Res<AssetServer>,
     mut pkv: ResMut<PkvStore>,
 ) {
     if let Some(event) = change_level_events.iter().next() {
@@ -35,7 +36,13 @@ pub fn handle_change_level(
 
         current_level.0 = event.apply(&current_level.0, &mut pkv);
 
-        level::start_level(commands, current_level.0, level_text, input_detector);
+        level::start_level(
+            commands,
+            current_level.0,
+            level_ui,
+            input_detector,
+            asset_server,
+        );
     }
 }
 
@@ -61,66 +68,94 @@ fn skip_tutorial(
 fn start_level(
     mut commands: Commands,
     level: GameLevel,
-    mut level_text: Query<(Entity, &mut Text), With<LevelText>>,
+    level_ui: Query<Entity, With<LevelUI>>,
     input_detector: Res<InputDetector>,
+    asset_server: Res<AssetServer>,
 ) {
-    if let Some((entity, mut text)) = level_text.iter_mut().next() {
-        let new_text = format!(
-            "{: ^36}",
-            level.get_text(input_detector).unwrap_or_default()
-        );
+    if let Some(level_ui_entity) = level_ui.iter().next() {
+        let mut builder = commands.entity(level_ui_entity);
+        builder.despawn_descendants();
 
-        text.sections[0].value = new_text;
-        const LEVEL_TEXT_SECONDS: u64 = 20;
-        commands.entity(entity).insert(Animator::new(Tween::new(
-            EaseFunction::QuadraticInOut,
-            Duration::from_secs(LEVEL_TEXT_SECONDS),
-            TextColorLens {
-                section: 0,
-                start: SMALL_TEXT_COLOR,
-                end: Color::NONE,
-            },
-        )));
+        if let Some(text) = level.get_text(input_detector) {
+            builder.with_children(|parent| {
+                const LEVEL_TEXT_SECONDS: u64 = 20;
+                parent
+                    .spawn(
+                        TextBundle::from_section(
+                            text,
+                            TextStyle {
+                                font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+                                font_size: 20.0,
+                                color: SMALL_TEXT_COLOR,
+                            },
+                        )
+                        .with_text_alignment(TextAlignment::CENTER)
+                        .with_style(Style {
+                            align_self: AlignSelf::Center,
+                            ..Default::default()
+                        }),
+                    )
+                    .insert(Animator::new(Tween::new(
+                        EaseFunction::QuadraticInOut,
+                        Duration::from_secs(LEVEL_TEXT_SECONDS),
+                        TextColorLens {
+                            section: 0,
+                            start: SMALL_TEXT_COLOR,
+                            end: Color::NONE,
+                        },
+                    )));
+            });
+        }
+
+        if let Some(buttons) = level.get_buttons() {
+            builder.with_children(|x| {
+                x.spawn(NodeBundle {
+                    style: Style {
+                        display: Display::Flex,
+                        align_items: AlignItems::Center,
+                        // max_size: Size::new(Val::Px(WINDOW_WIDTH), Val::Auto),
+                        margin: UiRect::new(Val::Auto, Val::Auto,  Val::Undefined, Val::Undefined),
+                        justify_content: JustifyContent::Center,
+
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .with_children(|parent| {
+                    for button in buttons {
+                        spawn_button(parent, button, asset_server.as_ref())
+                    }
+                });
+            });
+        }
     }
 
     shape_maker::create_level_shapes(&mut commands, level);
 }
 
-pub fn setup_level_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_level_ui(mut commands: Commands) {
     commands
         .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                 position_type: PositionType::Absolute,
                 justify_content: JustifyContent::Center,
-                align_items: AlignItems::FlexEnd,
+                flex_direction: FlexDirection::Column,
+                //position: UiRect::new(Val::Auto, Val::Auto, Val::Percent(10.), Val::Auto),
+                // align_items: AlignItems::FlexEnd,
                 ..Default::default()
             },
+            z_index: ZIndex::Global(5),
             ..Default::default()
         })
-        .with_children(|parent| {
-            parent
-                .spawn(
-                    TextBundle::from_section(
-                        "",
-                        TextStyle {
-                            font: asset_server.load("fonts/FiraMono-Medium.ttf"),
-                            font_size: 20.0,
-                            color: SMALL_TEXT_COLOR,
-                        },
-                    )
-                    .with_text_alignment(TextAlignment::CENTER)
-                    .with_style(Style {
-                        align_self: AlignSelf::Center,
-                        ..Default::default()
-                    }),
-                )
-                .insert(LevelText);
-        });
+        .insert(LevelUI);
 }
 
+// #[derive(Component)]
+// pub struct LevelText;
+
 #[derive(Component)]
-pub struct LevelText;
+pub struct LevelUI;
 
 #[derive(Default, Resource)]
 pub struct CurrentLevel(pub GameLevel);
@@ -144,9 +179,9 @@ impl GameLevel {
     pub fn get_text(&self, input_detector: Res<InputDetector>) -> Option<String> {
         match self.level_type {
             LevelType::Tutorial => match self.shapes {
-                1 => Some("move the shape".to_string()),
+                1 => Some("place the shape".to_string()),
                 2 => Some("build a tower with all the shapes".to_string()),
-                3 => Some("the locked shape can be unlocked".to_string()),
+                3 => Some("move the locked shape fast to unlocked".to_string()),
                 4 => {
                     if input_detector.is_touch {
                         Some("Rotate with your finger".to_string())
@@ -159,8 +194,17 @@ impl GameLevel {
             LevelType::Infinite => None,
             LevelType::Challenge => Some("Daily Challenge".to_string()),
             LevelType::ChallengeComplete(streak) => {
-                Some(format!("Congratulations.\nYour streak is {streak}!\nUse the camera button in the menu to download an image."))
+                Some(format!("Congratulations.\nYour streak is {streak}!"))
             }
+        }
+    }
+
+    pub fn get_buttons(&self) -> Option<Vec<MenuButton>> {
+        match self.level_type {
+            LevelType::ChallengeComplete(_streak) => {
+                Some(vec![ MenuButton::DownloadImage, MenuButton::Infinite])
+            }
+            _ => Default::default(),
         }
     }
 }
