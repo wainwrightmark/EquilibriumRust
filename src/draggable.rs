@@ -118,7 +118,6 @@ pub fn drag_move(
     mut dragged_entities: Query<(&Draggable, &mut DesiredTranslation), Without<ZoomCamera>>,
     mut touch_rotate: ResMut<TouchRotateResource>,
     mut ev_rotate: EventWriter<RotateEvent>,
-    mut cameras: Query<(&mut Transform, &OrthographicProjection, &ZoomCamera)>,
 ) {
     for event in er_drag_move.iter() {
         debug!("{:?}", event);
@@ -142,13 +141,6 @@ pub fn drag_move(
 
             desired_translation.translation = new_position.truncate();
 
-            if let Some(touch_id) = draggable.touch_id() {
-                for (mut camera_transform, projection, zoom_camera) in cameras.iter_mut() {
-                    if zoom_camera.touch_id == touch_id {
-                        camera_transform.translation = new_position * (1. - projection.scale);
-                    }
-                }
-            }
         } else if let DragSource::Touch { touch_id } = event.drag_source {
             if let Some(mut rotate) = touch_rotate.0 {
                 if rotate.touch_id == touch_id {
@@ -226,7 +218,6 @@ pub fn handle_drag_changes(
         Changed<Draggable>,
     >,
     padlock_query: Query<With<Padlock>>,
-    camera_query: Query<Entity, With<ZoomCamera>>,
 ) {
     for (
         entity,
@@ -239,6 +230,7 @@ pub fn handle_drag_changes(
         children,
     ) in query.iter_mut()
     {
+
         match draggable {
             Draggable::Free => {
                 *locked_axes = LockedAxes::default();
@@ -261,30 +253,28 @@ pub fn handle_drag_changes(
                         }
                     }
                 }
+                let mut builder = commands.entity(entity);
 
-                if let DragSource::Touch { touch_id } = dragged.drag_source {
-                    let camera_bundle = crate::camera::new_camera(1000.0, 0.33, transform.clone());
-                    commands
-                        .spawn(camera_bundle)
-                        .insert(ZoomCamera { touch_id });
+                if let DragSource::Touch { touch_id:_ } = dragged.drag_source {
+                    builder.insert(TouchDragged);
                 }
 
                 *locked_axes = LockedAxes::ROTATION_LOCKED;
                 *gravity_scale = GravityScale(0.0);
                 *velocity = Velocity::zero();
                 *dominance = Dominance::group(10);
+
+                builder.insert(DesiredTranslation {
+                    translation: transform.translation.truncate(),
+                });
             }
         }
 
-        if draggable.is_dragged() {
-            commands.entity(entity).insert(DesiredTranslation {
-                translation: transform.translation.truncate(),
-            });
-        } else {
-            for x in camera_query.iter() {
-                commands.entity(x).despawn();
-            }
-            commands.entity(entity).remove::<DesiredTranslation>();
+        if !draggable.is_dragged() {
+            let mut builder = commands.entity(entity);
+            builder.remove::<DesiredTranslation>();
+            builder.remove::<TouchDragged>();
+            info!("Removed touch dragged");
         }
     }
 }

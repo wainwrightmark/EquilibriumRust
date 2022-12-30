@@ -136,23 +136,23 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
         let path = path.0.clone().transformed(&tw);
         let path = path.transformed(&global_transform);
 
-        for event in path.iter(){
-            let (p1, p2) =
-            match event {
-                tess::path::Event::Begin { at } => (at,at),
-                tess::path::Event::Line { from, to} => (from, to),
-                tess::path::Event::Quadratic { from, ctrl: _, to } => (from, to),
-                tess::path::Event::Cubic { from, ctrl1:_, ctrl2:_, to } => (from, to),
-                tess::path::Event::End { last, first, close:_ } => (last, first),
-            };
+        // for event in path.iter(){
+        //     // let (p1, p2) =
+        //     // match event {
+        //     //     tess::path::Event::Begin { at } => (at,at),
+        //     //     tess::path::Event::Line { from, to} => (from, to),
+        //     //     tess::path::Event::Quadratic { from, ctrl: _, to } => (from, to),
+        //     //     tess::path::Event::Cubic { from, ctrl1:_, ctrl2:_, to } => (from, to),
+        //     //     tess::path::Event::End { last, first, close:_ } => (last, first),
+        //     // };
 
-            // for p in [p1,p2]{
-            //     min_x = min_x.min(p.x);
-            //     max_x = max_x.max(p.x);
-            //     min_y = min_y.min(p.y);
-            //     max_y = max_y.max(p.y);
-            // }
-        }
+        //     // for p in [p1,p2]{
+        //     //     min_x = min_x.min(p.x);
+        //     //     max_x = max_x.max(p.x);
+        //     //     min_y = min_y.min(p.y);
+        //     //     max_y = max_y.max(p.y);
+        //     // }
+        // }
 
         str.push('\n');
         let path_d = format!("{:?}", path);

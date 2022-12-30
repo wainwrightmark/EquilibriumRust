@@ -34,7 +34,7 @@
 - [ ] Real share button
 - [x] Shared image should be smaller
 - [ ] Walls should move with the screen size
-
+- [ ] Achievements
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection
