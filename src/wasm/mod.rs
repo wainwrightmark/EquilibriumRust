@@ -19,6 +19,8 @@ extern "C" {
     fn enable_touch();
 
     pub fn request_fullscreen();
+
+    fn on_start();
 }
 #[derive(Resource)]
 struct LastSize {
@@ -151,6 +153,6 @@ impl Plugin for WASMPlugin {
             app.add_startup_system_to_stage(StartupStage::PostStartup, check_touch);
         }
 
-        // app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
+        app.add_startup_system_to_stage(StartupStage::PostStartup, on_start);
     }
 }

@@ -38,7 +38,7 @@
 - [ ] Walls should move with the screen size
 - [ ] Achievements
 - [ ] Device Motion
-- [ ] Better loading screen
+- [x] Better loading screen
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection

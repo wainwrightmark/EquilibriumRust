@@ -23,28 +23,24 @@
     <link data-trunk rel="copy-file" href="build/windows/icon.ico" />
     <link rel="icon" href="icon.ico" />
     <link data-trunk rel="inline" href="build/web/styles.css" />
-    <style>
-      body {
-        margin: 0px;
-        overflow: hidden;
-      }
-
-      canvas {
-        display: block;
-        margin: auto;
-        background-color: white;
-      }
-    </style>
   </head>
 
   <body>
+    <div id="spinner" class="lds-roller spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
     <div style="display: flex; flex-direction: column">
-      <canvas id="game"></canvas>
+
+      <canvas id="game" style="width: 0px; height: 0px;"></canvas>
     </div>
 
     <script>
       let touch_added = false;
       let touch_events = [];
+
+      let on_start = () =>{
+        var spinner = window.document.getElementById("spinner");
+        window.document.body.removeChild(spinner);
+      }
+
       let has_touch = () => {
         return !!("ontouchstart" in window);
       };
@@ -75,7 +71,7 @@
           !doc.webkitFullscreenElement &&
           !doc.msFullscreenElement
         ) {
-          requestFullScreen.call(docEl,{ navigationUI: "hide" });
+          requestFullScreen.call(docEl, { navigationUI: "hide" });
         } else {
           cancelFullScreen.call(doc);
         }
