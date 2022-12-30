@@ -16,6 +16,7 @@ mod draggable;
 mod grid;
 mod saved_data;
 pub mod screenshots;
+
 use bevy_tweening::TweeningPlugin;
 use camera::*;
 use draggable::*;
@@ -37,7 +38,11 @@ use win::*;
 mod input;
 use input::*;
 
+mod collision;
+use collision::*;
+
 pub mod game_shape;
+
 
 pub const ZOOM_ENTITY_LAYER : u8 = 1;
 
@@ -90,7 +95,7 @@ fn main() {
         .add_plugin(LevelPlugin)
         .add_plugin(TweeningPlugin)
         .add_plugin(ScreenshotPlugin)
-
+        .add_plugin(CollisionPlugin)
         .insert_resource(PkvStore::new("Wainwrong", "Equilibrium"))
 
 

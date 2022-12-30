@@ -22,6 +22,7 @@
 - [ ] Tutorial text should not fade
 - [ ] Use icons instead of text in tutorial
 
+- [ ] Prettier countdown timer
 - [ ] Shapes should have rounded corners
 - [ ] Different print options
 - [x] Take a screenshot after finishing level

@@ -29,7 +29,7 @@ impl Plugin for DragPlugin {
                     .after(input::touch_listener)
                     .before(handle_drag_changes),
             )
-            .add_system_to_stage(CoreStage::Update, translate_desired.after(drag_move))
+            .add_system_to_stage(CoreStage::Update, translate_desired.after(drag_move).before(handle_drag_changes))
             .add_system_to_stage(CoreStage::Update, handle_drag_changes)
             .add_event::<RotateEvent>()
             .add_event::<DragStartEvent>()
@@ -271,10 +271,10 @@ pub fn handle_drag_changes(
         }
 
         if !draggable.is_dragged() {
-            let mut builder = commands.entity(entity);
-            builder.remove::<DesiredTranslation>();
-            builder.remove::<TouchDragged>();
-            info!("Removed touch dragged");
+            commands.entity(entity)
+            .remove::<DesiredTranslation>()
+            .remove::<TouchDragged>();
+            //info!("Removed touch dragged");
         }
     }
 }

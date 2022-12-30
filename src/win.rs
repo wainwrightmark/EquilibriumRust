@@ -18,8 +18,8 @@ pub struct WinPlugin;
 
 impl Plugin for WinPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(check_for_contacts)
-            .add_system(check_for_win.after(check_for_contacts))
+        app.add_system(check_for_collisions)
+            .add_system(check_for_win.after(check_for_collisions))
             .add_system_to_stage(CoreStage::First, handle_change_level)
             .add_system_to_stage(CoreStage::PostUpdate, check_for_tower);
     }
@@ -78,7 +78,6 @@ pub fn check_for_tower(
 
     mut collision_events: ResMut<Events<CollisionEvent>>,
     rapier_context: ResMut<RapierContext>,
-    // mut rapier_config: ResMut<RapierConfiguration>,
     walls: Query<Entity, With<Wall>>,
 ) {
     if !end_drag_events.iter().any(|_| true) {
@@ -211,12 +210,11 @@ impl EventHandler for SensorCollisionHandler {
     }
 }
 
-fn check_for_contacts(
+fn check_for_collisions(
     mut commands: Commands,
     win_timer: Query<(Entity, &WinTimer)>,
-    mut collision_events: EventReader<CollisionEvent>,
+    collision_events: EventReader<CollisionEvent>,
     draggables: Query<&Draggable>,
-    // rapier_config: ResMut<RapierConfiguration>,
 ) {
     if win_timer.is_empty() {
         return; // no need to check
@@ -224,12 +222,8 @@ fn check_for_contacts(
 
     let mut fail: Option<&str> = None;
 
-    for _ie in collision_events.iter() {
+    if !collision_events.is_empty() {
         fail = Some("Intersection Found");
-    }
-
-    for _ in collision_events.iter() {
-        fail = Some("Contact Found");
     }
 
     if fail.is_none() && draggables.iter().any(|x| x.is_dragged()) {

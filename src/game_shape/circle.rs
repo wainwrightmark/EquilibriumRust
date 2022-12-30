@@ -8,7 +8,7 @@ use bevy_rapier2d::prelude::Collider;
 use super::GameShapeBody;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash, Default)]
-pub struct Circle {}
+pub struct Circle;
 
 fn circle_geometry(shape_size: f32) -> bevy_prototype_lyon::shapes::Circle {
     shapes::Circle {
