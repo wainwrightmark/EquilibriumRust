@@ -42,14 +42,6 @@
       <canvas id="game"></canvas>
     </div>
 
-    <dialog id="fullscreenDialog">
-      <form method="dialog">
-        <h4>Go Fullscreen?</h4>
-        <button id="fullscreenBtn">Yes</button>
-        <button>No</button>
-      </form>
-    </dialog>
-
     <script>
       let touch_added = false;
       let touch_events = [];
@@ -62,15 +54,34 @@
         return e;
       };
 
-      let fullscreen_btn = document.getElementById("fullscreenBtn");
-      fullscreen_btn.addEventListener("click", (event) => {
-        let canvas = document.getElementById("game");
-        canvas.requestFullscreen();
-      });
-
       let request_fullscreen = () => {
-        let dialog = document.getElementById("fullscreenDialog");
-        dialog.showModal();
+        var doc = window.document;
+        var docEl = doc.getElementById("game");
+
+        var requestFullScreen =
+          docEl.requestFullscreen ||
+          docEl.mozRequestFullScreen ||
+          docEl.webkitRequestFullScreen ||
+          docEl.msRequestFullscreen;
+        var cancelFullScreen =
+          doc.exitFullscreen ||
+          doc.mozCancelFullScreen ||
+          doc.webkitExitFullscreen ||
+          doc.msExitFullscreen;
+
+        if (
+          !doc.fullscreenElement &&
+          !doc.mozFullScreenElement &&
+          !doc.webkitFullscreenElement &&
+          !doc.msFullscreenElement
+        ) {
+          requestFullScreen.call(docEl,{ navigationUI: "hide" });
+        } else {
+          cancelFullScreen.call(doc);
+        }
+
+        //let canvas = document.getElementById("game");
+        //canvas.requestFullscreen({ navigationUI: "hide" });
       };
 
       let enable_touch = () => {

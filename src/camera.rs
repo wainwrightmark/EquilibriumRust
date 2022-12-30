@@ -55,13 +55,13 @@ fn deactivate_zoom_camera(
     mut cameras: Query<&mut Camera, With<ZoomCamera>>,
 
 ){
-    info!("d z c");
+    //info!("d z c");
     if removals.iter().next().is_some(){
-        info!("d z c 2");
+        //info!("d z c 2");
         if query.is_empty(){
-            info!("d z c 3");
+            //info!("d z c 3");
             for mut c in cameras.iter_mut(){
-                info!("d z c 4");
+                //info!("d z c 4");
                 c.is_active = false;
             }
         }

@@ -151,6 +151,6 @@ impl Plugin for WASMPlugin {
             app.add_startup_system_to_stage(StartupStage::PostStartup, check_touch);
         }
 
-        app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
+        // app.add_startup_system_to_stage(StartupStage::PostStartup, request_fullscreen);
     }
 }
