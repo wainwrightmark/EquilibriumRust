@@ -28,7 +28,7 @@
 - [ ] Different print options
 - [x] Take a screenshot after finishing level
 - [ ] Infinite mode should remember where you got to
-- [ ] Walls should change color when you collide
+- [x] Walls should change color when you collide
 - [x] Better flicking action
 - [ ] Undo button - goes back to just before the last piece you picked up
 - [x] Show buttons in challenge complete screen

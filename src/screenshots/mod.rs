@@ -69,7 +69,10 @@ fn save_file(file_name: std::path::PathBuf, bytes: Vec<u8>) -> anyhow::Result<()
 
 fn save_svg(
     mut events: EventReader<SaveSVGEvent>,
-    query: Query<(&Transform, &Path, &DrawMode), (With<Draggable>, Without<Wall>, Without<Padlock>)>,
+    query: Query<
+        (&Transform, &Path, &DrawMode),
+        (With<Draggable>, Without<Wall>, Without<Padlock>),
+    >,
     mut saves: ResMut<SavedSvg>,
 ) {
     for event in events.iter() {
@@ -238,6 +241,6 @@ struct TransformWrapper(Transform);
 
 impl From<&Transform> for TransformWrapper {
     fn from(value: &Transform) -> Self {
-        Self(value.clone())
+        Self(*value)
     }
 }

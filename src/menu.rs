@@ -13,7 +13,12 @@ impl Plugin for ButtonPlugin {
 #[derive(Component)]
 pub struct MainMenu;
 
-const NORMAL_BUTTON: Color = Color::Rgba { red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0};//, green: (), blue: (), alpha: () } Color::rgb(0.9, 0.9, 0.9);
+const NORMAL_BUTTON: Color = Color::Rgba {
+    red: 0.0,
+    green: 0.0,
+    blue: 0.0,
+    alpha: 0.0,
+}; //, green: (), blue: (), alpha: () } Color::rgb(0.9, 0.9, 0.9);
 
 const HOVERED_BUTTON: Color = Color::rgb(0.8, 0.8, 0.8);
 const PRESSED_BUTTON: Color = Color::rgb(0.7, 0.7, 0.7);
@@ -137,7 +142,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     spawn_menu(&mut commands, asset_server.as_ref())
 }
 
-pub fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server: &AssetServer) {
+pub fn spawn_button(
+    parent: &mut ChildBuilder,
+    menu_button: MenuButton,
+    asset_server: &AssetServer,
+) {
     parent
         .spawn(ButtonBundle {
             style: Style {
@@ -160,7 +169,7 @@ pub fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_se
                     TextStyle {
                         font: asset_server.load("fonts/fontello-font.ttf"),
                         font_size: 30.0,
-                        color: BUTTON_BACKGROUND.into(),
+                        color: BUTTON_BACKGROUND,
                     },
                 ),
                 ..Default::default()

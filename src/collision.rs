@@ -53,7 +53,7 @@ fn display_collision_markers(
                         index,
                         horizontal: wall.horizontal,
                     };
-                    let mut new_transform = wall_transform.clone();
+                    let mut new_transform = *wall_transform;
                     //new_transform.
                     new_transform.translation +=
                         wall_local_point.extend(0.0) * rapier_context.physics_scale();

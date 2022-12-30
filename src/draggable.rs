@@ -242,7 +242,7 @@ pub fn handle_drag_changes(
             }
 
             Draggable::Locked => {
-                create_padlock(&mut commands, entity, transform.clone());
+                create_padlock(&mut commands, entity, *transform);
                 *locked_axes = LockedAxes::all();
                 *gravity_scale = GravityScale(0.0);
                 *velocity = Velocity::zero();
@@ -312,7 +312,7 @@ impl Draggable {
 
     pub fn has_drag_source(&self, drag_source: DragSource) -> bool {
         let Draggable::Dragged(dragged) = self else {return  false;};
-        return dragged.drag_source == drag_source;
+        dragged.drag_source == drag_source
     }
 
     // pub fn has_touch_id(&self, id: u64) -> bool {

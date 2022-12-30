@@ -114,7 +114,7 @@ fn start_level(
                         display: Display::Flex,
                         align_items: AlignItems::Center,
                         // max_size: Size::new(Val::Px(WINDOW_WIDTH), Val::Auto),
-                        margin: UiRect::new(Val::Auto, Val::Auto,  Val::Undefined, Val::Undefined),
+                        margin: UiRect::new(Val::Auto, Val::Auto, Val::Undefined, Val::Undefined),
                         justify_content: JustifyContent::Center,
 
                         ..Default::default()
@@ -202,7 +202,7 @@ impl GameLevel {
     pub fn get_buttons(&self) -> Option<Vec<MenuButton>> {
         match self.level_type {
             LevelType::ChallengeComplete(_streak) => {
-                Some(vec![ MenuButton::DownloadImage, MenuButton::Infinite])
+                Some(vec![MenuButton::DownloadImage, MenuButton::Infinite])
             }
             _ => Default::default(),
         }
