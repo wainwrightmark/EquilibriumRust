@@ -43,8 +43,7 @@ use collision::*;
 
 pub mod game_shape;
 
-
-pub const ZOOM_ENTITY_LAYER : u8 = 1;
+pub const ZOOM_ENTITY_LAYER: u8 = 1;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm;

@@ -3,7 +3,9 @@ use bevy_prototype_lyon::shapes::Rectangle;
 use crate::*;
 
 #[derive(Component)]
-pub struct Wall;
+pub struct Wall {
+    pub horizontal: bool,
+}
 
 pub struct WallsPlugin;
 
@@ -29,6 +31,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
         color,
+        true,
         // "Bottom-Wall".to_string(),
     );
     spawn_wall(
@@ -37,6 +40,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WINDOW_WIDTH + EXTRA_WIDTH,
         crate::WALL_WIDTH,
         color,
+        true,
         // "Top-Wall".to_string(),
     );
 
@@ -46,6 +50,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
         color,
+        false,
         // "Left-Wall".to_string(),
     );
     spawn_wall(
@@ -54,6 +59,7 @@ fn spawn_walls(mut commands: Commands) {
         crate::WALL_WIDTH,
         crate::WINDOW_HEIGHT,
         color,
+        false,
         // "Right-Wall".to_string(),
     );
 }
@@ -64,7 +70,7 @@ fn spawn_wall(
     width: f32,
     height: f32,
     color: Color,
-    // name: String,
+    horizontal: bool, // name: String,
 ) {
     let shape = Rectangle {
         extents: Vec2::new(width, height),
@@ -85,7 +91,7 @@ fn spawn_wall(
         .insert(Transform::from_translation(point.extend(0.0)))
         .insert(collider_shape.clone())
         // .insert(Name::new(name.to_string()))
-        .insert(Wall {})
+        .insert(Wall { horizontal })
         .with_children(|f| {
             f.spawn(collider_shape)
                 .insert(Sensor {})

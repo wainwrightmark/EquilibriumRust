@@ -29,7 +29,12 @@ impl Plugin for DragPlugin {
                     .after(input::touch_listener)
                     .before(handle_drag_changes),
             )
-            .add_system_to_stage(CoreStage::Update, translate_desired.after(drag_move).before(handle_drag_changes))
+            .add_system_to_stage(
+                CoreStage::Update,
+                translate_desired
+                    .after(drag_move)
+                    .before(handle_drag_changes),
+            )
             .add_system_to_stage(CoreStage::Update, handle_drag_changes)
             .add_event::<RotateEvent>()
             .add_event::<DragStartEvent>()
@@ -140,7 +145,6 @@ pub fn drag_move(
             let new_position = (draggable.get_offset() + clamped_position).extend(0.0);
 
             desired_translation.translation = new_position.truncate();
-
         } else if let DragSource::Touch { touch_id } = event.drag_source {
             if let Some(mut rotate) = touch_rotate.0 {
                 if rotate.touch_id == touch_id {
@@ -230,7 +234,6 @@ pub fn handle_drag_changes(
         children,
     ) in query.iter_mut()
     {
-
         match draggable {
             Draggable::Free => {
                 *locked_axes = LockedAxes::default();
@@ -255,7 +258,7 @@ pub fn handle_drag_changes(
                 }
                 let mut builder = commands.entity(entity);
 
-                if let DragSource::Touch { touch_id:_ } = dragged.drag_source {
+                if let DragSource::Touch { touch_id: _ } = dragged.drag_source {
                     builder.insert(TouchDragged);
                 }
 
@@ -271,9 +274,10 @@ pub fn handle_drag_changes(
         }
 
         if !draggable.is_dragged() {
-            commands.entity(entity)
-            .remove::<DesiredTranslation>()
-            .remove::<TouchDragged>();
+            commands
+                .entity(entity)
+                .remove::<DesiredTranslation>()
+                .remove::<TouchDragged>();
             //info!("Removed touch dragged");
         }
     }

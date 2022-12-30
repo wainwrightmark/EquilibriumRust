@@ -7,11 +7,9 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup)
-
-        .add_system_to_stage(CoreStage::PostUpdate, move_zoom_camera)
-        .add_system_to_stage(CoreStage::PostUpdate, activate_zoom_camera)
-        .add_system_to_stage(CoreStage::PostUpdate, deactivate_zoom_camera)
-        ;
+            .add_system_to_stage(CoreStage::PostUpdate, move_zoom_camera)
+            .add_system_to_stage(CoreStage::PostUpdate, activate_zoom_camera)
+            .add_system_to_stage(CoreStage::PostUpdate, deactivate_zoom_camera);
     }
 }
 
@@ -25,7 +23,9 @@ fn setup(mut commands: Commands) {
 
     commands
         .spawn(new_camera(FAR, ZOOM_SCALE, false))
-        .insert(bevy::render::view::visibility::RenderLayers::layer(ZOOM_ENTITY_LAYER))
+        .insert(bevy::render::view::visibility::RenderLayers::layer(
+            ZOOM_ENTITY_LAYER,
+        ))
         .insert(ZoomCamera { scale: ZOOM_SCALE });
 }
 
@@ -56,14 +56,13 @@ fn deactivate_zoom_camera(
     removals: RemovedComponents<TouchDragged>,
     query: Query<With<TouchDragged>>,
     mut cameras: Query<&mut Camera, With<ZoomCamera>>,
-
-){
+) {
     //info!("d z c");
-    if removals.iter().next().is_some(){
+    if removals.iter().next().is_some() {
         //info!("d z c 2");
-        if query.is_empty(){
+        if query.is_empty() {
             //info!("d z c 3");
-            for mut c in cameras.iter_mut(){
+            for mut c in cameras.iter_mut() {
                 //info!("d z c 4");
                 c.is_active = false;
             }

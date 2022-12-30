@@ -2,7 +2,7 @@ use std::{fs, ops::Neg};
 
 use anyhow::anyhow;
 use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::{*, tess::{geom::traits::Transformation}};
+use bevy_prototype_lyon::prelude::{tess::geom::traits::Transformation, *};
 use resvg::usvg::{self, NodeExt};
 
 use crate::*;
@@ -61,11 +61,10 @@ fn download_svg(mut events: EventReader<DownloadPngEvent>, saves: Res<SavedSvg>)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn save_file(file_name: std::path::PathBuf, bytes: Vec<u8>)-> anyhow::Result<()> {
+fn save_file(file_name: std::path::PathBuf, bytes: Vec<u8>) -> anyhow::Result<()> {
     fs::write(file_name, bytes)?;
 
     Ok(())
-
 }
 
 fn save_svg(
@@ -92,17 +91,18 @@ fn string_to_png(str: &str) -> Result<Vec<u8>, anyhow::Error> {
     //info!("ViewBox Size {:?}", tree.view_box.rect.size());
     let bounding_box = tree.root.calculate_bbox().unwrap();
 
-
-
-    let pixmap_size = bounding_box.to_rect().unwrap().size().to_screen_size();// tree.size.to_screen_size();
-    //info!("Pixmap size {:?}", pixmap_size);
+    let pixmap_size = bounding_box.to_rect().unwrap().size().to_screen_size(); // tree.size.to_screen_size();
+                                                                               //info!("Pixmap size {:?}", pixmap_size);
     let mut pixmap = resvg::tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height())
         .ok_or(anyhow!("Could not create pixmap"))?;
 
     resvg::render(
         &tree,
         usvg::FitTo::Original,
-        resvg::tiny_skia::Transform::from_translate(bounding_box.x().neg() as f32, bounding_box.y().neg() as f32),
+        resvg::tiny_skia::Transform::from_translate(
+            bounding_box.x().neg() as f32,
+            bounding_box.y().neg() as f32,
+        ),
         pixmap.as_mut(),
     )
     .ok_or(anyhow!("Could not render svg"))?;
@@ -119,10 +119,17 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
     let left = WINDOW_WIDTH * 0.5;
     let top = WINDOW_HEIGHT * 0.5;
 
-    let global_transform = Transform::from_translation(Vec3 { x: left, y: top, z: 0.0 });
-    let global_transform = global_transform.with_scale(Vec3{x: 1.0, y: -1.0, z: 1.0});
-    let global_transform : TransformWrapper = (&global_transform).into();
-
+    let global_transform = Transform::from_translation(Vec3 {
+        x: left,
+        y: top,
+        z: 0.0,
+    });
+    let global_transform = global_transform.with_scale(Vec3 {
+        x: 1.0,
+        y: -1.0,
+        z: 1.0,
+    });
+    let global_transform: TransformWrapper = (&global_transform).into();
 
     // let mut min_x: f32 = WINDOW_WIDTH;
     // let mut min_y: f32 = WINDOW_HEIGHT;
@@ -131,8 +138,7 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
 
     str.push('\n');
     for (transform, path, draw_mode) in iterator {
-
-        let tw : TransformWrapper = transform.into();
+        let tw: TransformWrapper = transform.into();
         let path = path.0.clone().transformed(&tw);
         let path = path.transformed(&global_transform);
 
@@ -175,8 +181,6 @@ pub fn create_svg<'a, I: Iterator<Item = (&'a Transform, &'a Path, &'a DrawMode)
     )
 }
 
-
-
 fn get_path_style(draw_mode: &DrawMode) -> String {
     match draw_mode {
         DrawMode::Fill(fill_mode) => get_fill_style(fill_mode),
@@ -212,10 +216,10 @@ fn color_to_rgba(color: Color) -> String {
     )
 }
 
-impl Transformation<f32> for TransformWrapper{
+impl Transformation<f32> for TransformWrapper {
     fn transform_point(&self, p: tess::geom::Point<f32>) -> tess::geom::Point<f32> {
         let matrix = self.0.compute_matrix();
-        let vec2 : Vec2 = Vec2 { x: p.x, y: p.y };
+        let vec2: Vec2 = Vec2 { x: p.x, y: p.y };
         let vec2 = matrix.transform_point3(vec2.extend(0.0)).truncate();
 
         tess::geom::Point::<f32>::new(vec2.x, vec2.y)
@@ -223,7 +227,7 @@ impl Transformation<f32> for TransformWrapper{
 
     fn transform_vector(&self, v: tess::geom::Vector<f32>) -> tess::geom::Vector<f32> {
         let matrix = self.0.compute_matrix();
-        let vec2 : Vec2 = Vec2 { x: v.x, y: v.y };
+        let vec2: Vec2 = Vec2 { x: v.x, y: v.y };
         let vec2 = matrix.transform_point3(vec2.extend(0.0)).truncate();
 
         tess::geom::Vector::<f32>::new(vec2.x, vec2.y)
@@ -232,7 +236,7 @@ impl Transformation<f32> for TransformWrapper{
 
 struct TransformWrapper(Transform);
 
-impl From<&Transform> for TransformWrapper{
+impl From<&Transform> for TransformWrapper {
     fn from(value: &Transform) -> Self {
         Self(value.clone())
     }
