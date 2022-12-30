@@ -13,9 +13,15 @@ impl Plugin for ButtonPlugin {
 #[derive(Component)]
 pub struct MainMenu;
 
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+const NORMAL_BUTTON: Color = Color::Rgba { red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0};//, green: (), blue: (), alpha: () } Color::rgb(0.9, 0.9, 0.9);
+
+const HOVERED_BUTTON: Color = Color::rgb(0.8, 0.8, 0.8);
+const PRESSED_BUTTON: Color = Color::rgb(0.7, 0.7, 0.7);
+
+const BUTTON_BACKGROUND: Color = Color::rgb(0.1, 0.1, 0.1);
+
+const BUTTON_WIDTH: f32 = 65.;
+const BUTTON_HEIGHT: f32 = 65.;
 
 fn button_system(
     mut interaction_query: Query<
@@ -79,8 +85,8 @@ fn spawn_menu(commands: &mut Commands, asset_server: &AssetServer) {
             style: Style {
                 position_type: PositionType::Absolute,
                 position: UiRect {
-                    left: Val::Px(100.),
-                    top: Val::Px(75.),
+                    left: Val::Px(10.),
+                    top: Val::Px(10. + BUTTON_HEIGHT),
                     ..Default::default()
                 },
                 display: Display::Flex,
@@ -133,7 +139,7 @@ fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server
     parent
         .spawn(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                size: Size::new(Val::Px(BUTTON_WIDTH), Val::Px(BUTTON_HEIGHT)),
                 margin: UiRect::all(Val::Auto),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -150,7 +156,7 @@ fn spawn_button(parent: &mut ChildBuilder, menu_button: MenuButton, asset_server
                     TextStyle {
                         font: asset_server.load("fonts/fontello-font.ttf"),
                         font_size: 30.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
+                        color: BUTTON_BACKGROUND.into(),
                     },
                 ),
                 ..Default::default()
