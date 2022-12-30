@@ -24,7 +24,7 @@
 
 - [ ] Prettier countdown timer
 - [ ] Shapes should have rounded corners
-- [ ] Prettier colors
+- [x] Prettier colors
 - [ ] Different print options
 - [x] Take a screenshot after finishing level
 - [ ] Infinite mode should remember where you got to
@@ -38,6 +38,7 @@
 - [ ] Walls should move with the screen size
 - [ ] Achievements
 - [ ] Device Motion
+- [ ] Better loading screen
 
 - [ ] Use heightfield instead of walls
 - [x] Win detection

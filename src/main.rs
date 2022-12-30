@@ -16,6 +16,8 @@ mod draggable;
 mod grid;
 mod saved_data;
 pub mod screenshots;
+mod color;
+use color::*;
 
 use bevy_tweening::TweeningPlugin;
 use camera::*;
@@ -78,7 +80,7 @@ fn main() {
     let mut builder = App::new();
 
     builder
-        .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.95)))
+        .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_plugins(DefaultPlugins.set(window_plugin).set(log_plugin))
         .add_plugin(WallsPlugin)
         .add_plugin(ButtonPlugin)
