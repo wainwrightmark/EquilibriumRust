@@ -31,7 +31,7 @@
 - [ ] Walls should change color when you collide
 - [x] Better flicking action
 - [ ] Undo button - goes back to just before the last piece you picked up
-- [ ] Show buttons in challenge complete screen
+- [x] Show buttons in challenge complete screen
 - [ ] Gallery Screen
 - [ ] Real share button
 - [x] Shared image should be smaller
