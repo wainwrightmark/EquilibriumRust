@@ -45,21 +45,13 @@ canvas {
       }
     </style>
   
-<link rel="preload" href="/equilibrium-b192b02318ce385_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/equilibrium-b192b02318ce385.js"></head>
+<link rel="preload" href="/equilibrium-18c18c159b9ebac0_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
+<link rel="modulepreload" href="/equilibrium-18c18c159b9ebac0.js"></head>
 
   <body>
     <div style="display: flex; flex-direction: column">
       <canvas id="game"></canvas>
     </div>
-
-    <dialog id="fullscreenDialog">
-      <form method="dialog">
-        <h4>Go Fullscreen?</h4>
-        <button id="fullscreenBtn">Yes</button>
-        <button>No</button>
-      </form>
-    </dialog>
 
     <script>
       let touch_added = false;
@@ -73,15 +65,34 @@ canvas {
         return e;
       };
 
-      let fullscreen_btn = document.getElementById("fullscreenBtn");
-      fullscreen_btn.addEventListener("click", (event) => {
-        let canvas = document.getElementById("game");
-        canvas.requestFullscreen();
-      });
-
       let request_fullscreen = () => {
-        let dialog = document.getElementById("fullscreenDialog");
-        dialog.showModal();
+        var doc = window.document;
+        var docEl = doc.getElementById("game");
+
+        var requestFullScreen =
+          docEl.requestFullscreen ||
+          docEl.mozRequestFullScreen ||
+          docEl.webkitRequestFullScreen ||
+          docEl.msRequestFullscreen;
+        var cancelFullScreen =
+          doc.exitFullscreen ||
+          doc.mozCancelFullScreen ||
+          doc.webkitExitFullscreen ||
+          doc.msExitFullscreen;
+
+        if (
+          !doc.fullscreenElement &&
+          !doc.mozFullScreenElement &&
+          !doc.webkitFullscreenElement &&
+          !doc.msFullscreenElement
+        ) {
+          requestFullScreen.call(docEl,{ navigationUI: "hide" });
+        } else {
+          cancelFullScreen.call(doc);
+        }
+
+        //let canvas = document.getElementById("game");
+        //canvas.requestFullscreen({ navigationUI: "hide" });
       };
 
       let enable_touch = () => {
@@ -125,4 +136,4 @@ canvas {
     </script>
   
 
-<script type="module">import init from '/equilibrium-b192b02318ce385.js';init('/equilibrium-b192b02318ce385_bg.wasm');</script></body></html>
+<script type="module">import init from '/equilibrium-18c18c159b9ebac0.js';init('/equilibrium-18c18c159b9ebac0_bg.wasm');</script></body></html>
