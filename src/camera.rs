@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::ZOOM_ENTITY_LAYER;
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
@@ -23,6 +25,7 @@ fn setup(mut commands: Commands) {
 
     commands
         .spawn(new_camera(FAR, ZOOM_SCALE, false))
+        .insert(bevy::render::view::visibility::RenderLayers::layer(ZOOM_ENTITY_LAYER))
         .insert(ZoomCamera { scale: ZOOM_SCALE });
 }
 

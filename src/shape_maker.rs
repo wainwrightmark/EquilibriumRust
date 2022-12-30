@@ -111,5 +111,15 @@ pub fn create_shape(
         .insert(GravityScale::default())
         .insert(Velocity::default())
         .insert(Dominance::default())
-        .insert(crate::Draggable::Free {});
+        .insert(crate::Draggable::Free {})
+        .with_children(|x|
+            {x
+                .spawn(bevy::render::view::visibility::RenderLayers::layer(ZOOM_ENTITY_LAYER))
+                .insert(game_shape.body.get_shape_bundle(shape_size, DrawMode::Stroke(StrokeMode::new(Color::BLACK, 1.))))
+                ;
+
+
+            })
+
+        ;
 }
