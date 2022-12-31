@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 itertools = "0.10"
-bevy_prototype_lyon = "0.7"
+bevy_prototype_lyon = {git="https://github.com/wainwrightmark/bevy_prototype_lyon"}
 bevy_rapier2d = {version = "0.19" }
 
 strum = { version = "0.24.1", features = ["derive"] }

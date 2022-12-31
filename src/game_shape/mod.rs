@@ -17,15 +17,12 @@ pub use circle::*;
 
 pub use polygon::*;
 
-const SATURATION: f32 = 0.35;
-const LIGHTNESS: f32 = 0.45;
-const ALPHA: f32 = 0.8;
-
 pub trait GameShapeBody: Send + Sync {
     fn to_collider_shape(&self, shape_size: f32) -> Collider;
     fn get_shape_bundle(&self, shape_size: f32, draw_mode: DrawMode) -> ShapeBundle;
 }
 
+const SHAPE_RADIUS: f32 = 5.0;
 #[derive(Clone)]
 pub struct GameShape {
     pub name: &'static str,
@@ -42,10 +39,7 @@ impl GameShape {
     }
 
     pub fn draw_mode(&self) -> DrawMode {
-        DrawMode::Fill(
-            FillMode::color(self.default_fill_color())
-
-        )
+        DrawMode::Fill(FillMode::color(self.default_fill_color()))
         // {
         //     //fill_mode: FillMode::color(self.default_fill_color()),
         //     stroke_mode: ,

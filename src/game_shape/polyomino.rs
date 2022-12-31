@@ -1,9 +1,9 @@
-use super::GameShapeBody;
+use super::{GameShapeBody, SHAPE_RADIUS};
 use crate::grid::prelude::{PolyominoShape, Shape};
 use bevy::prelude::{Transform, Vec2};
 use bevy_prototype_lyon::{
     prelude::{DrawMode, GeometryBuilder},
-    shapes::Polygon,
+    shapes::{Polygon, RoundedPolygon},
 };
 use bevy_rapier2d::prelude::Collider;
 use itertools::Itertools;
@@ -52,9 +52,10 @@ impl<const S: usize> GameShapeBody for Shape<S> {
         draw_mode: DrawMode,
     ) -> bevy_prototype_lyon::entity::ShapeBundle {
         let points = get_vertices(self, shape_size).collect_vec();
-        let shape = Polygon {
+        let shape = RoundedPolygon {
             points,
-            closed: true,
+            clockwise: true,
+        radius: SHAPE_RADIUS
         };
 
         GeometryBuilder::build_as(&shape, draw_mode, Transform::default())

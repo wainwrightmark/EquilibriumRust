@@ -22,6 +22,7 @@
 - [ ] Tutorial text should not fade
 - [ ] Use icons instead of text in tutorial
 
+- [ ] Rounded Corners
 - [ ] Prettier countdown timer
 - [ ] Shapes should have rounded corners
 - [x] Prettier colors

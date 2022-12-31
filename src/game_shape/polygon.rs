@@ -1,8 +1,8 @@
-use super::GameShapeBody;
+use super::{GameShapeBody, SHAPE_RADIUS};
 use bevy::prelude::{Transform, Vec2};
 use bevy_prototype_lyon::{
     prelude::{DrawMode, GeometryBuilder},
-    shapes::Polygon,
+    shapes::{Polygon, RoundedPolygon},
 };
 use bevy_rapier2d::prelude::Collider;
 
@@ -30,13 +30,13 @@ impl<const S: usize, const P: usize> GameShapeBody for PolygonBody<S, P> {
     ) -> bevy_prototype_lyon::entity::ShapeBundle {
         let u = shape_size / (1.0 * f32::sqrt(S as f32));
 
-        //let offset = Vec2::new(u * -1., u * -1.);
-        let shape = Polygon {
+        let shape = RoundedPolygon {
             points: self
                 .0
                 .map(|(x, y)| Vec2::new((x as f32) * u, (y as f32) * u))
                 .into(),
-            closed: true,
+            clockwise: true,
+            radius: SHAPE_RADIUS
         };
 
         GeometryBuilder::build_as(&shape, draw_mode, Transform::default())
