@@ -57,7 +57,7 @@ fn display_collision_markers(
                     //new_transform.
                     new_transform.translation +=
                         wall_local_point.extend(0.0) * rapier_context.physics_scale();
-                    new_transform.translation.z = 0.0;
+                    new_transform.translation.z = 1.0;
 
                     //info!("dcm shape {:?} + {:?} = {:?}", wall_transform, wall_local_point, new_transform.translation);
 
